@@ -1,0 +1,10 @@
+sudo -E pip install python-cinderclient==3.5.0
+sudo -E pip install python-openstackclient/
+sudo -E pip install oslo.config==7.0.0
+sudo -E pip install oslo.log==3.45.2
+sudo -E pip install python-novaclient/
+sudo -E pip install ddt==1.3.1
+sudo -E pip install osc-lib==2.0.0
+sudo -E pip install openstacksdk==0.14.0
+sudo -E pip install oslo.config==7.0.0
+sudo -E pip install oslo.log==3.45.2
