@@ -1,0 +1,25 @@
+{  
+    "openstack_relearse": "newton",
+    "supported_release": ["newton", "octava"],
+    "id_rsa_file": "/home/noiro/.ssh/id_rsa",
+    "passphrase": "noir0123",
+    "remote_password": "noir0123",
+    "proxy_env": {
+         "http_proxy": "http://proxy.esl.cisco.com:80",
+         "https_proxy": "http://proxy.esl.cisco.com:80"
+         },
+    "release": {
+        "newton": {
+            "name": "newton",
+            "release": "newton-eol",
+            "tempest_version": "13.0.0",
+            "neutron_hash": "1766a8ee18bf1e0351d965571c8e3434b87a74ee"
+        },
+        "octava": {
+            "name": "newton",
+            "release": "newton-eol",
+            "tempest_version": "13.0.0",
+            "neutron_hash": "1766a8ee18bf1e0351d965571c8e3434b87a74ee"
+           }
+    }
+}

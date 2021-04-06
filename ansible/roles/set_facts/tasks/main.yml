@@ -1,0 +1,38 @@
+---
+# tasks file for set_facts
+  - name: Getting fab number
+    shell: cat /etc/hostname | cut -d "-" -f 1 | cut -b 4-
+    register: fabno
+
+  - name: Getting external router network
+    shell: echo {{ external_rtr_ip }} | cut -d'.' -f1-3
+    register: ext_rtr_net
+
+  - set_fact:
+      openrelease: "{{ release[item]['release'] }}"
+      tempest: "{{ release[item]['tempest_version'] }}"
+      neutron_git_hash: "{{ release[item]['neutron_hash'] }}"
+      fabno: "{{ fabno.stdout }}"
+    when: rel  == "{{ item }}"
+    with_items: "{{ release.keys() | list }}"
+
+  - set_fact:
+      git_url: https://github.com
+    when: rel == 'newton'
+
+  - name: Getting name of dashboard ip
+    shell: egrep OS_AUTH_URL {{ ansible_env.HOME }}/{{ rcfile }} | awk -F'/' '{print $3}' | awk -F ':' '{print $1}'
+    register: cntr_rest_ip
+
+  - name: set cloud network and cloud gateway
+    set_fact:
+      cloudnet: "{% if undercloud_type == 'director' %}1.100.1.0{% else %}'1.11.1.0'{% endif %}"
+      cloudgw: "{% if undercloud_type == 'director' %}'{{ cntr_rest_ip.stdout_lines.0 }}'{% else %}'{{ undercloud_ip }}'{% endif %}"
+      gw1_ip: "1.10{{ fabno }}.1.254"
+      gw2_ip: "1.10{{ fabno }}.2.254"
+      ext1_ip: "1.10{{ fabno }}.1.1"
+      ext2_ip: "1.10{{ fabno }}.2.1"
+
+  - name: set no proxy
+    set_fact:
+      no_proxy: 127.0.0.1,localhost,{{ external_rtr_ip }},{{ cloudgw }},"{{ ext_rtr_net }}.0"/24,{{ cloudnet }}/24,{{ noiro_controller_ip }}

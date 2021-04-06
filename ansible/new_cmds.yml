@@ -1,0 +1,124 @@
+---
+- name: Installing and setting up environment
+  hosts: all
+  connection: local
+  gather_facts: yes
+  vars:
+    noiro_controller_ip: 172.28.184.8
+    novaclient_version: stable/ocata
+    git_url: https://opendev.org
+    external_rtr_ip: "{{ ansible_default_ipv4.address }}"
+
+  tasks:
+  - set_fact:
+      rel: "{{ openstack_release }}"
+      undercloud_type: "{{ undercloud_type }}"
+      undercloud_ip: "{{ undercloud_ip }}"
+      
+  - name: set rcfiles and user
+    set_fact:
+      rcfile: "{% if undercloud_type == 'director' %}overcloudrc{% else %}admin-openrc.sh{% endif %}"
+      user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
+
+  - name: role to set facts
+    include_role:
+      name: set_facts
+    when: inventory_hostname in groups.external_router   
+  
+  - name: copy rcfile from undercloud vm
+    fetch:
+      src: "{{ rcfile }}"
+      dest: ./overcloudrc
+      flat: yes
+    when:
+      - inventory_hostname in groups.undercloud
+
+  - name: add routes to get access to director internal ips 
+    command: route add -net {{ cloudnet }} netmask 255.255.255.0 gateway {{ cloudgw }}
+    become: true
+    when:
+      - inventory_hostname in groups.external_router
+
+  - name: Getting  controller variable
+    shell: source /home/{{ user }}/stackrc && nova list | grep controller | awk -F'|' '{ print $7}' | cut -c11- | tr -d '[:space:]'
+    register: cntrl_int_ip
+    when:
+      - inventory_hostname in groups.undercloud
+
+  - name: Getting  controller variable
+    become: true
+    shell: egrep auth_url /etc/neutron/neutron.conf | grep v3 | awk -F':' '{print $2}' | cut -c3-
+    register: keystone_ip
+    when:
+      - inventory_hostname in groups.controller
+
+  - name: copy rcfile in controller vm
+    become: true
+    copy:
+      src: "{{ ansible_env.HOME}}/{{ rcfile }}.v3"
+      dest: /root/ 
+    when:
+      - inventory_hostname in groups.controller
+
+  - name: copy rcfile external router to controller
+    copy:
+      src: "{{ ansible_env.HOME}}/{{ rcfile }}"
+      dest: ~/
+    when: inventory_hostname in groups.external_router 
+
+  - name: Include multiple roles
+    include_role:
+      name: "{{ item }}"
+    with_items:
+      - python-pkg
+      - git-manage
+      - routes_add
+    when: inventory_hostname in groups.external_router
+        
+  - name: run excluder_test script
+    when: inventory_hostname in groups.external_router
+    command: python /home/noiro/exclude_tests.py --undercloud-type {{ undercloud_type }}
+    environment:
+      PYTHONPATH: /home/noiro/noirotest
+
+  - name: Change the value
+    when: inventory_hostname in groups.external_router
+    shell: sed -i s/'self.creds_client.assign_user_role(user, project, self.admin_role)'/'self.creds_client.assign_user_role(user, project, self.admin_role)'/g tempest/tempest/common/dynamic_creds.py
+    when:
+      - undercloud_type == "juju" and rel == "ocata"
+
+  - name: Downloading required images
+    when: inventory_hostname in groups.external_router
+    get_url:
+      url: https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+      dest: /home/{{ ansible_user }}/
+
+  - name: Downloading required images
+    when: inventory_hostname in groups.external_router
+    get_url:
+      url: http://{{ noiro_controller_ip }}/images/ubuntu_multi_nics.qcow2
+      dest: /home/{{ ansible_user }}/
+    environment:
+      no_proxy: "{{ no_proxy }}" 
+
+  - name: Inclue setup noirotest and install rally roles
+    include_role:
+      name: "{{ item }}"
+    with_items:
+      - noirotest_setup
+      - install_rally
+    when: inventory_hostname in groups.external_router
+
+  - name: Clean up sauto-created resources
+    when: inventory_hostname in groups.external_router
+    command: "{{ item }}"
+    with_items:
+      - openstack server delete sauto_testvm
+      - neutron router-interface-delete sauto-r1 sauto-subnet1
+      - neutron router-delete sauto-r1
+      - neutron net-delete sauto-net1
+  
+  - name: Include role which comfigure openstack controller to run tests
+    include_role:
+      name: controller_conf
+    when: inventory_hostname in groups.controller

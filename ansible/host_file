@@ -1,0 +1,9 @@
+[external_router]
+10.30.120.119 ansible_user=noiro
+
+
+[undercloud]
+10.30.120.118 ansible_connection=ssh ansible_user=stack ansible_password=noir0123
+
+[controller]
+1.100.1.88  ansible_user=heat-admin

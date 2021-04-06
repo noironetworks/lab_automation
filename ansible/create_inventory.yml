@@ -1,0 +1,33 @@
+---
+- name: create inventory hosts to run new_cmds
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - debug:
+        msg: "System {{ inventory_hostname }} has address {{ ansible_default_ipv4.address }}"
+      when: ansible_default_ipv4.address is defined
+
+    - set_fact:
+        undercloud_type: "{{ undercloud_type }}"
+        undercloud_ip: "{{ undercloud_ip }}"
+        user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
+
+    - name: getting controller ip
+      shell: ssh -o StrictHostKeyChecking=no {{ user}}@{{ undercloud_ip }} "source /home/{{user}}/stackrc && nova list | grep controller" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'
+      register: controller_ip
+      
+    - name: Create file to access controller
+      copy:
+        dest: "{{ ansible_env.HOME }}/host_file"
+        content: |
+          [routervm]
+          {{ ansible_default_ipv4.address }} ansible_user=noiro
+
+          
+          [undercloud]
+          {{ undercloud_ip }} ansible_user={{ user }}
+          
+          [controller]
+          {{ controller_ip['stdout_lines'][0] }}  ansible_user=heat-admin
+         

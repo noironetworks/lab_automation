@@ -1,0 +1,30 @@
+---
+# tasks file for controller_access
+- name: register key
+  command: cat /home/noiro/.ssh/id_rsa.pub
+  register: key
+  when:
+    - inventory_hostname in groups.external_router
+
+- name: Create file to access controller
+  copy:
+    dest: "/home/noiro/temp-ans/test.sh"
+    content: |
+      CTRL_IP=`source /home/stack/stackrc && nova list | grep controller | awk -F'|' '{print \$7}' | cut -c11-`
+      ssh -o StrictHostKeyChecking=no heat-admin@$CTRL_IP "echo {{ key['stdout'] }} >> .ssh/authorized_keys"
+    mode: 0777
+  when:
+    - inventory_hostname in groups.external_router 
+
+- name: copy file to remote host
+  copy:
+    src: /home/noiro/temp-ans/test.sh
+    dest: /tmp
+
+- name: Run test file which will give access
+  command: '{{ item }}'
+  with_items:
+    - chmod +x "{{ ansible_env.HOME }}"/test.sh
+    - /bin/sh "{{ ansible_env.HOME }}"/test.sh
+  when:
+    - inventory_hostname in groups.undercloud
