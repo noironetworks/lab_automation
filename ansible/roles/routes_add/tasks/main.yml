@@ -1,12 +1,12 @@
 ---
 # tasks file for routes_add
     - name: greping required ip address values
-      shell: "ip -o addr| grep ens8"
+      shell: "ip -o addr| grep {{ iface2 }}"
       register: router_ip
 
     - name: Routes needed for noirotest tests-1
       become: yes
-      command: route add -net "{{ item }}" netmask 255.255.255.0 gateway "{{ gw1_ip }}" dev ens7
+      command: route add -net {{ item }} netmask 255.255.255.0 gateway {{ gw1_ip }} dev {{ iface1 }}
       with_items:
         - 50.50.50.0
         - 55.55.55.0
@@ -14,7 +14,7 @@
 
     - name: Routes needed for noirotest tests-2
       become: yes
-      command: route add -net "{{ item }}" netmask 255.255.255.0 gateway "{{ gw2_ip }}" dev ens7
+      command: route add -net {{ item }} netmask 255.255.255.0 gateway {{ gw2_ip }} dev {{ iface1 }}
       with_items:
         - 60.60.60.0
         - 66.66.66.0
@@ -22,8 +22,9 @@
 
     - name: Routes needed for noirotest tests-3
       become: yes
-      command: route add -net "{{ item }}" netmask 255.255.255.0 gateway "{{ gw2_ip }}" dev ens8
+      command: route add -net {{ item }} netmask 255.255.255.0 gateway {{ gw2_ip }} dev {{ iface2 }}
       with_items:
         - 60.60.60.0
         - 66.66.66.0
       when: router_ip != ""
+

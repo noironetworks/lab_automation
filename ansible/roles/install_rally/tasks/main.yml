@@ -4,6 +4,8 @@
       get_url:
         url: https://raw.githubusercontent.com/noironetworks/rally/noiro-master/install_rally.sh
         dest: "{{ ansible_env.HOME }}/install_rally.sh"
+      environment:
+        https_proxy: "{{ proxy_env['https_proxy']  }}"
 
     - name: Ged rid of questions
       command: " {{ item }}"
@@ -19,20 +21,20 @@
     - name: Running Rally Script
       command: ./install_rally.sh
       register: rally_run
-
-    - name: RC File
-      command: "source {{ item }}"
-      with_items:
-        - "{{ ansible_env.HOME }}/overcloudrc"
-        -  ~/rally/bin/activate
-
+      environment:
+        https_proxy: "{{ proxy_env['https_proxy']  }}"
+    
     - name: Creating rally db, deployment with existing and checking..
-      command: " {{ item }}"
-      with_items:
-        - rally db recreate
-        - rally deployment create --fromenv --name=existing
-        - rally deplyment check
-
+      shell: 
+        cmd: |
+          source ~/overcloudrc
+          source ~/rally/bin/activate
+          rally db recreate
+          rally deployment create --fromenv --name=existing
+          rally deployment check
+      args:
+        executable: /bin/bash
+    
     - name: Creating directory named extra
       file:
         path: ~/.rally/extra

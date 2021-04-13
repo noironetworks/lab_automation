@@ -5,8 +5,6 @@
   apt:
     name: git
     state: present
-  when:
-    - inventory_hostname in groups.external_router
 
 - name: Install python and ssh packages
   become: true
@@ -16,11 +14,4 @@
   with_items:
     - python2.7
     - sshpass
-  when:
-    - inventory_hostname in groups.external_router
 
-- name: Install pip
-  easy_install:
-    name: pip
-  when:
-    - inventory_hostname in groups.external_router

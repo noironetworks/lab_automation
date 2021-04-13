@@ -72,9 +72,16 @@
     with_items:
       - python-pkg
       - git-manage
-      - routes_add
     when: inventory_hostname in groups.external_router
-        
+
+  - name: Include role to add routes
+    include_role:
+      name: routes_add
+    vars:
+      iface1: ens7
+      iface2: ens8
+    when: inventory_hostname in groups.external_router
+       
   - name: run excluder_test script
     when: inventory_hostname in groups.external_router
     command: python /home/noiro/exclude_tests.py --undercloud-type {{ undercloud_type }}
@@ -92,6 +99,8 @@
     get_url:
       url: https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
       dest: /home/{{ ansible_user }}/
+    environment:
+      https_proxy: "{{ proxy_env['https_proxy']  }}"
 
   - name: Downloading required images
     when: inventory_hostname in groups.external_router
@@ -109,14 +118,18 @@
       - install_rally
     when: inventory_hostname in groups.external_router
 
-  - name: Clean up sauto-created resources
+  - name: clean up sauto created resources
+    shell:
+      cmd: |
+        source ~/overcloudrc
+        source ~/rally/bin/activate
+        openstack server delete sauto_testvm
+        neutron router-interface-delete sauto-r1 sauto-subnet1
+        neutron router-delete sauto-r1
+        neutron net-delete sauto-net1 
+    args:
+      executable: /bin/bash
     when: inventory_hostname in groups.external_router
-    command: "{{ item }}"
-    with_items:
-      - openstack server delete sauto_testvm
-      - neutron router-interface-delete sauto-r1 sauto-subnet1
-      - neutron router-delete sauto-r1
-      - neutron net-delete sauto-net1
   
   - name: Include role which comfigure openstack controller to run tests
     include_role:

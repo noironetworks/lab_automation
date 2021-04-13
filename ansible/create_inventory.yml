@@ -13,13 +13,19 @@
         undercloud_ip: "{{ undercloud_ip }}"
         user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
 
+    - include_role:
+         name: prerequisite
+
+    - include_role:
+         name: passwordless_access
+
     - name: getting controller ip
       shell: ssh -o StrictHostKeyChecking=no {{ user}}@{{ undercloud_ip }} "source /home/{{user}}/stackrc && nova list | grep controller" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'
       register: controller_ip
       
     - name: Create file to access controller
       copy:
-        dest: "{{ ansible_env.HOME }}/host_file"
+        dest: "{{ ansible_env.HOME }}/hosts"
         content: |
           [routervm]
           {{ ansible_default_ipv4.address }} ansible_user=noiro
@@ -30,4 +36,4 @@
           
           [controller]
           {{ controller_ip['stdout_lines'][0] }}  ansible_user=heat-admin
-         
+
