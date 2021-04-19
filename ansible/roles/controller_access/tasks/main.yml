@@ -1,25 +1,42 @@
 ---
 # tasks file for controller_access
-- name: register key
-  command: cat /home/noiro/.ssh/id_rsa.pub
-  register: key
-  when:
-    - inventory_hostname in groups.external_router
-
-- name: Create file to access controller
-  copy:
-    dest: "/home/noiro/temp-ans/test.sh"
-    content: |
-      CTRL_IP=`source /home/stack/stackrc && nova list | grep controller | awk -F'|' '{print \$7}' | cut -c11-`
-      ssh -o StrictHostKeyChecking=no heat-admin@$CTRL_IP "echo {{ key['stdout'] }} >> .ssh/authorized_keys"
-    mode: 0777
-  when:
-    - inventory_hostname in groups.external_router 
-
 - name: copy file to remote host
   copy:
     src: /home/noiro/temp-ans/test.sh
-    dest: /tmp
+    dest: "{{ ansible_env.HOME }}/test.sh"
+
+- name: 
+  shell: "ifconfig ext-br | grep 'inet ' | awk '{print $2}"
+  register: nh_ip
+  when: inventory_hostname in groups.controller
+
+- local_action:
+    copy content="{{ ext_br.stdout_lines }}" dest="{{ ansible_env.HOME }}/test.sh"
+  when: inventory_hostname in groups.controller
+
+- name: Adding routes to multiple files
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/routes.sh"
+    line: 'sudo route add -host "{{ item }}" gateway "{{ nh_ip }}"'
+    create: yes
+  with_items:
+    - "{{ groups['undercloud'] }}"
+
+- name: Adding routes to multiple files
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/test.sh"
+    line: 'sudo route add -host "{{ item }}" gateway "{{ nh_ip }}"'
+  with_items:
+    - "{{ groups['undercloud'] }}"
+ 
+- name: copy file to remote host
+  lineinfile:
+    path: "{{ ansible_env.HOME }}"/test.sh 
+    line: "{{ item }}"
+  with_items:
+    - "sudo iptables -I INPUT 4 -s 10.30.120.0/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet 10.30.120.0/24 ipv4' -j ACCEPT\""
+    - "sudo iptables -I INPUT 5 -s 1.250.1.0/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet 1.250.1.0/24 ipv4' -j ACCEPT\""
+  when: fab_no == "202" and inventory_hostname in groups.controller
 
 - name: Run test file which will give access
   command: '{{ item }}'
@@ -28,3 +45,18 @@
     - /bin/sh "{{ ansible_env.HOME }}"/test.sh
   when:
     - inventory_hostname in groups.undercloud
+
+- name: Copying file from undercloud to external router
+  fetch:
+    src: "{{ ansible_env.HOME }}/routes.sh"
+    dest: ./routes.sh
+    flat: yes
+    when:
+      - inventory_hostname in groups.undercloud
+
+- name: Changing mode of file
+  file:
+    dest: "{{ ansible_env.HOME }}/routes.sh"
+    mode: a+x
+
+

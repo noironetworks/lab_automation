@@ -4,12 +4,20 @@
         aim_conf: "{{ queen_prefix }}/aim{{ aim_conf }}"
         neutron_conf: "{{ queen_prefix }}/neutron{{ neutron_conf }}"
         plugin_conf: "{{ queen_prefix }}/neutron{{ plugin_conf }}"
-        restart_cmd: " docker restart "
         neutron_service: "neutron_api"
         aim_service: "ciscoaci_aim"
-        aim_cmd_prefix: "docker exec -u root {{ aim_service}} "
         SILENCE: ""
+       when: rel == "queens" or rel == "train"
+
+    - set_fact:
+        restart_cmd: " docker restart "
+        aim_cmd_prefix: "docker exec -u root {{ aim_service}} "
       when: rel == "queens"
+
+    - set_fact:
+        restart_cmd: " podman restart "
+        aim_cmd_prefix: "podman exec -u root {{ aim_service}} "
+      when: rel == "train"
 
     - name: Changing value for dns_domain
       lineinfile:
@@ -47,7 +55,7 @@
     - name: Restart AIM Service for queens
       become: yes
       shell: "{{ restart_cmd }} {{ aim_service }}"
-      when: rel == "queens"
+      when: rel == "queens" or rel == "train"
 
     - name: aimctl manager actions
       shell: " {{item }}"

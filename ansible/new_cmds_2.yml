@@ -1,0 +1,133 @@
+---
+- name: Installing and setting up environment
+  hosts: all
+  connection: local
+  gather_facts: yes
+  vars:
+    noiro_controller_ip: 172.28.184.8
+    novaclient_version: stable/ocata
+    git_url: https://opendev.org
+    external_rtr_ip: "{{ ansible_default_ipv4.address }}"
+
+  tasks:
+  - name: check openstack relaese is provided
+    command: cat ~/release.txt
+    register: release
+    when: openstack_release is not defined or openstack_release == ''
+
+  - name: check openstack relaese is provided
+    command: cat ~/undercloud_ip.txt
+    register: undercloudip
+    when: undercloud_ip == ''
+
+  - set_fact:
+      undercloud_type: "{{ undercloud_type }}"
+      fabno: "{{ fabric_no }}"
+
+  - name: set rcfiles and user
+    set_fact:
+      undercloud_ip: "{% if undercloud_ip == '' %}{{ undercloudip['stdout_lines'][0] }}{% else %}{{ undercloud_ip }}{% endif %}"
+      rel: "{% if openstack_release == '' %}{{ release['stdout_lines'][0] }}{% else %}{{ openstack_release }}{% endif %}"
+      rcfile: "{% if undercloud_type == 'director' %}overcloudrc{% else %}admin-openrc.sh{% endif %}"
+      user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
+
+  - name: role to set facts
+    include_role:
+      name: set_facts
+    when: inventory_hostname in groups.external_router   
+  
+  - name: copy rcfile from undercloud vm
+    fetch:
+      src: "{{ rcfile }}"
+      dest: ./overcloudrc
+      flat: yes
+    when:
+      - inventory_hostname in groups.undercloud
+  
+  - name: Include role to get controller access
+    include_role:
+     name: controller_access 
+    when:
+      - inventory_hostname in groups.external_router
+
+  - name: add routes to get access to director internal ips 
+    command: route add -net {{ cloudnet }} netmask 255.255.255.0 gateway {{ cloudgw }}
+    become: true
+    when:
+      - inventory_hostname in groups.external_router
+ 
+  - name: Include multiple roles
+    include_role:
+      name: controller_hosts
+    when: inventory_hostname in groups.external_router and undercloud_type == "director"
+
+  - name: Include multiple roles
+    include_role:
+      name: "{{ item }}"
+    with_items:
+      - controller_hosts
+      - python-pkg
+      - git-manage
+    when: inventory_hostname in groups.external_router
+       
+  - name: Include role to add routes
+    include_role:
+      name: routes_add
+    vars:
+      iface1: eth1
+      iface2: eth2      
+    when: inventory_hostname in groups.external_router
+
+  - name: run excluder_test script
+    when: inventory_hostname in groups.external_router
+    command: python /home/noiro/exclude_tests.py --undercloud-type {{ undercloud_type }}
+    environment:
+      PYTHONPATH: /home/noiro/noirotest
+
+  - name: Change the value
+    when: inventory_hostname in groups.external_router
+    shell: sed -i s/'self.creds_client.assign_user_role(user, project, self.admin_role)'/'self.creds_client.assign_user_role(user, project, self.admin_role)'/g tempest/tempest/common/dynamic_creds.py
+    when:
+      - undercloud_type == "juju" and rel == "ocata"
+
+  - name: Downloading required images
+    when: inventory_hostname in groups.external_router
+    get_url:
+      url: https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+      dest: /home/{{ ansible_user }}/
+    environment:
+      https_proxy: "{{ proxy_env['https_proxy']  }}"
+
+  - name: Downloading required images
+    when: inventory_hostname in groups.external_router
+    get_url:
+      url: http://{{ noiro_controller_ip }}/images/ubuntu_multi_nics.qcow2
+      dest: /home/{{ ansible_user }}/
+    environment:
+      no_proxy: "{{ no_proxy }}"
+
+  - name: Inclue setup noirotest and install rally roles
+    include_role:
+      name: "{{ item }}"
+    with_items:
+      - noirotest_setup
+      - install_rally
+    when: inventory_hostname in groups.external_router
+
+  - name: clean up sauto created resources
+    shell:
+      cmd: |
+        source ~/overcloudrc
+        source ~/rally/bin/activate
+        openstack server delete sauto_testvm
+        neutron router-interface-delete sauto-r1 sauto-subnet1
+        neutron router-delete sauto-r1
+        neutron net-delete sauto-net1
+    args:
+      executable: /bin/bash
+    when: inventory_hostname in groups.external_router
+  
+  - name: Include role which comfigure openstack controller to run tests
+    include_role:
+      name: controller_conf
+    when: inventory_hostname in groups.controller
