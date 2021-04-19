@@ -1,9 +1,5 @@
 ---
 # tasks file for set_facts
-  - name: Getting fab number
-    shell: cat /etc/hostname | cut -d "-" -f 1 | cut -b 4-
-    register: fabno
-
   - name: Getting external router network
     shell: echo {{ external_rtr_ip }} | cut -d'.' -f1-3
     register: ext_rtr_net
@@ -12,10 +8,13 @@
       openrelease: "{{ release[item]['release'] }}"
       tempest: "{{ release[item]['tempest_version'] }}"
       neutron_git_hash: "{{ release[item]['neutron_hash'] }}"
-      fabno: "{{ fabno.stdout }}"
     when: rel  == "{{ item }}"
     with_items: "{{ release.keys() | list }}"
 
+  - set_fact:
+      fabno: "{{ fabno.stdout }}"
+    when: fabric_no is not defined
+ 
   - set_fact:
       git_url: https://github.com
     when: rel == 'newton'

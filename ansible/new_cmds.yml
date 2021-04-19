@@ -20,6 +20,10 @@
       rcfile: "{% if undercloud_type == 'director' %}overcloudrc{% else %}admin-openrc.sh{% endif %}"
       user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
 
+  - name: Getting fab number
+    shell: cat /etc/hostname | cut -d "-" -f 1 | cut -b 4-
+    register: fabno
+
   - name: role to set facts
     include_role:
       name: set_facts
