@@ -5,6 +5,7 @@
 # 2. Install the Leapp utility:
 sudo yum install leapp
 # 3. Download the additional required data files (RPM package changes and RPM repository mapping) attached to the Knowledge Base article "Data required by the Leapp utility for an in-place upgrade from RHEL 7 to RHEL 8" and place these files in the /etc/leapp/files/ directory.
+sudo tar -xzf leapp-data13.tar.gz -C /etc/leapp/files && rm leapp-data13.tar.gz
 # 4. Update your Red Hat subscription:
 # If your undercloud uses the Red Hat Customer Portal for registration, refresh your current subscription to obtain access to the Red Hat Enterprise Linux 8.2 content:
 sudo subscription-manager refresh

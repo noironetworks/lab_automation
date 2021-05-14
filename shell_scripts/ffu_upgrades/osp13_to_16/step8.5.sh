@@ -17,3 +17,5 @@ cat > playbook-ssh.yaml << EOL
 EOL
 # 3. Run the playbook:
 ansible-playbook -i ~/inventory.yaml playbook-ssh.yaml
+# 4. Run the playbook to clean up the repos:
+ansible-playbook -i ~/inventory.yaml /opt/ciscoaci-tripleo-heat-templates/tools/playbook_rmrepo.yaml

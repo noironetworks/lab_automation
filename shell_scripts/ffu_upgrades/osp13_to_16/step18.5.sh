@@ -12,14 +12,21 @@ source ~/stackrc
 # namespace_stein
 # tag_stein
 # 3. Run the upgrade finalization command:
+# 3.1 Create upgrade_converge.sh script:
+cat > upgrade_converge.sh << EOL
 openstack overcloud upgrade converge \
-    --stack STACK NAME \
-    --templates \
-    -e ENVIRONMENT FILE
-    ...
+    --templates /home/stack/tripleo-heat-templates \
+    -r /home/stack/templates/aci_roles_data.yaml \
     -e /home/stack/templates/upgrades-environment.yaml \
     -e /home/stack/templates/rhsm.yaml \
-    -e /home/stack/containers-prepare-parameter.yaml \
-    -e /usr/share/openstack-tripleo-heat-templates/environments/services/neutron-ovs.yaml \
-    ...
+    -e /home/stack/templates/containers-prepare-parameter.yaml \
+    -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml \
+    -e /home/stack/templates/network-environment.yaml \
+    -e /home/stack/templates/ciscoaci_containers.yaml \
+    -e /home/stack/templates/ciscoaci-config.yaml
+EOL
+# 2.1 Make it executable:
+chmod +x ./upgrade_converge.sh
+# 2.2 Run the upgrade converge:
+./upgrade_converge.sh
 # 4. Wait until the stack synchronization completes.

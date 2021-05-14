@@ -1,18 +1,13 @@
 ############################################################################
 # 18.1 Running the overcloud upgrade preparation
 ############################################################################
-# 0.1 remove the old openstack-tripleo-heat-templates directory in /home/stack:
-rm -rf openstack-tripleo-heat-templates
-# 0.2 Copy over the templates directory into /home/stack:
-cd /home/stack
-cp -r /usr/share/openstack-tripleo-heat-templates  tripleo-heat-templates
 # 1. Source the stackrc file:
 source ~/stackrc
 # 2. Run the upgrade preparation command:
 cat > upgrade_prepare.sh << EOL
 openstack overcloud upgrade prepare \
     --templates /home/stack/tripleo-heat-templates \
-    -r /home/stack/templates/custom_roles_data.yaml \
+    -r /home/stack/templates/aci_roles_data.yaml \
     -e /home/stack/templates/upgrades-environment.yaml \
     -e /home/stack/templates/rhsm.yaml \
     -e /home/stack/templates/containers-prepare-parameter.yaml \

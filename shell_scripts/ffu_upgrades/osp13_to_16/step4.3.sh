@@ -116,5 +116,7 @@ EOL
 # The playbook sets the new NIC prefix to em. To set a different NIC prefix, set the prefix variable when running the playbook:
 #   ansible-playbook -c local -i localhost, -e prefix="mynic" ~/playbook-nics.yaml
 ansible-playbook -c local -i localhost, playbook-nics.yaml
+# 3.5 Remove the udev rules for the old interfaces.
+sudo rm -f /etc/udev/rules.d/70-persistent-net.rules
 # 4. Reboot the undercloud node using the standard reboot procedures.
 sudo reboot
