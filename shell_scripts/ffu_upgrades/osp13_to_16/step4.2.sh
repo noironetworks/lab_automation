@@ -5,7 +5,7 @@
 cat > mem_requirement_check.sh << EOL
 #!/bin/sh
 MEM_MINIMUM=25165824
-CURRENT_MEM=$(cat /proc/meminfo  | grep MemTotal | awk '{print $2}')
+CURRENT_MEM=\$(cat /proc/meminfo  | grep MemTotal | awk '{print \$2}')
 if [ "\${CURRENT_MEM}" -lt "\${MEM_MINIMUM}" ]; then
     echo "\${CURRENT_MEM} is less than minimum memory requirement of \${MEM_MINIMUM}"
     exit

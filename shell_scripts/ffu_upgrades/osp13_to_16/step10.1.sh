@@ -7,7 +7,7 @@
 # 1.1 Edit the templates/ciscoaci-config.yaml file and add this:
 #   OS::TripleO::Services::Rhsm: /usr/share/openstack-tripleo-heat-templates/deployment/rhsm/rhsm-baremetal-ansible.yaml
 # 2. The rhsm composable service accepts a RhsmVars parameter, which you can use to define multiple sub-parameters relevant to your registration:
-cat > rhsm.yaml << EOL
+cat > /home/stack/templates/rhsm.yaml << EOL
 resource_registry:
   OS::TripleO::Services::Rhsm: /usr/share/openstack-tripleo-heat-templates/deployment/rhsm/rhsm-baremetal-ansible.yaml
 parameter_defaults:

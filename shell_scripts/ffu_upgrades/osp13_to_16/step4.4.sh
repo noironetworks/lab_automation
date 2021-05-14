@@ -9,3 +9,5 @@ sudo grep PermitRootLogin /etc/ssh/sshd_config
 sudo -s
 # 3.2 Add line setting root login permission
 sudo echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+# 3.3 Exit root user
+exit

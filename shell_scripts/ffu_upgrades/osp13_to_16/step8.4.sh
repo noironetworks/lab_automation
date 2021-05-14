@@ -6,4 +6,6 @@
 ansible-playbook -i ~/inventory.yaml playbook-nics.yaml
 # The playbook sets the new NIC prefix to em. To set a different NIC prefix, set the prefix variable when running the playbook:
 #    ansible-playbook -i ~/inventory.yaml -e prefix="mynic" playbook-nics.yaml
+# 2.5 Remove the old udev rules from the overcloud nodes:
+for server in $(nova list | awk -F"=" /overcloud/'{print $2}' | cut -d" " -f 1); do ssh heat-admin@$server "sudo rm -f /etc/udev/rules.d/70-persistent-net.rules"; done
 # 3. Reboot overcloud nodes using the standard reboot procedures. 

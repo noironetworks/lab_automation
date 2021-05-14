@@ -11,6 +11,9 @@ sudo dnf module enable -y container-tools:2.0
 # 4. Set the virt repository module to version 8.2:
 sudo dnf module disable -y virt:rhel
 sudo dnf module enable -y virt:8.2
+# 4.5 Remove repos that reference RHEL7
+sudo vi /etc/yum.repos.d/cobbler-config.repo
+sudo vi /etc/yum.repos.d/localrepo.repo
 # 5. Synchronize the operating system to ensure that your system packages match the operating system version:
 sudo dnf distro-sync -y
 sudo reboot

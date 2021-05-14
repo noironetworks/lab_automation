@@ -8,7 +8,7 @@ source ~/stackrc
 cat > update-nic-templates.sh << EOL
 #!/bin/bash
 STACK_NAME="overcloud"
-ROLES_DATA="/home/stack/templates/custom_roles_data.yaml"
+ROLES_DATA="/home/stack/templates/aci_roles_data.yaml"
 NETWORK_DATA="/usr/share/openstack-tripleo-heat-templates/network_data.yaml"
 NIC_CONFIG_LINES=\$(openstack stack environment show \$STACK_NAME | grep "::Net::SoftwareConfig" | sed -E 's/ *OS::TripleO::// ; s/::Net::SoftwareConfig:// ; s/ http.*user-files/ /')
 echo "\$NIC_CONFIG_LINES" | while read LINE; do
@@ -37,4 +37,5 @@ EOL
 chmod +x update-nic-templates.sh
 # 5. Run the script:
 ./update-nic-templates.sh
+# 6. For our FABs, we have to fix the NIC templates, because we use them differently.
 
