@@ -102,6 +102,7 @@ cat > playbook-nics.yaml << EOL
           find:
             paths: /etc/sysconfig/network-scripts/
             patterns: 'ifcfg-*'
+            excludes: '*.bak'
           register: ifcfg_files
         - name: Perform final regex on ifcfg files
           replace:

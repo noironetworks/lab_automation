@@ -23,6 +23,7 @@ openstack overcloud upgrade converge \
     -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml \
     -e /home/stack/templates/network-environment.yaml \
     -e /home/stack/templates/ciscoaci_containers.yaml \
+    -e /home/stack/templates/ciscoaci_containers_stein.yaml \
     -e /home/stack/templates/ciscoaci-config.yaml
 EOL
 # 2.1 Make it executable:
