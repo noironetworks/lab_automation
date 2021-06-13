@@ -1,0 +1,12 @@
+---
+- name: Run step2.7 of OSP10 => OSP13 FFU
+  hosts: overcloud-controller-0
+  tasks:
+  - name: Step2. Optional. If the node uses Pacemaker resources, stop the cluster
+    become: yes
+    command: pcs cluster stop --force
+
+  - name: Step3.  Reboot the node
+    become: yes
+    ignore_errors: true
+    command: reboot
