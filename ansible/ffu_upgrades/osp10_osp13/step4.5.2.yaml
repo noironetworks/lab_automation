@@ -1,0 +1,33 @@
+---
+- name: Run step4.5 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step2. Create a template to upload the the images to the local registry
+    environment: /etc/environment
+    command: |
+      openstack overcloud container image prepare \
+          --namespace=registry.access.redhat.com/rhosp13 \
+          --push-destination=10.30.120.22:8787 \
+          --prefix=openstack- \
+          --tag-from-label {version}-{release} \
+          --output-env-file=/home/stack/templates/overcloud_images.yaml \
+          --output-images-file /home/stack/templates/local_registry_images.yaml \
+          -e /usr/share/openstack-tripleo-heat-templates/environments/services-docker/ironic.yaml
+  - name: Step4. Modify the local_registry_images.yaml file
+    lineinfile:
+      path: /home/stack/templates/local_registry_images.yaml
+      line: "{{ item }}"
+    with_items:
+    - 'ContainerImageRegistryLogin: true'
+    - 'ContainerImageRegistryCredentials:'
+    - 'registry.access.redhat.com:'
+    - ' mcohen2@cisco.com: Ins3965!'
+  - name: Step5.1 Log in to registry.access.redhat.com
+    become: yes
+    command: docker login -u mcohen2@cisco.com -p Ins3965! registry.access.redhat.com
+  - name: Step5.2 Pull the container images from the remote registry to the undercloud
+    become: yes
+    command: |
+      openstack overcloud container image upload \
+          --config-file /home/stack/templates/local_registry_images.yaml \
+          --verbose

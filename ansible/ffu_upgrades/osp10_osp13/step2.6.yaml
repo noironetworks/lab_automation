@@ -1,0 +1,45 @@
+---
+- name: Run step2.6 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step1.5. Copy environment template
+    copy:
+      src: /usr/share/openstack-tripleo-heat-templates/extraconfig/pre_deploy/rhel-registration/environment-rhel-registration.yaml
+      dest: /home/stack/templates/environment-rhel-registration.yaml
+
+  - name: Step1.6. Set rhel_reg_release
+    lineinfile:
+      path: /home/stack/templates/environment-rhel-registration.yaml
+      regexp: '  rhel_reg_release: ""'
+      line: '  rhel_reg_release: "7.7"'
+
+  - name: Step1.7. Subscribe the requisite RHEL7 repos to support OVS (1 of 2)
+    become: yes
+    command: "{{ item }}"
+    with_items:
+    - subscription-manager repos --enable=rhel-7-server-extras-rpms
+    - subscription-manager repos --enable=rhel-7-server-optional-rpms
+
+  - name: Step2. Update the current plan using your original openstack overcloud deploy command (1 of 3)
+    copy:
+      dest: "/home/stack/install_cmd_plan_only"
+      content: |
+        openstack overcloud deploy \
+            --update-plan-only \
+            --templates \
+            -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml \
+            -e /home/stack/templates/network-environment.yaml \
+            -e /home/stack/templates/environment-rhel-registration.yaml \
+            -e /home/stack/templates/ciscoaci-config.yaml \
+            -e /home/stack/templates/sauto.yaml \
+            --ntp-server 172.28.184.8 \
+            --control-flavor control \
+            --compute-flavor compute
+
+  - name: Step2. Update the current plan using your original openstack overcloud deploy command (2 of 3)
+    file:
+      path: /home/stack/install_cmd_plan_only
+      mode: '0755'
+
+  - name: Step2. Update the current plan using your original openstack overcloud deploy command (3 of 3)
+    shell: /home/stack/install_cmd_plan_only

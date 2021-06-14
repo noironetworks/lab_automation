@@ -1,0 +1,9 @@
+---
+- name: Run step4.7 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step 1. Get the OSP13 build RPMs
+    shell: ls /home/stack/openstack-ciscorpms-repo-13*
+    register: lsoutput
+  - name: Step1. (Re-)Build the containers used by Cisco
+    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -z "{{ lsoutput.stdout_lines[0] }}" -u $(ifconfig eth0 | grep 'inet ' | awk '{print $2}')  -d 1.100.1.1:8787
