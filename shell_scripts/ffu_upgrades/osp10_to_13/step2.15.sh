@@ -22,8 +22,6 @@ sudo createrepo /var/www/html/acirepo12
 # 7. Remove the tripleo-ciscoaci package
 sudo rpm -ev tripleo-ciscoaci
 # 8. Install the tripleo-ciscoaci package for queens
-sudo rpm -ihv tripleo-ciscoaci-13.0-1027.noarch.rpm
+sudo rpm -ihv tripleo-ciscoaci-13.0-1042.noarch.rpm
 # 9. Copy the queens repo to its own directory (no longer needed)
 #sudo cp -r /var/www/html/acirepo /var/www/html/acirepo13
-# 9. Edit the tripleo script to remove references to plugin.ini:
-vi /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_aciaim.yaml

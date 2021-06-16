@@ -15,7 +15,7 @@
 +  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_neutron_opflex.yaml
 +  OS::TripleO::Docker::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/puppet/services/ciscoaci-ml2.yaml
 +  OS::TripleO::Services::CiscoAciAIM: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_aciaim.yaml
-+  OS::TripleO::Services::CiscoAciOpflex: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
++  OS::TripleO::Services::CiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
    #OS::TripleO::Services::NeutronSriovAgent: /usr/share/openstack-tripleo-heat-templates/puppet/services/neutron-sriov-agent.yaml
    #compute
 -  OS::TripleO::ComputeExtraConfigPre: /opt/tripleo-ciscoaci/nodepre.yaml
@@ -26,7 +26,7 @@
 +  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_neutron_opflex.yaml
 +  OS::TripleO::Services::ComputeNeutronCorePlugin: /opt/ciscoaci-tripleo-heat-templates/puppet/services/ciscoaci_compute.yaml
 +  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/compute-neutron-metadata.yaml
-+  OS::TripleO::Services::ComputeCiscoAciOpflex: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
++  OS::TripleO::Services::ComputeCiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
 +  OS::TripleO::Services::CiscoAciLldp: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_lldp.yaml
 
 

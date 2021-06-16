@@ -21,6 +21,7 @@ openstack overcloud ffwd-upgrade prepare \
     -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml \
     -e /home/stack/templates/network-environment.yaml \
     -e /home/stack/templates/ciscoaci-config.yaml \
+    -e /home/stack/templates/compute_extra.yaml \
     -e /home/stack/templates/sauto.yaml \
     --ntp-server 172.28.184.8 \
     --control-flavor control \

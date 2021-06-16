@@ -19,6 +19,8 @@ export no_proxy=1.100.1.1,localhost,10.30.120.22
 echo "export http_proxy=http://proxy.esl.cisco.com:80" >> /etc/environment
 echo "export https_proxy=http://proxy.esl.cisco.com:80" >> /etc/environment
 echo "export no_proxy=1.100.1.1,localhost,10.30.120.22" >> /etc/environment
+# 1.8 Exit root user
+exit
 # 2. Create a template to upload the the images to the local registry, and the
 #    environment file to refer to those images
 openstack overcloud container image prepare \
@@ -33,6 +35,10 @@ openstack overcloud container image prepare \
 # 3. This creates two files
 # 4. Modify the local_registry_images.yaml file and include the following parameters to
 #    authenticate with registry.access.redhat.com
+ContainerImageRegistryLogin: true
+ContainerImageRegistryCredentials:
+registry.access.redhat.com:
+ mcohen2@cisco.com: <password here>
 # 4.5 Edit the /etc/sysconfig/docker file to add the 10.30.120.22:8787 host to this list
 #     of insecure registries:
 #        INSECURE_REGISTRY="....  --insecure-registry 10.30.120.22:8787"
