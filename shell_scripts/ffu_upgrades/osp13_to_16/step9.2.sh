@@ -1,6 +1,16 @@
 ############################################################################
 # 9.2 Updating composable services in custom environment files
 ############################################################################
+# 0.1 Copy upstream roles_data.yaml to use as starting point for custom roles:
+cp /usr/share/openstack-tripleo-heat-templates/roles_data.yaml /home/stack/templates/aci_roles_data.yaml
+# 0.2 Add the custom roles to the template
+#    For controller:
+    - OS::TripleO::Services::CiscoAciAIM
+    - OS::TripleO::Services::CiscoAciLldp
+    - OS::TripleO::Services::CiscoAciOpflexAgent
+#    For compute:
+    - OS::TripleO::Services::CiscoAciLldp
+    - OS::TripleO::Services::ComputeCiscoAciOpflexAgent
 # 1. Search for custom environment files that use composable services. You usually store custom environment files in the /home/stack/templates directory:
 cd ~/templates/
 grep "OS::TripleO::Services" *
@@ -17,7 +27,8 @@ find /usr/share/openstack-tripleo-heat-templates/ -name ceph-mgr.yaml
 -  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
 -  OS::TripleO::Docker::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/puppet/services/ciscoaci-ml2.yaml
 -  OS::TripleO::Services::CiscoAciAIM: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_aciaim.yaml
-+  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
++  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml
++  OS::TripleO::Services::CiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
 +  OS::TripleO::Docker::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron/neutron-ml2-ciscoaci.yaml
 +  OS::TripleO::Services::CiscoAciAIM: /opt/ciscoaci-tripleo-heat-templates/deployment/aciaim/cisco-aciaim-container-puppet.yaml
 +  OS::TripleO::Services::NeutronMetadataAgent: /usr/share/openstack-tripleo-heat-templates/deployment/neutron/neutron-metadata-container-puppet.yaml
@@ -27,7 +38,8 @@ find /usr/share/openstack-tripleo-heat-templates/ -name ceph-mgr.yaml
 -  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml
 -  OS::TripleO::Services::ComputeNeutronCorePlugin: /opt/ciscoaci-tripleo-heat-templates/puppet/services/ciscoaci_compute.yaml
 -  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/compute-neutron-metadata.yaml
-+  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
++  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml
++  OS::TripleO::Services::ComputeCiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
 +  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/compute_neutron_metadata/compute-neutron-metadata.yaml
 
 -  OS::TripleO::Services::CiscoAciLldp: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_lldp.yaml

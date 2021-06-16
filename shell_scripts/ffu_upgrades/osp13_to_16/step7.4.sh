@@ -5,5 +5,5 @@
 # 2. Source the stackrc file.
 source ~/stackrc
 # 3. Log in to a Controller node and run the Pacemaker command to disable fencing:
-ssh heat-admin@CONTROLLER_IP "sudo pcs property set stonith-enabled=false"
+ssh heat-admin@$(openstack server list  -c Name -f value -c Networks -f value |grep controller-0  | awk -F"=" '{print $2}') "sudo pcs property set stonith-enabled=false"
 
