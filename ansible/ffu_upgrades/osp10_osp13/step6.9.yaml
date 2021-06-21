@@ -6,6 +6,7 @@
     command: |
       openstack overcloud ffwd-upgrade converge \
           --templates \
+          --yes \
           -r /home/stack/templates/custom_roles_data.yaml \
           -e /home/stack/templates/overcloud_images.yaml \
           -e /home/stack/templates/ciscoaci_containers.yaml \
