@@ -11,13 +11,11 @@
     - set_fact:
         undercloud_type: "{{ undercloud_type }}"
         undercloud_ip: "{{ undercloud_ip }}"
+        undercloud_password: "noir0123"
         user: "{% if undercloud_type == 'director' %}stack{% else %}noiro{% endif %}"
 
     - include_role:
          name: prerequisite
-
-    - include_role:
-         name: passwordless_access
 
     - name: getting controller ip
       shell: ssh -o StrictHostKeyChecking=no {{ user}}@{{ undercloud_ip }} "source /home/{{user}}/stackrc && nova list | grep controller" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'
@@ -32,8 +30,30 @@
 
           
           [undercloud]
-          {{ undercloud_ip }} ansible_user={{ user }}
+          {{ undercloud_ip }} ansible_user={{ user }} ansible_password={{ undercloud_password }}
           
           [controller]
           {{ controller_ip['stdout_lines'][0] }}  ansible_user=heat-admin
+
+    - stat:
+        path: "{{ id_rsa_file }}"
+      register: file
+
+    - name: Check needed OS tools exist
+      shell: which sshpass ssh-keygen ssh-copy-id
+      register: os_tools_exist
+
+    - name: Generating SSH key pair
+      shell: yes | ssh-keygen -q -t rsa -N "" -f "{{ id_rsa_file }}"
+      when:
+        - file.stat.exists == false and os_tools_exist
+
+    - debug:
+        msg: "Key pair already exists..."
+      when: file.stat.exists
+
+    - name: copy public key to remote servers
+      shell: sshpass -p "{{ undercloud_password }}" ssh-copy-id -f -i "{{ id_rsa_file }}" -o StrictHostKeyChecking=no "{{ user }}"@"{{ item }}"
+      with_items:
+        - "{{ undercloud_ip }}"
 
