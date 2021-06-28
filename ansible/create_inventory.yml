@@ -20,17 +20,21 @@
     - name: getting controller ip
       shell: ssh -o StrictHostKeyChecking=no {{ user}}@{{ undercloud_ip }} "source /home/{{user}}/stackrc && nova list | grep controller" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'
       register: controller_ip
+ 
+    - name: Find out path inventory file
+      shell: pwd
+      register: inven_path
       
     - name: Create file to access controller
       copy:
-        dest: "{{ ansible_env.HOME }}/hosts"
+        dest: "{{ inven_path['stdout_lines'][0] }}/host_file"
         content: |
           [routervm]
           {{ ansible_default_ipv4.address }} ansible_user=noiro
 
           
           [undercloud]
-          {{ undercloud_ip }} ansible_user={{ user }} ansible_password={{ undercloud_password }}
+          {{ undercloud_ip }} ansible_connection=ssh ansible_user={{ user }} ansible_password={{ undercloud_password }}
           
           [controller]
           {{ controller_ip['stdout_lines'][0] }}  ansible_user=heat-admin
