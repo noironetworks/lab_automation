@@ -1,0 +1,16 @@
+---
+- name: Running the director upgrade
+  hosts: undercloud
+  tasks:
+  - name: Step0.1 Remove /etc/os-net-config/config.json
+    become: yes
+    file:
+        path: /etc/os-net-config/config.json
+        state: absent
+  - name: Step0.2 Save off old network interface
+    become: yes
+    file:
+        path: /etc/sysconfig/network-scripts/ifcfg-ens192
+        state: absent
+  - name: Step1. Run the following command to upgrade the director on the undercloud
+    command: openstack undercloud upgrade -y

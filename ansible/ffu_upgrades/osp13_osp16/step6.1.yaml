@@ -1,0 +1,8 @@
+---
+- name: Locking the environment to a Red Hat Enterprise Linux release
+  hosts: undercloud
+  tasks:
+  - name: Step2. Lock the undercloud to a specific verison with the subscription-manager release command
+    become: yes
+    command: subscription-manager release --set=8.2
+

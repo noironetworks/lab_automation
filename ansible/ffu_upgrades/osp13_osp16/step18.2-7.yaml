@@ -1,0 +1,7 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: undercloud
+  tasks:
+  - name: Step4.3 Run the upgrade command with no tags
+    ignore_errors: yes
+    shell: openstack overcloud upgrade run -y --stack overcloud --limit overcloud-controller-0,overcloud-controller-1

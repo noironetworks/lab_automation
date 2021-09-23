@@ -1,0 +1,18 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: undercloud
+  tasks:
+  - name: Step0.2 Get controller-0 IP
+    shell: openstack server list  -c Name -f value -c Networks -f value |grep controller-0  | awk -F"=" '{print $2}'
+    register: controller0_out
+  - name: Step2. Identify the bootstrap Controller node by running the following command on a Controller node
+    environment:
+        CONTROLLER_IP: "{{ controller0_out.stdout_lines[0] }}"
+    shell: ssh heat-admin@$CONTROLLER_IP "sudo hiera -c /etc/puppet/hiera.yaml pacemaker_short_bootstrap_node_name"
+    register: bootstrap_controller
+  - name: Step3.2 Run the upgrade command with the system_upgrade tag
+    shell: openstack overcloud upgrade run -y --stack overcloud --tags system_upgrade --limit overcloud-controller-0
+  - name: Step3.3 Run the external upgrade command with the system_upgrade_transfer_data tag
+    shell: openstack overcloud external-upgrade run -y --stack overcloud --tags system_upgrade_transfer_data
+  - name: Step3.4 Run the upgrade command with the nova_hybrid_state tag and run only the upgrade_steps_playbook.yaml playbook
+    shell: openstack overcloud upgrade run -y --stack overcloud --playbook upgrade_steps_playbook.yaml --tags nova_hybrid_state --limit all

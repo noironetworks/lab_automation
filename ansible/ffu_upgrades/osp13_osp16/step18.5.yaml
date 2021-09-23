@@ -1,0 +1,36 @@
+---
+- name: Synchronizing the overcloud stack
+  hosts: undercloud
+  tasks:
+  - name: Step2. Edit the containers-prepare-parameter.yaml file and remove the following parameters and their values
+    lineinfile:
+      path: /home/stack/templates/containers-prepare-parameter.yaml
+      regexp: "{{ item }}"
+      state: absent
+    with_items:
+    - "      name_prefix_stein: openstack-"
+    - "      name_suffix_stein: ''"
+    - "      namespace_stein: registry.redhat.io/rhosp15-rhel8"
+    - "      tag_stein: 15.0"
+  - name: Step3.1 Create upgrade_converge.sh script
+    copy:
+      dest: "/home/stack/upgrade_converge.sh"
+      content: |
+        openstack overcloud upgrade converge -y \
+            --templates /home/stack/tripleo-heat-templates \
+            -r /home/stack/templates/aci_roles_data.yaml \
+            -e /home/stack/templates/upgrades-environment.yaml \
+            -e /home/stack/templates/rhsm.yaml \
+            -e /home/stack/templates/containers-prepare-parameter.yaml \
+            -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml \
+            -e /home/stack/templates/network-environment.yaml \
+            -e /home/stack/templates/ciscoaci_containers.yaml \
+            -e /home/stack/templates/ciscoaci_containers_stein.yaml \
+            -e /home/stack/templates/ciscoaci-config.yaml
+  - name: Step3.2 Make it executable
+    file:
+      path: /home/stack/upgrade_converge.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step3.3 Run the upgrade converge
+    shell: /home/stack/upgrade_converge.sh
