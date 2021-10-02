@@ -230,7 +230,7 @@
             type: number
           InternalApiInterfaceRoutes:
             default: []
-            description: >/
+            description: >
               Routes for the internal_api network traffic.
               JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
               Unless the default is changed, the parameter is automatically resolved
