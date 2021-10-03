@@ -1,7 +1,11 @@
 ---
-- name: Upgrading Controller nodes with director-deployed Ceph Storage
-  hosts: undercloud
+- name: Stop glance_api service on all but one controller
+  hosts: overcloud-controller-1,overcloud-controller-2
   tasks:
-  - name: Step5.3.2 (re-)Run the upgrade command with no tags
-    shell: openstack overcloud upgrade run -y --stack overcloud --limit overcloud-controller-0,overcloud-controller-1,overcloud-controller-2
+  - name: Step7 Stop the glance_api container/service on two of the controllers
+    become: yes
+    ignore_errors: true
+    systemd:
+      name: tripleo_glance_api.service
+      state: stopped
 
