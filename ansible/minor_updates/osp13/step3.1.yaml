@@ -1,0 +1,12 @@
+---
+- name: Performing a minor update of an undercloud
+  hosts: undercloud
+  tasks:
+  - name: Step2. Update the python-tripleoclient package and its dependencies to ensure you have the latest scripts for the minor version update
+    become: yes
+    command: yum update -y python-tripleoclient
+  - name: Step3. The director uses the openstack undercloud upgrade command to update the Undercloud environment. Run the command
+    command: openstack undercloud upgrade
+  - name: Step5. Reboot the undercloud to update the operating system’s kernel and other system packages
+    become: yes
+    command: reboot
