@@ -4,7 +4,7 @@
   tasks:
   - name: Step1.5 Create the update converge command
     copy:
-      dest: "/home/stack/update_prepare.sh"
+      dest: "/home/stack/update_converge.sh"
       content: |
         openstack overcloud update converge -y \
             --templates /home/stack/tripleo-heat-templates \
@@ -21,5 +21,5 @@
       path: /home/stack/update_converge.sh
       state: touch
       mode: u+x,g+x,o+x
-  - name: Step2. Run the update preparation command
+  - name: Step2. Run the update converge command
     shell: /home/stack/update_converge.sh
