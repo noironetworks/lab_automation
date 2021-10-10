@@ -1,0 +1,6 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: undercloud
+  tasks:
+  - name: Step6 Use setenforce 0 on all controllers, to fix problems with glance
+    shell: for server in $(nova list | awk -F"=" /overcloud/'{print $2}' | cut -d" " -f 1); do ssh heat-admin@$server "sudo setenforce 0"; done

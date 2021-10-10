@@ -88,7 +88,13 @@ to container management commands. Refresh the stack user permissions with the fo
 <pre><code>$ source ~/stackrc
 $ ansible-playbook -i inventory.txt step6.11.yaml
 $ ansible-playbook -i inventory.txt step7.3.yaml
-$ ansible-playbook -i inventory.txt step7.4.yaml
+</code></pre>
+
+The last playbook may fail due to validations not passing, but in most cases
+these can be ignored.
+
+Continue running the playbooks:
+<pre><code>$ ansible-playbook -i inventory.txt step7.4.yaml
 $ ansible-playbook -i inventory.txt step7.5.yaml
 $ ansible-playbook -i inventory.txt step8.1.yaml
 $ ansible-playbook -i inventory.txt step8.3.yaml
@@ -132,32 +138,48 @@ $ ansible-playbook -i inventory.txt --limit overcloud-controller-0 step18.2-3.ya
 $ ansible-playbook -i inventory.txt step18.2-4.yaml
 </code></pre>
 
-This step fails, due to incorrect "proxy settings". The real issue is that the
-ext-br interface was brought down. Run the next playbook to bring it back up
-on that host, and continue.
+If the previous step fails due to incorrect "proxy settings", then the issue is that the
+ext-br interface on the controller was brought down. Run the next 2 playbooks to bring it
+back up and continue with the in-place upgrade for that controller. If this didn't happen,
+then you can skip these next 2 playbooks.
 
 <pre><code>$ ansible-playbook -i inventory.txt --limit overcloud-controller-0 step18.2-5.yaml
-$ ansible-playbook -i inventory.txt step18.2-6.yaml
+$ ansible-playbook -i inventory.txt step18.2-4-1.yaml
+</code></pre>
+
+Start the LEAPP upgrade of the second controller:
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-6.yaml
 $ ansible-playbook -i inventory.txt --limit overcloud-controller-1 step18.2-3.yaml
 $ ansible-playbook -i inventory.txt step18.2-7.yaml
 </code></pre>
 
-This step fails, due to incorrect "proxy settings". The real issue is that the
-ext-br interface was brought down. Run the next playbook to bring it back up
-on that host, and continue.
+If the previous step fails due to incorrect "proxy settings", then the issue is that the
+ext-br interface on the controller was brought down. Run the next 2 playbooks to bring it
+back up and continue with the in-place upgrade for that controller. If this didn't happen,
+then you can skip these next 2 playbooks.
 
 <pre><code>$ ansible-playbook -i inventory.txt --limit overcloud-controller-1 step18.2-5.yaml
-$ ansible-playbook -i inventory.txt step18.2-8.yaml
+$ ansible-playbook -i inventory.txt step18.2-7.yaml
+</code></pre>
+
+Start the LEAPP upgrade of the third controller:
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-8.yaml
 $ ansible-playbook -i inventory.txt --limit overcloud-controller-2 step18.2-3.yaml
 $ ansible-playbook -i inventory.txt step18.2-9.yaml
 </code></pre>
 
-This step fails, due to incorrect "proxy settings". The real issue is that the
-ext-br interface was brought down. Run the next playbook to bring it back up
-on that host, and continue.
+If the previous step fails due to incorrect "proxy settings", then the issue is that the
+ext-br interface on the controller was brought down. Run the next 2 playbooks to bring it
+back up and continue with the in-place upgrade for that controller. If this didn't happen,
+then you can skip these next 2 playbooks.
 
 <pre><code>$ ansible-playbook -i inventory.txt --limit overcloud-controller-2 step18.2-5.yaml
-$ ansible-playbook -i inventory.txt step18.2-10.yaml
+$ ansible-playbook -i inventory.txt step18.2-9.yaml
+</code></pre>
+
+Run the following playbooks to stop the glance_api service on controllers 1 and 2, and clear setenforce:
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-10.yaml
+$ ansible-playbook -i inventory.txt step18.2-11.yaml
 </code></pre>
 
 14. Live-migrate the instances off of compute-0

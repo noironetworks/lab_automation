@@ -64,6 +64,14 @@
     - {regexp: '  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_opflex.yaml', line: '  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml'}
     - {regexp: '  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/docker/services/compute-neutron-metadata.yaml', line: '  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/compute_neutron_metadata/compute-neutron-metadata.yaml'}
     - {regexp: '  OS::TripleO::Services::CiscoAciLldp: /opt/ciscoaci-tripleo-heat-templates/docker/services/cisco_lldp.yaml', line: '  OS::TripleO::Services::CiscoAciLldp: /opt/ciscoaci-tripleo-heat-templates/deployment/lldp/cisco_lldp.yaml'}
-    - {regexp: '  DockerInsecureRegistryAddress: 1.100.1.1:8787,10.30.120.22:8787', line: '  DockerInsecureRegistryAddress: ["ostack-pt-1-s1-ucloud-13.ctlplane.localdomain:8787", "1.100.1.1:8787", "10.30.120.22:8787"]'}
+    - {regexp: '  DockerInsecureRegistryAddress: 1.100.1.1:8787,10.30.120.22:8787', line: '  DockerInsecureRegistryAddress:'}
     - {regexp: '  ACIYumRepo: http://1.100.1.1/acirepo', line: '  ACIYumRepo: http://1.100.1.1:8787/v2/__acirepo'}
-
+  - name: Step5. Fix the Docker registry configuration
+    lineinfile:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      insertafter: '  DockerInsecureRegistryAddress:'
+      line: "{{ item }}"
+    with_items:
+    - "  - 10.30.120.22:8787"
+    - "  - 1.100.1.1:8787"
+    - "  - {{ ansible_hostname }}.ctlplane.localdomain:8787"

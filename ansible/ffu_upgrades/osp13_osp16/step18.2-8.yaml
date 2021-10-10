@@ -2,7 +2,5 @@
 - name: Upgrading Controller nodes with director-deployed Ceph Storage
   hosts: undercloud
   tasks:
-  - name: Step4.3.1 This step often fails. If it does, log in to the controller, run "sudo ifup ext-br", and re-run the last step.
-    shell: openstack overcloud upgrade run -y --stack overcloud --limit overcloud-controller-0,overcloud-controller-1
   - name: Step5.2 Run the upgrade command with the system_upgrade tag
     shell: openstack overcloud upgrade run -y --stack overcloud --tags system_upgrade --limit overcloud-controller-2
