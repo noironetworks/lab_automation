@@ -1,0 +1,17 @@
+---
+- name: Preparing for overcloud installation
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+  - name: fetch overcloud images yaml from docker images machine
+    fetch:
+      src: /home/stack/overcloud_images.yaml
+      dest: overcloud/files/
+      flat: yes      
+    when: inventory_hostname in groups.docker_images_machine
+
+  - name: Installing overcloud
+    include_role:
+      name: overcloud
+    when: inventory_hostname in groups.undercloud_vm

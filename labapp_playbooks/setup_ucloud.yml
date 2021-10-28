@@ -1,0 +1,7 @@
+---
+- name: Configuring undercloud-vm
+  hosts: undercloud_vm
+  gather_facts: true
+  remote_user: stack
+  roles:
+     - ucloud

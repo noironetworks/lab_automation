@@ -1,0 +1,42 @@
+resource_registry:
+   OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/compute.yaml
+   OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+   OS::TripleO::Network::StorageMgmt: /usr/share/openstack-tripleo-heat-templates/network/storage_mgmt.yaml
+   OS::TripleO::Network::Storage: /usr/share/openstack-tripleo-heat-templates/network/storage.yaml
+  # Port assignments for the controller role
+   OS::TripleO::Controller::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external.yaml
+   OS::TripleO::Controller::Ports::InternalApiPort: /usr/share/openstack-tripleo-heat-templates/network/ports/internal_api.yaml
+   OS::TripleO::Controller::Ports::StoragePort: /usr/share/openstack-tripleo-heat-templates/network/ports/storage.yaml
+   OS::TripleO::Controller::Ports::StorageMgmtPort: /usr/share/openstack-tripleo-heat-templates/network/ports/storage_mgmt.yaml
+   OS::TripleO::Controller::Ports::TenantPort: /usr/share/openstack-tripleo-heat-templates/network/ports/tenant.yaml
+  # Port assignment for the Redis VIP on isolated network (defaults to Internal API)
+   OS::TripleO::Controller::Ports::RedisVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/vip.yaml
+
+  # Port assignments for the compute role
+  # OS::TripleO::Compute::Ports::InternalApiPort: /usr/share/openstack-tripleo-heat-templates/network/ports/internal_api.yaml
+  # OS::TripleO::Compute::Ports::StoragePort: /usr/share/openstack-tripleo-heat-templates/network/ports/storage.yaml
+  # OS::TripleO::Compute::Ports::TenantPort: /usr/share/openstack-tripleo-heat-templates/network/ports/tenant.yaml
+
+parameter_defaults:
+ AdminPassword: 'noir0123'
+ InternalApiNetCidr: 1.121.101.0/24
+ StorageNetCidr: 1.121.102.0/24
+ StorageMgmtNetCidr: 1.121.103.0/24
+ TenantNetCidr: 1.121.104.0/24
+ ExternalNetCidr: {{ ext_net_cidr }}
+ ExternalInterfaceDefaultRoute: {{ ext_net_defroute }}
+ InternalApiAllocationPools: [{'start': '1.121.101.10', 'end': '1.121.101.200'}]
+ StorageAllocationPools: [{'start': '1.121.102.10', 'end': '1.121.102.200'}]
+ StorageMgmtAllocationPools: [{'start': '1.121.103.10', 'end': '1.121.103.200'}]
+ TenantAllocationPools: [{'start': '1.121.104.10', 'end': '1.121.104.200'}]
+ ExternalAllocationPools: [{'start': '{{ ext_pool_ip_start }}', 'end': '{{ ext_pool_ip_end }}'}]
+ ExternalNetworkVlanID: 1
+ InternalApiNetworkVlanID: 101
+ StorageNetworkVlanID: 102
+ StorageMgmtNetworkVlanID: 103
+ TenantNetworkVlanID: 104
+# Additional parameters introduced for Y1 (OSP-D 7.1) to enable static IP's for provisioning interfaces
+ ControlPlaneSubnetCidr: "24"
+ ControlPlaneDefaultRoute: 1.100.1.1
+ EC2MetadataIp: 1.100.1.1
+ DnsServers: ['172.28.184.18']

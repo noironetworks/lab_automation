@@ -1,0 +1,29 @@
+resource_registry:
+   OS::TripleO::Controller::Net::SoftwareConfig: 
+                /home/stack/templates/nic-configs/controller.yaml
+   OS::TripleO::Compute::Net::SoftwareConfig:
+                 /home/stack/templates/nic-configs/compute.yaml
+
+parameter_defaults:
+ AdminPassword: 'noir0123'
+ InternalApiNetCidr: 1.121.101.0/24
+ StorageNetCidr: 1.121.102.0/24
+ StorageMgmtNetCidr: 1.121.103.0/24
+ TenantNetCidr: 1.121.104.0/24
+ ExternalNetCidr: {{ ext_net_cidr }}
+ ExternalInterfaceDefaultRoute: {{ ext_net_defroute }}
+ InternalApiAllocationPools: [{'start': '1.121.101.10', 'end': '1.121.101.200'}]
+ StorageAllocationPools: [{'start': '1.121.102.10', 'end': '1.121.102.200'}]
+ StorageMgmtAllocationPools: [{'start': '1.121.103.10', 'end': '1.121.103.200'}]
+ TenantAllocationPools: [{'start': '1.121.104.10', 'end': '1.121.104.200'}]
+ ExternalAllocationPools: [{'start': '{{ ext_pool_ip_start }}', 'end': '{{ ext_pool_ip_end }}'}]
+ ExternalNetworkVlanID: 1
+ InternalApiNetworkVlanID: {{ internal_api_vlan }}
+ StorageNetworkVlanID: {{ storage_network_vlan }}
+ StorageMgmtNetworkVlanID: {{ storage_mgmt_network_vlan }}
+ TenantNetworkVlanID: {{ tenant_network_vlan }}
+ ControlPlaneSubnetCidr: "24"
+ ControlPlaneDefaultRoute: 1.100.1.1
+ EC2MetadataIp: 1.100.1.1
+ DnsServers: ['172.28.184.18']
+ NtpServer: ['172.28.184.8']

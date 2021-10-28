@@ -1,0 +1,160 @@
+[DEFAULT]
+
+#
+# From instack-undercloud
+#
+
+# Local file path to the necessary images. The path should be a
+# directory readable by the current user that contains the full set of
+# images. (string value)
+image_path = /home/stack/images
+
+# IP information for the interface on the Undercloud that will be
+# handling the PXE boots and DHCP for Overcloud instances.  The IP
+# portion of the value will be assigned to the network interface
+# defined by local_interface, with the netmask defined by the prefix
+# portion of the value. (string value)
+local_ip = 1.100.1.1/24
+
+# Virtual IP address to use for the public endpoints of Undercloud
+# services. (string value)
+undercloud_public_vip = 1.100.1.3
+
+# Virtual IP address to use for the admin endpoints of Undercloud
+# services. (string value)
+undercloud_admin_vip = 1.100.1.4
+
+# Certificate file to use for OpenStack service SSL connections.
+# (string value)
+#undercloud_service_certificate =
+
+# Network interface on the Undercloud that will be handling the PXE
+# boots and DHCP for Overcloud instances. (string value)
+local_interface = eth1
+
+# Network that will be masqueraded for external access, if required.
+# This should be the subnet used for PXE booting. (string value)
+masquerade_network = 1.100.1.0/24
+
+# Start of DHCP allocation range for PXE and DHCP of Overcloud
+# instances. (string value)
+dhcp_start = 1.100.1.101
+
+# End of DHCP allocation range for PXE and DHCP of Overcloud
+# instances. (string value)
+dhcp_end = 1.100.1.150
+
+# Network CIDR for the Neutron-managed network for Overcloud
+# instances. This should be the subnet used for PXE booting. (string
+# value)
+network_cidr = 1.100.1.0/24
+
+# Network gateway for the Neutron-managed network for Overcloud
+# instances. This should match the local_ip above when using
+# masquerading. (string value)
+network_gateway = 1.100.1.1
+
+# Network interface on which discovery dnsmasq will listen.  If in
+# doubt, use the default value. (string value)
+discovery_interface = br-ctlplane
+
+# Temporary IP range that will be given to nodes during the discovery
+# process.  Should not overlap with the range defined by dhcp_start
+# and dhcp_end, but should be in the same network. (string value)
+discovery_iprange = 1.100.1.50,1.100.1.70
+
+# Whether to run benchmarks when discovering nodes. (boolean value)
+discovery_runbench = true
+
+# Whether to enable the debug log level for Undercloud OpenStack
+# services. (boolean value)
+undercloud_debug = true
+
+
+[auth]
+
+#
+# From instack-undercloud
+#
+
+# Password used for MySQL databases. If left unset, one will be
+# automatically generated. (string value)
+undercloud_db_password = noir0123
+
+# Keystone admin token. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_admin_token = <None>
+
+# Keystone admin password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_admin_password = noir0123
+
+# Glance service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_glance_password = noir0123
+
+# Heat db encryption key(must be 16, 24, or 32 characters. If left
+# unset, one will be automatically generated. (string value)
+#undercloud_heat_encryption_key = <None>
+
+# Heat service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_heat_password = noir0123
+
+# Neutron service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_neutron_password = noir0123
+
+# Nova service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_nova_password = noir0123
+
+# Ironic service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_ironic_password = noir0123
+
+# Tuskar service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_tuskar_password = noir0123
+
+# Ceilometer service password. If left unset, one will be
+# automatically generated. (string value)
+undercloud_ceilometer_password = noir0123
+
+# Ceilometer metering secret. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_ceilometer_metering_secret = <None>
+
+# Ceilometer snmpd user. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_ceilometer_snmpd_user = <None>
+
+# Ceilometer snmpd password. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_ceilometer_snmpd_password = <None>
+
+# Swift service password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_swift_password = noir0123
+
+# Rabbitmq cookie. If left unset, one will be automatically generated.
+# (string value)
+#undercloud_rabbit_cookie = <None>
+
+# Rabbitmq password. If left unset, one will be automatically
+# generated. (string value)
+undercloud_rabbit_password = noir0123
+
+# Rabbitmq username. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_rabbit_username = <None>
+
+# Heat stack domain admin password. If left unset, one will be
+# automatically generated. (string value)
+undercloud_heat_stack_domain_admin_password = noir0123
+
+# Swift hash suffix. If left unset, one will be automatically
+# generated. (string value)
+#undercloud_swift_hash_suffix = <None>
+ipxe_enabled = false
+enable_ui = true

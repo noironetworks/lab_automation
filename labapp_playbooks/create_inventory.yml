@@ -1,0 +1,183 @@
+---
+- name: Create inventory file
+  hosts: localhost
+  gather_facts: true
+
+  collections:
+    - community.mysql
+
+  tasks:
+    - set_fact:
+        fabric_id: "{{ fabric_id }}"
+        ostack_version: "{{ ostack_version }}"
+
+    - name: Insatll packages from pip repositories
+      pip:
+        name: PyMySQL 
+        executable: pip3
+      environment:
+        https_proxy: http://proxy.esl.cisco.com:80 
+
+    - name: Access fabrics table from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM fabrics WHERE id = %s
+        positional_args:
+          - "{{ fabric_id }}"
+      register: fab 
+
+    - debug:
+         var: fab.query_result[0][0].name
+      
+    - name: Access osds data from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM osds WHERE fabricname = %s
+        positional_args:
+          - "{{ fab.query_result[0][0].name }}"
+      register: osd
+      
+    - name: Access external router data from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM extrtrs WHERE id = %s
+        positional_args:
+          - "{{ fabric_id }}"
+      register: extrtrs
+      
+    - debug:
+         var: osd.query_result[0][0].ipaddress
+      
+    - set_fact:
+          user: "{% if osd.query_result[0][0].deployment_type == 'canonical' %}noiro{% else %}stack{% endif %}"
+          hypr: "{% if osd.query_result[0][0].deployment_type == 'canonical' %}{{ osd.query_result[0][0].hypervisor}}{% else %}{{osd.query_result[0][0].vcenter}}{% endif %}"
+      
+    - debug:
+          var: hypr
+      
+    - name: Access hypervisor data from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM vcenters WHERE name = %s
+        positional_args:
+          #- noiro-kvm-3
+          - "{{ hypr }}"
+      register: hypervisor
+
+    - name: Access hypervisor data from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM apics WHERE id = %s
+        positional_args:
+          - "{{ fabric_id }}"
+      register: apic
+
+
+    - name: Access hypervisor data from db
+      community.mysql.mysql_query:
+        login_db: "{{ dbname }}"
+        login_user: "{{ dbuser }}"
+        login_password: "{{ dbpassword }}"
+        login_host: "{{ dbhosts }}"
+        query: SELECT * FROM baremetals WHERE fabricname = %s
+        positional_args:
+          - "{{ fab.query_result[0][0].name }}"
+      register: baremetals
+
+    - name: Number of baremetals
+      set_fact:
+        controller_count: "{% if baremetals.query_result[0]|length > 4 %}3{% else %}1{% endif %}"
+        compute_count: "{% if baremetals.query_result[0]|length > 4 %}{{ baremetals.query_result[0]|length - 3 }}{% else %}{{ baremetals.query_result[0]|length - 1 }}{% endif %}"
+        controller_count: "{% if osd.query_result[0][0].maximize_compute_count %}1{% endif %}"
+        compute_count: "{% if osd.query_result[0][0].maximize_compute_count %}{{ baremetals.query_result[0]|length - 1 }}{% endif %}"
+        conn: "{% if vpc_possible == 'True' %}bond{% else %}single{% endif %}"
+        opflex_uplink_interface: "{% if osd.query_result[0][0].disable_vpc_mode %}{% if fab.query_result[0][0].active_switch_id == 102 %}nic3{% else %}nic2{% endif %}{% else %}{% if vpc_possible == 'True' %}bond1{% else %}nic2{% endif %}{% endif %}"
+
+    - debug:
+        var: controller_count
+
+    - debug:
+        var: compute_count     
+      
+    - name: Find out path inventory file
+      shell: pwd
+      register: inven_path
+    
+    - name: Create inventory file
+      copy:
+        dest: "{{ inven_path['stdout_lines'][0] }}/host_file"
+        content: |
+         [undercloud_vm]
+         {{ osd.query_result[0][0].ipaddress }} ansible_connection=ssh  ansible_user={{user}}  ansible_password=noir0123         
+         
+         [docker_images_machine]
+         10.30.120.22  ansible_connection=ssh  ansible_user=stack  ansible_password=noir0123
+     
+         [all:vars]
+         ostack_version={{ ostack_version }}
+         undercloud_type=juju
+         undercloud_ip={{ osd.query_result[0][0].ipaddress }}
+         http_proxy=http://proxy.esl.cisco.com:80
+         https_proxy=https://proxy.esl.cisco.com:80
+         no_proxy=localhost,127.0.0.1,10.30.120.22,1.100.1.1
+         ucloud_hostname={{ fab.query_result[0][0].name }}-ucloud-{{ ostack_version }}
+         fabric_type={{ fab.query_result[0][0].fabric_type }}
+         controller_count={{ controller_count }}
+         compute_count={{ compute_count }}
+         conn={{ conn }}
+         fabric_id={{ fabric_id }}
+         apic_hosts={{ apic.query_result[0][0].ipaddress }}
+         apic_password=noir0123
+         ostack_system_id={{ fab.query_result[0][0].name }}
+         aci_aep=sauto_{{ fab.query_result[0][0].name }}_aep
+         infra_vlan={{ apic.query_result[0][0].infravlan }}
+         nic={{ opflex_uplink_interface }}
+         opflex_encap_mode={{ osd.query_result[0][0].opflex_encap_mode }}
+         vmm_mcast_range=225.{{fabric_id}}.1.1:225.{{fabric_id}}.255.255
+         vmm_mcast_address=225.{{fabric_id}}.10.3
+         opflex_vlan_range=701:750
+         neutron_vlan_range=1701:1750
+         vpc_pairs=101:102
+         opflex_uplink_interface={{ opflex_uplink_interface }}
+         nested={{ osd.query_result[0][0].nested }}
+         maximize_compute_count={{ osd.query_result[0][0].maximize_compute_count }}
+         disable_vpc={{ osd.query_result[0][0].disable_vpc_mode }}
+         active_switch_id={{ fab.query_result[0][0].active_switch_id }}
+         ext_net_cidr={{ fab.query_result[0][0].osd_labnet_cidr }}
+         ext_net_defroute={{ fab.query_result[0][0].osd_labnet_gw }}
+         ext_pool_ip_start={{ fab.query_result[0][0].osd_labnet_pool_start }}
+         ext_pool_ip_end={{ fab.query_result[0][0].osd_labnet_pool_end }}
+         internal_api_vlan={{ fab.query_result[0][0].bd_api_vlan }}
+         storage_network_vlan={{ fab.query_result[0][0].bd_nw_vlan }}
+         storage_mgmt_network_vlan={{ fab.query_result[0][0].bd_mng_nw_vlan }}
+         tenant_network_vlan={{ fab.query_result[0][0].bd_tenant_nw_vlan }}
+         BD_VLAN_LIST=[ {{ fab.query_result[0][0].bd_api_vlan }}, {{ fab.query_result[0][0].bd_nw_vlan }}, {{ fab.query_result[0][0].bd_mng_nw_vlan }}, {{ fab.query_result[0][0].bd_tenant_nw_vlan }}]
+
+    - stat:
+        path: /home/noiro/.ssh/id_rsa.pub
+      register: file
+
+    - name: Check needed OS tools exist
+      shell: which sshpass ssh-keygen ssh-copy-id
+      register: os_tools_exist
+
+    - name: copy public key to remote servers
+      shell: sshpass -p noir0123 ssh-copy-id -f -i /home/noiro/.ssh/id_rsa.pub -o StrictHostKeyChecking=no {{user}}@{{ item }}
+      with_items:
+        - "{{ osd.query_result[0][0].ipaddress }}"
+        - 10.30.120.22  

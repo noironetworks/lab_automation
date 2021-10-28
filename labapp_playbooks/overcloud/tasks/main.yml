@@ -1,0 +1,272 @@
+---
+# tasks file for overcloud
+- set_fact:
+   vm_name: "{{ ucloud_hostname }}"
+   undercloud_type: "{{ undercloud_type }}"
+   undercloud_ip: "{{ undercloud_ip }}"
+   ostack_version: "{{ ostack_version }}"
+   fabric_type: "{{ fabric_type }}"
+
+- name: copy custom roles data
+  become: yes
+  become_user: stack
+  copy:
+    src: custom_roles_data.yaml
+    dest: /home/stack/templates/custom_roles_data.yaml
+    mode: 0755
+  when: 13 <= ostack_version < 16
+
+- name: copy custom roles data for osp16
+  become: yes
+  become_user: stack
+  copy:
+    src: custom_roles_data.yaml.16
+    dest: /home/stack/templates/custom_roles_data.yaml
+    mode: 0755
+  when: ostack_version == 16
+
+- name: copy nightly overcloud images yaml
+  become: yes
+  become_user: stack
+  copy:
+    src: overcloud_images.yaml
+    dest: /home/stack/templates/overcloud_images.yaml
+    mode: 0755
+  when: ostack_version == 13
+
+- name: copy sauto.yaml
+  become: yes
+  become_user: stack
+  copy:
+    src: sauto.yaml
+    dest: /home/stack/templates/sauto.yaml
+    mode: 0755
+  when: ostack_version == 13
+
+- name: copy nodeextraconfig.yaml
+  become: yes
+  become_user: stack
+  copy:
+    src: nodeextraconfig.yaml
+    dest: /home/stack/templates/nodeextraconfig.yaml
+    mode: 0755
+  when: ostack_version < 16
+
+- name: copy debug.sh
+  become: yes
+  become_user: stack
+  copy:
+    src: debug.sh
+    dest: /home/stack/debug.sh
+    mode: 0755
+
+- name: generate and copy ciscoaci-config.yaml from template
+  become: yes
+  become_user: stack
+  template:
+    src: ciscoaci-opflex-config.yaml.template
+    dest: /home/stack/templates/ciscoaci-config.yaml
+    mode: 0755
+
+- name: nic-config directory
+  become: yes
+  become_user: stack
+  file:
+       path: /home/stack/templates/nic-configs
+       state: directory
+       mode: 0755
+
+- name: generate and copy controller nic-configuration from template for osp13
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.single.13.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version == 13 and conn == 'single'
+
+- name: generate and copy controller nic-configuration from template for osp13
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.bond.13.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version == 13 and conn == 'bond'
+
+- name: generate and copy controller nic-configuration from template for osp16
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.single.16.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version == 16 and conn == 'single'
+
+- name: generate and copy controller nic-configuration from template for osp16
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.bond.16.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version == 16 and conn == 'bond'
+
+- name: generate and copy controller nic-configuration from template for osp pre13
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.single.pre13.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version < 13 and conn == 'single'
+
+- name: generate and copy controller nic-configuration from template for osp pre13
+  become: yes
+  become_user: stack
+  template:
+    src: controller-nic-config.bond.pre13.template
+    dest: /home/stack/templates/nic-configs/controller.yaml
+    mode: 0755
+  when: ostack_version < 13 and conn == 'bond'
+
+- name: generate and copy compute nic-configuration from template for osp13
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.single.13.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version == 13 and conn == 'single'
+
+- name: generate and copy compute nic-configuration from template for osp13
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.bond.13.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version == 13 and conn == 'bond'
+
+- name: generate and copy compute nic-configuration from template for osp16
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.single.16.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version == 16 and conn == 'single'
+
+- name: generate and copy compute nic-configuration from template for osp16
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.bond.16.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version == 16 and conn == 'bond'
+
+- name: generate and copy compute nic-configuration from template for osp pre13
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.single.pre13.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version < 13 and conn == 'single'
+
+- name: generate and copy compute nic-configuration from template for osp pre13
+  become: yes
+  become_user: stack
+  template:
+    src: compute-nic-config.bond.pre13.template
+    dest: /home/stack/templates/nic-configs/compute.yaml
+    mode: 0755
+  when: ostack_version < 13 and conn == 'bond'
+
+- name: generate and copy network-environment.yaml from template for legacy fabs
+  become: yes
+  become_user: stack
+  template:
+    src: network-environment-legacy-13.yaml.template
+    dest: /home/stack/templates/network-environment.yaml
+    mode: 0755
+  when: ostack_version >= 13 and fabric_type == 'legacy'
+
+- name: generate and copy network-environment.yaml from template for non-legacy fabs
+  become: yes
+  become_user: stack
+  template:
+    src: network-environment-13.yaml.template
+    dest: /home/stack/templates/network-environment.yaml
+    mode: 0755
+  when: ostack_version >= 13 and fabric_type == 'non-legacy'
+
+- name: generate and copy network-environment.yaml from template for osp pre13
+  become: yes
+  become_user: stack
+  template:
+    src: network-environment-pre13.yaml.template
+    dest: /home/stack/templates/network-environment.yaml
+    mode: 0755
+  when: ostack_version < 13
+
+- name: check for existing overcloud stack
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      openstack stack list -f json
+  register: stack_exists
+
+- name: delete existing overcloud stack
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      openstack stack delete --yes --wait overcloud
+  when: stack_exists.stdout|length > 2 
+
+- name: overcloud deploy for osp10
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      openstack overcloud deploy --templates -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci-config.yaml -e /home/stack/templates/sauto.yaml --ntp-server 172.28.184.8 --control-flavor control --compute-flavor compute
+  when: ostack_version == 10
+  register: deploy
+  ignore_errors: yes
+
+- name: overcloud deploy for osp13
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      openstack overcloud deploy --templates /home/stack/tripleo-heat-templates -r /home/stack/templates/custom_roles_data.yaml -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/overcloud_images.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci_containers.yaml -e /home/stack/templates/ciscoaci-config.yaml -e /home/stack/templates/sauto.yaml
+  when: ostack_version == 13
+  register: deploy
+  ignore_errors: yes
+
+- name: overcloud deploy for osp16
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      export PYTHONIOENCODING=UTF-8
+      openstack overcloud deploy --templates /home/stack/tripleo-heat-templates -r /home/stack/templates/custom_roles_data.yaml -e /home/stack/containers-prepare-parameter.yaml -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci_containers.yaml -e /home/stack/templates/ciscoaci-config.yaml
+  when: ostack_version == 16
+  register: deploy
+  ignore_errors: yes
+
+- name: run debug.sh if deployment fails
+  shell:
+    cmd: |
+      source /home/stack/stackrc
+      /home/stack/debug.sh
+  register: debug_log
+  when: deploy["changed"]==false
+
+- name: print debug.sh 
+  debug:
+    var: debug_log
+  when: deploy["changed"]==false
+
+- name: Raise an exception when deployment fails
+  fail: 
+    msg: Deployment failed
+  when: deploy["changed"]==false
