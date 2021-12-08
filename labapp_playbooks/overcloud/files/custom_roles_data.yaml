@@ -68,6 +68,7 @@
     - OS::TripleO::Services::CinderHPELeftHandISCSI
     - OS::TripleO::Services::CinderScheduler
     - OS::TripleO::Services::CinderVolume
+    - OS::TripleO::Services::CiscoAciOpflexAgent
     - OS::TripleO::Services::Clustercheck
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::Congress
@@ -212,6 +213,7 @@
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
     - OS::TripleO::Services::ComputeNeutronOvsAgent
+    - OS::TripleO::Services::ComputeCiscoAciOpflexAgent
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::Fluentd
     - OS::TripleO::Services::Ipsec
