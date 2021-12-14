@@ -130,7 +130,6 @@
      
          [all:vars]
          ostack_version={{ ostack_version }}
-         undercloud_type=juju
          undercloud_ip={{ osd.query_result[0][0].ipaddress }}
          http_proxy=http://proxy.esl.cisco.com:80
          https_proxy=https://proxy.esl.cisco.com:80

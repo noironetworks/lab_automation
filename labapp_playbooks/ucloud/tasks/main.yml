@@ -2,7 +2,6 @@
 
 - set_fact:
    vm_name: "{{ ucloud_hostname }}"
-   undercloud_type: "{{ undercloud_type }}"
    undercloud_ip: "{{ undercloud_ip }}"
    ostack_version: "{{ ostack_version }}"
 

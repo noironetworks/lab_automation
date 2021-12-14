@@ -2,7 +2,6 @@
 # tasks file for overcloud
 - set_fact:
    vm_name: "{{ ucloud_hostname }}"
-   undercloud_type: "{{ undercloud_type }}"
    undercloud_ip: "{{ undercloud_ip }}"
    ostack_version: "{{ ostack_version }}"
    fabric_type: "{{ fabric_type }}"
@@ -230,18 +229,18 @@
     cmd: |
       source /home/stack/stackrc
       openstack overcloud deploy --templates -e /usr/share/openstack-tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci-config.yaml -e /home/stack/templates/sauto.yaml --ntp-server 172.28.184.8 --control-flavor control --compute-flavor compute
-  when: ostack_version == 10
-  register: deploy
   ignore_errors: yes
+  register: deploy10
+  when: ostack_version == 10
 
 - name: overcloud deploy for osp13
   shell:
     cmd: |
       source /home/stack/stackrc
       openstack overcloud deploy --templates /home/stack/tripleo-heat-templates -r /home/stack/templates/custom_roles_data.yaml -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/overcloud_images.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci_containers.yaml -e /home/stack/templates/ciscoaci-config.yaml -e /home/stack/templates/sauto.yaml
-  when: ostack_version == 13
-  register: deploy
   ignore_errors: yes
+  register: deploy13
+  when: ostack_version == 13
 
 - name: overcloud deploy for osp16
   shell:
@@ -249,9 +248,9 @@
       source /home/stack/stackrc
       export PYTHONIOENCODING=UTF-8
       openstack overcloud deploy --templates /home/stack/tripleo-heat-templates -r /home/stack/templates/custom_roles_data.yaml -e /home/stack/containers-prepare-parameter.yaml -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci_containers.yaml -e /home/stack/templates/ciscoaci-config.yaml
-  when: ostack_version == 16
-  register: deploy
   ignore_errors: yes
+  register: deploy
+  when: ostack_version == 16
 
 - name: run debug.sh if deployment fails
   shell:
@@ -259,14 +258,14 @@
       source /home/stack/stackrc
       /home/stack/debug.sh
   register: debug_log
-  when: deploy["changed"]==false
+  when: deploy10["changed"]==false and deploy13["changed"]==false and deploy16["changed"]==false
 
 - name: print debug.sh 
   debug:
     var: debug_log
-  when: deploy["changed"]==false
+  when: deploy10["changed"]==false and deploy13["changed"]==false and deploy16["changed"]==false
 
 - name: Raise an exception when deployment fails
   fail: 
     msg: Deployment failed
-  when: deploy["changed"]==false
+  when: deploy10["changed"]==false and deploy13["changed"]==false and deploy16["changed"]==false
