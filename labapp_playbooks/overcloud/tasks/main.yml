@@ -249,7 +249,7 @@
       export PYTHONIOENCODING=UTF-8
       openstack overcloud deploy --templates /home/stack/tripleo-heat-templates -r /home/stack/templates/custom_roles_data.yaml -e /home/stack/containers-prepare-parameter.yaml -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml -e /home/stack/templates/network-environment.yaml -e /home/stack/templates/ciscoaci_containers.yaml -e /home/stack/templates/ciscoaci-config.yaml
   ignore_errors: yes
-  register: deploy
+  register: deploy16
   when: ostack_version == 16
 
 - name: run debug.sh if deployment fails
