@@ -4,16 +4,19 @@
    vm_name: "{{ ucloud_hostname }}"
    undercloud_ip: "{{ undercloud_ip }}"
    ostack_version: "{{ ostack_version }}"
+   fabric_type: "{{ fabric_type }}"
 
 - name: upgrade hostname
   become: yes
   become_user: root
   shell: "hostnamectl set-hostname {{ vm_name }}.noiro.lab"
+  when: fabric_type == 'legacy'
 
 - name: upgrade hostname transient
   become: yes
   become_user: root
   shell: "hostnamectl set-hostname --transient {{ vm_name }}.noiro.lab"
+  when: fabric_type == 'legacy'
 
 - name: create nic-config directory
   become: yes
@@ -22,11 +25,13 @@
     path: /home/stack/templates/nic-configs
     state: directory
     mode: 0755
+  when: fabric_type == 'legacy'
 
 - name: change permission of rclocal file
   become: yes
   become_user: root
   shell: "chmod +x /etc/rc.d/rc.local"
+  when: fabric_type == 'legacy'
 
 - name: restart undercloud_vm
   shell: "sleep 5 && reboot"
@@ -34,6 +39,7 @@
   poll: 0
   become: true
   ignore_errors: true
+  when: fabric_type == 'legacy'
 
 - name: waiting for the undercloud_vm to come back
   wait_for_connection:
@@ -41,6 +47,7 @@
     sleep: 5
     delay: 5
     timeout: 300
+  when: fabric_type == 'legacy'
 
 - name: copy undercloud.conf
   become: yes
@@ -49,7 +56,7 @@
     src: undercloud.conf.13.template
     dest: /home/stack/undercloud.conf
     mode: 0755
-  when: ostack_version == 13
+  when: ostack_version == 13 and fabric_type == 'legacy'
 
 - name: copy undercloud.conf
   become: yes
@@ -58,7 +65,7 @@
     src: undercloud.conf.16.template
     dest: /home/stack/undercloud.conf
     mode: 0755
-  when: ostack_version == 16
+  when: ostack_version == 16 and fabric_type == 'legacy'
 
 - name: copy undercloud.conf
   become: yes
@@ -67,7 +74,7 @@
     src: undercloud.conf.template
     dest: /home/stack/undercloud.conf
     mode: 0755
-  when: ostack_version != 13 and ostack_version != 16
+  when: ostack_version != 13 and ostack_version != 16 and fabric_type == 'legacy'
 
 - name: yum update
   become: yes
