@@ -13,7 +13,7 @@
     src: custom_roles_data.yaml
     dest: /home/stack/templates/custom_roles_data.yaml
     mode: 0755
-  when: 13 <= ostack_version < 16
+  when: 13 <= ostack_version < 16 and fabric_type == 'legacy'
 
 - name: copy custom roles data for osp16
   become: yes
@@ -22,7 +22,7 @@
     src: custom_roles_data.yaml.16
     dest: /home/stack/templates/custom_roles_data.yaml
     mode: 0755
-  when: ostack_version == 16
+  when: ostack_version == 16 and fabric_type == 'legacy'
 
 - name: copy nightly overcloud images yaml
   become: yes
@@ -31,7 +31,7 @@
     src: overcloud_images.yaml
     dest: /home/stack/templates/overcloud_images.yaml
     mode: 0755
-  when: ostack_version == 13
+  when: ostack_version == 13 and fabric_type == 'legacy'
 
 - name: copy sauto.yaml
   become: yes
@@ -40,7 +40,7 @@
     src: sauto.yaml
     dest: /home/stack/templates/sauto.yaml
     mode: 0755
-  when: ostack_version == 13
+  when: ostack_version == 13 and fabric_type == 'legacy'
 
 - name: copy nodeextraconfig.yaml
   become: yes
@@ -49,7 +49,7 @@
     src: nodeextraconfig.yaml
     dest: /home/stack/templates/nodeextraconfig.yaml
     mode: 0755
-  when: ostack_version < 16
+  when: ostack_version < 16 and fabric_type == 'legacy'
 
 - name: copy debug.sh
   become: yes
@@ -58,6 +58,7 @@
     src: debug.sh
     dest: /home/stack/debug.sh
     mode: 0755
+  when: fabric_type == 'legacy'
 
 - name: generate and copy ciscoaci-config.yaml from template
   become: yes
@@ -183,16 +184,7 @@
     mode: 0755
   when: ostack_version < 13 and conn == 'bond'
 
-- name: generate and copy network-environment.yaml from template for legacy fabs
-  become: yes
-  become_user: stack
-  template:
-    src: network-environment-legacy-13.yaml.template
-    dest: /home/stack/templates/network-environment.yaml
-    mode: 0755
-  when: ostack_version >= 13 and fabric_type == 'legacy'
-
-- name: generate and copy network-environment.yaml from template for non-legacy fabs
+- name: generate and copy network-environment.yaml from template for osp13 and higher
   become: yes
   become_user: stack
   template:

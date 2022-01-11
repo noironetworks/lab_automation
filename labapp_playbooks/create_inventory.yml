@@ -72,7 +72,6 @@
         login_host: "{{ dbhosts }}"
         query: SELECT * FROM vcenters WHERE name = %s
         positional_args:
-          #- noiro-kvm-3
           - "{{ hypr }}"
       register: hypervisor
 
@@ -165,7 +164,6 @@
          storage_network_vlan={{ fab.query_result[0][0].bd_nw_vlan }}
          storage_mgmt_network_vlan={{ fab.query_result[0][0].bd_mng_nw_vlan }}
          tenant_network_vlan={{ fab.query_result[0][0].bd_tenant_nw_vlan }}
-         BD_VLAN_LIST=[ {{ fab.query_result[0][0].bd_api_vlan }}, {{ fab.query_result[0][0].bd_nw_vlan }}, {{ fab.query_result[0][0].bd_mng_nw_vlan }}, {{ fab.query_result[0][0].bd_tenant_nw_vlan }}]
 
     - stat:
         path: /home/noiro/.ssh/id_rsa.pub
