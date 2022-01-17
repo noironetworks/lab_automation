@@ -148,8 +148,8 @@
          opflex_encap_mode={{ osd.query_result[0][0].opflex_encap_mode }}
          vmm_mcast_range=225.{{fabric_id}}.1.1:225.{{fabric_id}}.255.255
          vmm_mcast_address=225.{{fabric_id}}.10.3
-         opflex_vlan_range=701:750
-         neutron_vlan_range=1701:1750
+         opflex_vlan_range={{ fab.query_result[0][0].opflex_vlan_range_list }}
+         neutron_vlan_range={{ fab.query_result[0][0].neutron_vlan_range_list }}
          vpc_pairs=101:102
          opflex_uplink_interface={{ opflex_uplink_interface }}
          nested={{ osd.query_result[0][0].nested }}
