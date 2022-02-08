@@ -155,7 +155,7 @@
       sudo subscription-manager status
       sudo subscription-manager config --server.proxy_hostname=proxy.esl.cisco.com --server.proxy_port=80
       sudo subscription-manager register --username='mcohen2@cisco.com' --password='Ins3965!'
-      sudo subscription-manager attach --pool=8a85f99a766234dd0176905c321f0c1f
+      sudo subscription-manager attach --auto
       sudo subscription-manager repos --disable=*
       sudo subscription-manager release --set=8.2
       sudo subscription-manager repos --enable=rhel-8-for-x86_64-baseos-eus-rpms --enable=rhel-8-for-x86_64-appstream-eus-rpms --enable=rhel-8-for-x86_64-highavailability-eus-rpms --enable=ansible-2.9-for-rhel-8-x86_64-rpms --enable=openstack-16.1-for-rhel-8-x86_64-rpms --enable=fast-datapath-for-rhel-8-x86_64-rpms --enable=advanced-virt-for-rhel-8-x86_64-rpms
