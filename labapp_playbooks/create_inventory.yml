@@ -100,10 +100,8 @@
 
     - name: Number of baremetals
       set_fact:
-        controller_count: "{% if baremetals.query_result[0]|length > 4 %}3{% else %}1{% endif %}"
-        compute_count: "{% if baremetals.query_result[0]|length > 4 %}{{ baremetals.query_result[0]|length - 3 }}{% else %}{{ baremetals.query_result[0]|length - 1 }}{% endif %}"
-        controller_count: "{% if osd.query_result[0][0].maximize_compute_count %}1{% endif %}"
-        compute_count: "{% if osd.query_result[0][0].maximize_compute_count %}{{ baremetals.query_result[0]|length - 1 }}{% endif %}"
+        controller_count: "{% if osd.query_result[0][0].maximize_compute_count %}1{% else %}{% if baremetals.query_result[0]|length > 4 %}3{% else %}1{% endif %}{% endif %}"
+        compute_count: "{% if osd.query_result[0][0].maximize_compute_count %}{{ baremetals.query_result[0]|length - 1 }}{% else %}{% if baremetals.query_result[0]|length > 4 %}{{ baremetals.query_result[0]|length - 3 }}{% else %}{{ baremetals.query_result[0]|length - 1 }}{% endif %}{% endif %}" 
         conn: "{% if vpc_possible == 'True' %}bond{% else %}single{% endif %}"
         opflex_uplink_interface: "{% if osd.query_result[0][0].disable_vpc_mode %}{% if fab.query_result[0][0].active_switch_id == 102 %}nic3{% else %}nic2{% endif %}{% else %}{% if vpc_possible == 'True' %}bond1{% else %}nic2{% endif %}{% endif %}"
 
