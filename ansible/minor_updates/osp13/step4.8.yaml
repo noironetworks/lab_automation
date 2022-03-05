@@ -1,0 +1,24 @@
+---
+- name:  Finalizing the update
+  hosts: undercloud
+  tasks:
+  - name: Step1.5 Create the update converge command
+    copy:
+      dest: "/home/stack/update_converge.sh"
+      content: |
+        openstack overcloud update converge \
+            --templates /home/stack/tripleo-heat-templates \
+            -r /home/stack/templates/custom_roles_data.yaml \
+            -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml \
+            -e /home/stack/templates/overcloud_images.yaml \
+            -e /home/stack/templates/network-environment.yaml \
+            -e /home/stack/templates/ciscoaci_containers.yaml \
+            -e /home/stack/templates/ciscoaci-config.yaml \
+            -e /home/stack/templates/sauto.yaml
+  - name: Step1.6 Make the converge script executable
+    file:
+      path: /home/stack/update_converge.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step2. Run the update finalization command
+    shell: /home/stack/update_converge.sh

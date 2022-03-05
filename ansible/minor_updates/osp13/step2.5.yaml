@@ -1,0 +1,20 @@
+---
+- name: Using the undercloud as a local registry
+  hosts: undercloud
+  become: yes
+  tasks:
+  - name: Step2. Log in to registry.redhat.io
+    shell: docker login registry.redhat.io --username mcohen2@cisco.com --password Ins3965!
+  - name: Step3. Create a template to upload the the images to the local registry, and the environment file to refer to those images
+    command: openstack overcloud container image prepare \
+                --namespace=registry.redhat.io/rhosp13 \
+                --push-destination=1.100.1.1:8787 \
+                --prefix=openstack- \
+                --tag-from-label {version}-{release} \
+                --output-env-file=/home/stack/templates/overcloud_images.yaml \
+                --output-images-file /home/stack/local_registry_images.yaml
+  - name: Step5. Pull the container images from the remote registry and push them to the undercloud registry
+    command: openstack overcloud container image upload \
+                --config-file  /home/stack/local_registry_images.yaml \
+                --verbose
+

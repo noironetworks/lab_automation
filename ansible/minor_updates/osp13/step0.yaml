@@ -1,0 +1,20 @@
+---
+- name: Set up subscription manager for the nodes
+  hosts: all
+  become: yes
+  tasks:
+  - name: Step1. Set up proxy
+    command: subscription-manager config --server.proxy_hostname=proxy.esl.cisco.com --server.proxy_port=80
+  - name: Step2. Register
+    command: subscription-manager register --username mcohen2@cisco.com --password Ins3965!
+    ignore_errors: true
+  - name: Step3. Attach
+    command: subscription-manager attach --pool=8a85f9997d484aeb017d5c0bbf25521c
+    ignore_errors: true
+  - name: Step4. Disable all repos
+    command: subscription-manager repos --disable=*
+  - name: Step5. Configure RHEL7 repos
+    ignore_errors: yes
+    command: subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-rh-common-rpms --enable=rhel-ha-for-rhel-7-server-rpms --enable=rhel-7-server-openstack-13-rpms
+  - name: Step6. Set RHEL release to 7.9
+    command: subscription-manager release --set=7.9

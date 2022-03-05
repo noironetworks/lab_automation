@@ -1,0 +1,19 @@
+---
+- name: Updating the overcloud images
+  hosts: undercloud
+  tasks:
+  - name: Step1. Remove any existing images from the images directory on the stack user’s home (/home/stack/images)
+    file:
+        path: /home/stack/images/*
+        state: absent
+  - name: Step3. Extract the archives
+    unarchive:
+      src: "{{ item }}"
+      dest: /home/stack/images
+    with_items:
+    - /usr/share/rhosp-director-images/overcloud-full-latest-13.0.tar
+    - /usr/share/rhosp-director-images/ironic-python-agent-latest-13.0.tar
+  - name: Step4. Import the latest images into the director
+    command: openstack overcloud image upload --update-existing --image-path /home/stack/images/
+  - name: Step5. Configure your nodes to use the new images
+    shell: openstack overcloud node configure $(openstack baremetal node list -c UUID -f value)
