@@ -191,7 +191,7 @@
     src: network-environment-13.yaml.template
     dest: /home/stack/templates/network-environment.yaml
     mode: 0755
-  when: ostack_version >= 13 and fabric_type != 'legacy'
+  when: ostack_version >= 13
 
 - name: generate and copy network-environment.yaml from template for osp pre13
   become: yes
