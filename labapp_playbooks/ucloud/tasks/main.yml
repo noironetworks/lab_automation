@@ -34,19 +34,12 @@
   when: fabric_type == 'legacy'
 
 - name: restart undercloud_vm
-  shell: "sleep 5 && reboot"
-  async: 1
-  poll: 0
-  become: true
-  ignore_errors: true
-  when: fabric_type == 'legacy'
-
-- name: waiting for the undercloud_vm to come back
-  wait_for_connection:
-    connect_timeout: 20
-    sleep: 5
-    delay: 5
-    timeout: 300
+  become: yes
+  become_user: root
+  reboot:
+    post_reboot_delay: 30
+    connect_timeout: 10
+    reboot_timeout: 300
   when: fabric_type == 'legacy'
 
 - name: copy undercloud.conf
