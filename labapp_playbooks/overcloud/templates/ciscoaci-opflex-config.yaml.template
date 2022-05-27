@@ -73,6 +73,13 @@ resource_registry:
   OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
   {% endif %}
 
+parameters:
+{% if ostack_version == 16 %}
+  KeystoneNotificationTopics:
+    description: Keystone notification topics to enable
+    default: []
+    type: comma_delimited_list
+
 parameter_defaults:
 {% if ostack_version > 11 %}
   EC2MetadataIp: 1.100.1.1
@@ -88,7 +95,7 @@ parameter_defaults:
 {% endif %}
   ControllerCount: {{ controller_count }}
   ComputeCount: {{ compute_count }}
-  GlanceBackend: 'file'
+  GlanceBackend: 'swift'
   NeutronCorePlugin: 'ml2plus'
   NeutronServicePlugins: 'group_policy,ncp,apic_aim_l3'
   NeutronEnableIsolatedMetadata: true
