@@ -1,0 +1,22 @@
+---
+   - name: Get existing HPP group, and store to file in /tmp
+     gather_facts: false
+     hosts: localhost
+     connection: local
+     tasks:
+       - name: Create the HPP group
+         aci_rest:
+           host: 10.30.120.90
+           username: admin
+           password: noir0123
+           method: get
+           path: /api/mo/uni/tn-sriov/pol-sriov_np_static-ingress/subj-ingress.json
+           validate_certs: false
+           timeout: 30
+         delegate_to: localhost
+         register: query_result
+       - name: Save the policy state as JSON
+         shell: |
+              echo '{{ query_result | to_json }}' | jq -r .imdata > /tmp/hpp-subject.json
+         args:
+              executable: /bin/sh

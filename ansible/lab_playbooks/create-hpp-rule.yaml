@@ -1,0 +1,66 @@
+---
+   - name: Get existing HPP group, and store to file in /tmp
+     gather_facts: false
+     hosts: localhost
+     connection: local
+     tasks:
+       - name: Create the HPP group
+         aci_rest:
+           host: 10.30.120.90
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/uni/tn-sriov/pol-sriov_np_static-demo.json
+           validate_certs: false
+           timeout: 30
+           content:
+              "hostprotPol": {
+                "attributes": {
+                   "name": "sriov_np_static-demo",
+                   "descr": "",
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True
+       - name: Create the HPP group subject
+         aci_rest:
+           host: 10.30.120.90
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/uni/tn-sriov/pol-sriov_np_static-demo/subj-demo.json
+           validate_certs: false
+           timeout: 30
+           content:
+              "hostprotSubj": {
+                "attributes": {
+                  "name": "demo"
+                }
+              }
+         delegate_to: localhost
+         ignore_errors: True
+       - name: Create the HPP group subject rule
+         aci_rest:
+           host: 10.30.120.90
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/uni/tn-sriov/pol-sriov_np_static-demo/subj-demo/rule-demo-block-5201.json
+           validate_certs: false
+           timeout: 30
+           content:
+              "hostprotRule": {
+                 "attributes": {
+                   "protocol": "tcp",
+                   "icmpCode": "unspecified",
+                   "ethertype": "ipv4",
+                   "icmpType": "unspecified",
+                   "toPort": "5201",
+                   "direction": "ingress",
+                   "fromPort": "5201",
+                   "name": "demo-block-5201",
+                   "connTrack": "reflexive"
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True

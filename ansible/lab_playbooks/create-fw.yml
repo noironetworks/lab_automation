@@ -1,0 +1,18 @@
+---
+  - name: Query all firmware sources
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Query all firmware sources
+        aci_firmware_source:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           source: aci-apic-dk9.5.0.1k.iso
+           state: present
+           url: 172.28.184.8:/home/noiro/localrepo/jordan_latest/aci-apic-dk9.5.0.1k.iso
+           url_protocol: scp
+           url_username: noiro
+           url_password: noir0123
+           validate_certs: false
+        delegate_to: localhost

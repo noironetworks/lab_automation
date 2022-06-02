@@ -1,0 +1,22 @@
+---
+  - name: Get the DNs of all the firmwareOSource MOs
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Query all firmware sources
+        aci_firmware_source:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           state: query
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r .current[].firmwareOSource.attributes.dn > /tmp/fw-inventory.txt
+        args:
+              executable: /bin/sh
