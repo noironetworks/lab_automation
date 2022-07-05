@@ -73,8 +73,8 @@ resource_registry:
   OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
   {% endif %}
 
-parameters:
 {% if ostack_version == 16 %}
+parameters:
   KeystoneNotificationTopics:
     description: Keystone notification topics to enable
     default: []
