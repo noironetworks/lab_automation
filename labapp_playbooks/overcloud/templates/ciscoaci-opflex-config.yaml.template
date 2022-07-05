@@ -79,6 +79,7 @@ parameters:
     description: Keystone notification topics to enable
     default: []
     type: comma_delimited_list
+{% endif %}
 
 parameter_defaults:
 {% if ostack_version > 11 %}
