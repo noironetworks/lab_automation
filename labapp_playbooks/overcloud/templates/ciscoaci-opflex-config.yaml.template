@@ -73,13 +73,6 @@ resource_registry:
   OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
   {% endif %}
 
-{% if ostack_version == 16 %}
-parameters:
-  KeystoneNotificationTopics:
-    description: Keystone notification topics to enable
-    default: []
-    type: comma_delimited_list
-{% endif %}
 
 parameter_defaults:
 {% if ostack_version > 11 %}
@@ -93,6 +86,8 @@ parameter_defaults:
 {% endif %}
 {% if ostack_version == 16 %}
   DockerInsecureRegistryAddress: ["{{ ucloud_hostname }}.ctlplane.localdomain:8787", "1.100.1.1:8787"]
+  KeystoneNotificationTopics: notifications
+  NotificationDriver: 'messagingv2'
 {% endif %}
   ControllerCount: {{ controller_count }}
   ComputeCount: {{ compute_count }}
