@@ -1,0 +1,6 @@
+---
+# vars file for img_download
+aci_login: &aci_login
+  host: "{{ inventory_hostname }}" 
+  password: "{{ password }}"
+  validate_certs: no
