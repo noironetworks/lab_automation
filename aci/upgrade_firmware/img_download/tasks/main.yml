@@ -1,0 +1,32 @@
+---
+# tasks file for img_download
+    - name: Verify switch images are present
+      aci_firmware_source:
+        host: "{{ inventory_hostname }}"
+        username: admin
+        password: "{{ password }}"
+        validate_certs: no
+        source: "{{ image }}"
+        state: query
+      delegate_to: localhost
+      register: query_result
+          
+    - name: Add firmware image source
+      aci_firmware_source:
+       host: "{{ inventory_hostname }}"
+       username: admin
+       password: "{{ password }}"
+       source: "{{ image }}"
+       validate_certs: no 
+       url_username: "{{ server_username }}"
+       url_password: "{{ server_password }}"
+       url: "{{ server_ip }}:{{ image_path }}/{{ image }}"
+       state: present
+      delegate_to: localhost
+      when: query_result['current']|length == 0  
+
+    - name: Wait to download images
+      wait_for:
+        timeout: 360
+      delegate_to: localhost
+      when: query_result['current']|length == 0

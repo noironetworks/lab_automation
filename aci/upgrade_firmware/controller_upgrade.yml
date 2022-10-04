@@ -1,0 +1,51 @@
+---
+- name: Upgrade Apic Controller
+  hosts: apic
+  connection: local
+  gather_facts: no
+  vars:
+    aci_login: &aci_login
+       host: "{{ inventory_hostname }}" 
+       password: "{{ password }}"
+       validate_certs: no
+
+  tasks:
+    - name: Get the controller version from source image
+      set_fact:
+        contrl_ver: "{% if controller_image.split('.')| length == 5 %}apic-{{ [1,2]|map('extract',controller_image.split('.'))|join('.') }}({{ controller_image.split('.')[3] }}){% else %}}apic-{{ [1,2]|map('extract',controller_image.split('.'))|join('.') }}({{ [3, 4]|map('extract',controller_image.split('.'))|join('.') }}){% endif %}"
+
+    - name: fetch firmware image from server
+      include_role:
+        name: img_download
+      vars:
+        image: "{{ controller_image }}"
+
+    - name: Verify switch images is downloaded
+      aci_firmware_source:
+        <<: *aci_login
+        source: "{{ controller_image }}"
+        state: query
+      delegate_to: localhost
+      register: query_result
+
+    - name: Set the desired version of controller
+      aci_rest:
+        <<: *aci_login
+        path: /api/node/mo/uni/controller.xml
+        method: post
+        content: |
+            <firmwareCtrlrFwP
+               version= "{{ contrl_ver }}"
+               ignoreCompat="true">
+            </firmwareCtrlrFwP>
+   
+    - name: Trigger the controller upgrade
+      aci_rest:
+        <<: *aci_login
+        path: /api/node/mo/uni/controller.xml
+        method: post
+        content: |
+            <maintCtrlrMaintP
+               adminState="up" adminSt="triggered">
+            </maintCtrlrMaintP>
+      when: query_result['current']|length > 0

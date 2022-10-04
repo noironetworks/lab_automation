@@ -1,0 +1,12 @@
+[apic]
+172.28.184.120 username=admin password=noir0123
+
+
+[all:vars]
+leaf_ids=[101, 102, 201]
+controller_image=aci-apic-dk9.6.0.1g.iso 
+switch_image=aci-n9000-dk9.16.0.1g.bin 
+server_ip=172.28.184.220
+server_username=noiro
+server_password=noir0123
+image_path=/home/noiro/aci-images/6.0_1g
