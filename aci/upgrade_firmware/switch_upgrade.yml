@@ -40,9 +40,10 @@
          <<: *aci_login
          group: upgrade 
          policy: switchPol
-         state: absent 
-
-    - aci_firmware_policy: Set desired switch version 
+         state: absent
+    
+    - name: Set desired switch version
+      aci_firmware_policy: 
         <<: *aci_login
         name: switchPol
         version: "{{ switch_ver }}"
