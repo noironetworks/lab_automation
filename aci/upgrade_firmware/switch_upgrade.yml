@@ -1,0 +1,81 @@
+---
+- name: Upgrade Switches on Apic
+  hosts: apic
+  connection: local
+  gather_facts: no
+  vars:
+    aci_login: &aci_login
+       host: "{{ inventory_hostname }}" 
+       password: "{{ password }}"
+       validate_certs: no
+
+  tasks:
+    - name: Get version of switch from source image
+      set_fact:
+        switch_ver: "{% if switch_image.split('.')| length == 5 %}n9000-{{ [1,2]|map('extract',switch_image.split('.'))|join('.') }}({{ switch_image.split('.')[3] }}){% else %}n9000-{{ [1,2]|map('extract',switch_image.split('.'))|join('.') }}({{ [3, 4]|map('extract',switch_image.split('.'))|join('.') }}){% endif %}"
+
+    - name: Get firmware image from server
+      include_role:
+        name: img_download
+      vars:
+        image: "{{ switch_image }}"
+
+    - name: verify image downloaded
+      aci_firmware_source:
+        <<: *aci_login
+        source: "{{ switch_image }}" 
+        state: query
+      delegate_to: localhost
+      register: query_result
+    
+    - name: Ensure delete  maintenance policy 
+      aci_maintenance_policy:
+       <<: *aci_login 
+       name: switchPol
+       scheduler: upgradeSch
+       state: absent
+
+    - name: Delete maintenance group
+      aci_maintenance_group:
+         <<: *aci_login
+         group: upgrade 
+         policy: switchPol
+         state: absent 
+
+    - aci_firmware_policy: Set desired switch version 
+        <<: *aci_login
+        name: switchPol
+        version: "{{ switch_ver }}"
+        ignoreCompat: True
+        state: present
+
+    - name: Simple Scheduler 
+      aci_fabric_scheduler:
+        <<: *aci_login
+        name: upgradeSch
+        state: present
+
+    - name: Ensure maintenance policy is present
+      aci_maintenance_policy:
+        <<: *aci_login
+        name: switchPol
+        scheduler: upgradeSch
+        adminst: triggered
+        state: present
+      when: query_result['current']|length > 0
+
+    - name: Ensure maintenance group created
+      aci_maintenance_group:
+        <<: *aci_login
+        group: upgrade
+        policy: switchPol
+        state: present
+
+    - name: Add nodes ids to maintenance group
+      aci_maintenance_group_node:
+        <<: *aci_login
+        group: upgrade
+        node: "{{ item }}"
+        state: present
+      with_items:
+        - "{{ leaf_ids }}"
