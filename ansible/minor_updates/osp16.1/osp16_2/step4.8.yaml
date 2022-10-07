@@ -1,0 +1,7 @@
+---
+- name:  Performing online database updates
+  hosts: undercloud
+  tasks:
+  - name: Step2. Run the openstack overcloud external-update run command against tasks that use the online_upgrade tag
+    command: openstack overcloud external-update run -y --tags online_upgrade
+
