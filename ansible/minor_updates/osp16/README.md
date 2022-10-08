@@ -52,27 +52,32 @@ $ ./get-overcloud-inventory.sh inventory.txt
 <pre><code>$ ansible-playbook -i inventory.txt step2.2.yaml
 </code></pre>
 
-8. Run the change_eus.yaml playbook:
+8. Run the change_tus playbook:
+
+<pre><code>$ ansible-playbook -i ~/inventory.yaml -f 25 ~/change_tus.yaml --limit undercloud,Controller,Compute
+</code></pre>
+
+9. Run the change_eus.yaml playbook:
 
 <pre><code>$ ansible-playbook -i ~/inventory.yaml -f 25 ~/change_eus.yaml --limit undercloud,Controller,Compute
 </code></pre>
 
-9. Run the update_rhosp_repos.yaml playbook:
+10. Run the update_rhosp_repos.yaml playbook:
 
 <pre><code>$ ansible-playbook -i ~/inventory.yaml -f 25 ~/update_rhosp_repos.yaml --limit undercloud,Controller,Compute
 </code></pre>
 
-10. Run the update_ceph_repos.yaml playbook:
+11. Run the update_ceph_repos.yaml playbook:
 
 <pre><code>$ ansible-playbook -i ~/inventory.yaml -f 25 ~/update_ceph_repos.yaml --limit CephStorage
 </code></pre>
 
-11. Run the container-tools.yaml playbook against all nodes:
+12. Run the container-tools.yaml playbook against all nodes:
 
 <pre><code>$ ansible-playbook -i ~/inventory.yaml -f 25 ~/container-tools.yaml
 </code></pre>
 
-12. Continue with the playbooks
+13. Continue with the playbooks
 <pre><code>$ ansible-playbook -i inventory.yaml step2.5.yaml
 $ ansible-playbook -i inventory.txt step2.7.yaml
 $ ansible-playbook -i inventory.txt step3.1.yaml
@@ -80,32 +85,32 @@ $ ansible-playbook -i inventory.txt step3.1.yaml
 
 That last step reboots the undercloud.
 
-13. Log in to the undercloud and continue with the playbooks:
+14. Log in to the undercloud and continue with the playbooks:
 <pre><code>$ source ~/stackrc
 $ ansible-playbook -i inventory.txt step3.2.yaml
 </code></pre>
 
-14. Install new Cisco Tripleo RPM and build the Cisco containers:
+15. Install new Cisco Tripleo RPM and build the Cisco containers:
 <pre><code>$ ansible-playbook -i inventory.txt step3.3.yaml
 </code></pre>
 
-15. If you are upgrading from the 5.1(3.20210217) release or older, you will need to run an
+16. If you are upgrading from the 5.1(3.20210217) release or older, you will need to run an
 additional playbook to split the opflex agents/services into their own containers (they were
 in the same container in these older releases):
 <pre><code>$ ansible-playbook -i inventory.txt step4.0.yaml
 </code></pre>
 
-16. Continue running the ansible playbooks:
+17. Continue running the ansible playbooks:
 <pre><code>$ ansible-playbook -i inventory.txt step4.1.yaml
 $ ansible-playbook -i inventory.txt step4.2.yaml
-$ ansible-playbook -i inventory.txt step4.3.yaml
 $ ansible-playbook -i inventory.txt step4.4.yaml
-$ ansible-playbook -i inventory.txt step4.7.yaml
+$ ansible-playbook -i inventory.txt step4.5.yaml
 $ ansible-playbook -i inventory.txt step4.8.yaml
+$ ansible-playbook -i inventory.txt step4.9.yaml
 $ ansible-playbook -i inventory.txt step5.1.yaml
 </code></pre>
 
-17. Reboot the overcloud nodes:
+18. Reboot the overcloud nodes:
 
 At this point, all the nodes have been upgraded, but may need to be rebooted before certain
 software/packages updates can take effect (e.g. openvswitch). Reboot controller nodes one
