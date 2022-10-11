@@ -412,6 +412,7 @@ sudo -E pip install oslo.config==7.0.0
 sudo -E pip install oslo.log==3.45.2
 #sudo -E pip install python-novaclient/
 sudo -E pip install ddt==1.3.1
+sudo -E pip install paramiko==2.7
 if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
     sudo -E pip install oslo.utils==4.1.1
     sudo -E pip install osc-lib==2.0.0
