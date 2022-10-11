@@ -20,6 +20,8 @@ JUJU_RC='admin-openrc.sh'
 DIRECTOR_RC='overcloudrc'
 PPATH='export PYTHONPATH=/home/noiro/noirotest && '
 CMD_TIME_WAIT = 15
+with open('fab_name.txt') as f:
+    FAB_NAME = f.readline().strip()
 # Wait 3 hours max
 TEMPEST_WAIT_TIME = (60*60*3)
 NOIRO_SETUP_WAIT_TIME = (60*2)
@@ -447,7 +449,7 @@ class TempestTestRunner(Runner):
         # Doesn't exist -- create it
         cmd1 = "neutron net-create sauto_l3out-2 --router:external True "
         cmd2 = "--shared --apic:distinguished_names type=dict "
-        cmd3 = "ExternalNetwork=uni/tn-common/out-sauto_l3out-2/instP-sauto_l3out-2_epg"
+        cmd3 = "ExternalNetwork=uni/tn-common/out-" + FAB_NAME + "_l3out-2/instP-" + FAB_NAME + "_l3out-2_epg"
         cmd = self.KEY + cmd1 + cmd2 + cmd3
         print cmd
         self.remote_cmd(ssh_client, cmd)
