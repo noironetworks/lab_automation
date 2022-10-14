@@ -155,6 +155,78 @@ sudo -E apt -y --allow-unauthenticated install python-os-testr
 sudo -E pip install pexpect
 sudo -E pip install python-group-based-policy-client
 
+git clone https://github.com/noironetworks/noirotest.git
+if [ "$1" = "${QUEENS}" ]; then
+    sed -i 's/#cmd = "sudo yum/cmd = "sudo yum/g' noirotest/setup.py>> /dev/null
+    sed -i 's/#run(cmd)/run(cmd)/g' noirotest/setup.py>> /dev/null
+fi
+
+# Routes we'll need for noirotest tests
+RTR_IPS=`ip -o addr | grep ens8`
+if [ "$RTR_IPS" = "" ]; then
+    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
+    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
+    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens7
+    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens7
+else
+    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
+    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
+    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens8
+    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens8
+fi
+
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+ssh -o StrictHostKeyChecking=no noiro@${EXT_RTR_IP} ls >> /dev/null
+
+# Set up config file for noirotest
+cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconfig.yaml
+
+if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
+    sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    if [ "$1" = "${QUEENS}" -o "$1" = "${PIKE}" ]; then
+        echo "containerized_services:" >> ~/noirotest/testcases/testconfig.yaml
+        echo "  - nova" >> ~/noirotest/testcases/testconfig.yaml
+    fi
+    if [ "$1" = "${QUEENS}" ]; then
+        echo "  - aim" >> ~/noirotest/testcases/testconfig.yaml
+        echo "  - neutron" >> ~/noirotest/testcases/testconfig.yaml
+        echo "rcfile: 'overcloudrc'" >> ~/noirotest/testcases/testconfig.yaml
+    fi
+    echo "rest_ip: $CTRLR_REST_IP" >> ~/noirotest/testcases/testconfig.yaml
+    sed -i "s/no_proxy=,/no_proxy=\$no_proxy,/g" ~/${RCFILE}.v3
+fi
+sed -i "s/no_proxy=,/no_proxy=\$no_proxy,/g" ~/${RCFILE}
+
+# Download and install rally
+wget -q -O- https://raw.githubusercontent.com/noironetworks/rally/noiro-master/install_rally.sh > install_rally.sh
+# Get rid of question
+sed -i 's/ask_yn "Proceed with installation anyway?"/true/g' ~/install_rally.sh
+sed -i 's/bootstrap.pypa.io/bootstrap.pypa.io\/pip\/2.7/g' ~/install_rally.sh
+chmod +x ./install_rally.sh
+./install_rally.sh
+. ~/${RCFILE}
+. ~/rally/bin/activate
+rally db recreate
+rally deployment create --fromenv --name=existing
+rally deployment check
+mkdir ~/.rally/extra
+cp ~/rally/src/rally-jobs/extra/instance_test.sh ~/.rally/extra
+cp ~/rally/src/rally-jobs/extra/install_benchmark.sh ~/.rally/extra
+
+# Fix certs
+sudo apt-get install apt-transport-https ca-certificates -y
+sudo update-ca-certificates
+openssl s_client -showcerts -servername $(hostname).noiro.lab -connect $(hostname).noiro.lab:443 </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p'  > git-mycompany-com.pem
+cat git-mycompany-com.pem | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+sudo apt-get upgrade openssl -y
+
+# Images we'll need for tempest and noirotest testing (installed in OpenStack by test scripts)
+wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img --no-check-certificate
+wget http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
+
+git config --global http.sslverify false
 ${GIT_CLONE}/openstack/tempest.git
 ${GIT_CLONE}/openstack/neutron.git
 # Tempest uses semantic versions instead of stable branches
@@ -198,65 +270,6 @@ sudo -E pip install neutron/
 if [ "$1" = "${QUEENS}" ]; then
     sudo -E pip install neutron-tempest-plugin/
 fi
-
-git clone https://github.com/noironetworks/noirotest.git
-
-# Routes we'll need for noirotest tests
-RTR_IPS=`ip -o addr | grep ens8`
-if [ "$RTR_IPS" = "" ]; then
-    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
-    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
-    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens7
-    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens7
-else
-    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
-    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev ens7
-    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens8
-    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev ens8
-fi
-
-# Images we'll need for tempest and noirotest testing (installed in OpenStack by test scripts)
-wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
-wget http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-ssh -o StrictHostKeyChecking=no noiro@${EXT_RTR_IP} ls >> /dev/null
-
-# Set up config file for noirotest
-cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconfig.yaml
-
-if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
-    sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
-    sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
-    sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
-    if [ "$1" = "${QUEENS}" -o "$1" = "${PIKE}" ]; then
-        echo "containerized_services:" >> ~/noirotest/testcases/testconfig.yaml
-        echo "  - nova" >> ~/noirotest/testcases/testconfig.yaml
-    fi
-    if [ "$1" = "${QUEENS}" ]; then
-        echo "  - aim" >> ~/noirotest/testcases/testconfig.yaml
-        echo "  - neutron" >> ~/noirotest/testcases/testconfig.yaml
-        echo "rcfile: 'overcloudrc'" >> ~/noirotest/testcases/testconfig.yaml
-    fi
-    echo "rest_ip: $CTRLR_REST_IP" >> ~/noirotest/testcases/testconfig.yaml
-    sed -i "s/no_proxy=,/no_proxy=\$no_proxy,/g" ~/${RCFILE}.v3
-fi
-sed -i "s/no_proxy=,/no_proxy=\$no_proxy,/g" ~/${RCFILE}
-
-# Download and install rally
-wget -q -O- https://raw.githubusercontent.com/noironetworks/rally/noiro-master/install_rally.sh > install_rally.sh
-# Get rid of question
-sed -i 's/ask_yn "Proceed with installation anyway?"/true/g' ~/install_rally.sh
-sed -i 's/bootstrap.pypa.io/bootstrap.pypa.io\/2.7/g' ~/install_rally.sh
-chmod +x ./install_rally.sh
-./install_rally.sh
-. ~/${RCFILE}
-. ~/rally/bin/activate
-rally db recreate
-rally deployment create --fromenv --name=existing
-rally deployment check
-mkdir ~/.rally/extra
-cp ~/rally/src/rally-jobs/extra/instance_test.sh ~/.rally/extra
-cp ~/rally/src/rally-jobs/extra/install_benchmark.sh ~/.rally/extra
 
 # The noirotest tests don't seem to work when used with the
 # newton-eol version of python-novaclient (GBP workflow/tests),
@@ -332,6 +345,6 @@ sudo -E pip install oslo.log==3.45.2
 sudo -E pip install python-novaclient/
 sudo -E pip install ddt==1.3.1
 if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
-    sudo -E pip install osc-lib==2.0.0
-    sudo -E pip install openstacksdk==0.14.0
+    sudo -E pip install osc-lib==1.9.0
 fi
+sudo -E pip install openstacksdk==0.14.0

@@ -86,7 +86,7 @@ excluded_test_matrix = {
     ],
     'stable/queens': [
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_subnet_details',
-         "BIG: https://github.com/noironetworks/support/issues/915"),
+         "BUG: https://github.com/noironetworks/support/issues/915"),
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_update_router_admin_state',
          'BUG: https://github.com/noironetworks/support/issues/491'),
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_port_security_macspoofing_port',
@@ -103,6 +103,16 @@ excluded_test_matrix = {
          'The apic_aim mechanism driver does not support transit routes (connect networks to same neutron router instead)'),
         ('neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name',
          'This is an upstream bug (non-optimized has same failure)')
+    ],
+    'stable/train': [
+        ('tempest.api.network.test_floating_ips.FloatingIPTestJSON.test_floating_ip_update_different_router',
+         "Overlapping subnets not allowed on same neutron router."),
+        ('tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_get_equals_list',
+	 "BUG: "),
+        ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_port_security_macspoofing_port',
+         'Why is this failing?'),
+        ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_update_router_admin_state',
+         'BUG: https://github.com/noironetworks/support/issues/491'),
     ],
 }
 

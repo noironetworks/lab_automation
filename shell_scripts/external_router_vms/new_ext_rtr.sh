@@ -155,6 +155,8 @@ sudo -E apt -y --allow-unauthenticated install python-os-testr
 sudo -E pip install pexpect
 sudo -E pip install python-group-based-policy-client
 
+git config --global http.sslverify false
+
 ${GIT_CLONE}/openstack/tempest.git
 ${GIT_CLONE}/openstack/neutron.git
 # Tempest uses semantic versions instead of stable branches
