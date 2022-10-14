@@ -135,7 +135,8 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     echo "NH_IP=\`ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\${CIP} \"sudo ifconfig ext-br\" | grep 'inet ' | awk '{print \$2}'\`" >> test.sh
     echo "echo \"sudo route add -host \$CIP gateway \$NH_IP\" >> routes.sh" >> test.sh
     if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-        echo "ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\$CIP \"sudo iptables -I INPUT 4 -s 10.30.120.0/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet 10.30.120.0/24 ipv4' -j ACCEPT\"" >> test.sh
+	UNDERCLOUD_NET=`echo ${UNDERCLOUD_IP} | cut -d'.' -f1-3`".0"
+        echo "ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\$CIP \"sudo iptables -I INPUT 4 -s ${UNDERCLOUD_NET}/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet ${UNDERCLOUD_NET}/24 ipv4' -j ACCEPT\"" >> test.sh
         echo "ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\$CIP \"sudo iptables -I INPUT 5 -s 1.250.1.0/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet 1.250.1.0/24 ipv4' -j ACCEPT\"" >> test.sh
     fi
     echo "done" >> test.sh
@@ -273,8 +274,9 @@ else
 fi
 
 # Images we'll need for tempest and noirotest testing (installed in OpenStack by test scripts)
-wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
-wget http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
+#wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+wget -nv http://${NOIRO_CTRLR_IP}/images/cirros-0.3.5-x86_64-disk.img
+wget -nv http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 ssh -o StrictHostKeyChecking=no noiro@${EXT_RTR_IP} ls >> /dev/null
 
@@ -412,7 +414,6 @@ sudo -E pip install oslo.config==7.0.0
 sudo -E pip install oslo.log==3.45.2
 #sudo -E pip install python-novaclient/
 sudo -E pip install ddt==1.3.1
-sudo -E pip install paramiko==2.7
 if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
     sudo -E pip install oslo.utils==4.1.1
     sudo -E pip install osc-lib==2.0.0
@@ -440,7 +441,6 @@ cd /home/noiro/
 sudo -E pip install python-openstackclient/
 sudo -E pip install python-novaclient/
 #fi
-#if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-#    IPTABLES_COMMENT="004 accept ssh from ctlplane subnet ${HOST_CIDR}/24 ipv4"
-#    cmd="iptables -I INPUT 4 -s ${HOST_CIDR}/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment ${IPTABLES_COMMENT} -j ACCEPT"
-#fi
+if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+    sudo -E pip install paramiko==2.7
+fi

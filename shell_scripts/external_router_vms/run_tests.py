@@ -379,6 +379,13 @@ class TempestTestRunner(Runner):
         print(image_uuid)
         return image_uuid
 
+    def get_admin_project_id(self):
+	cmd = self.KEY + "openstack project show admin -c id -f value"
+        admin_project_uuid = subprocess.check_output(['bash','-c', cmd])
+        admin_project_uuid = [puuid.strip() for puuid in admin_project_uuid.split("\n") if puuid][0]
+        print(admin_project_uuid)
+	return admin_project_uuid
+
     def configure_image_flavor(self, flavor=None):
         """Configure image flavor for tempest tests.
 
@@ -488,6 +495,7 @@ class TempestTestRunner(Runner):
                                'alt_flavor_uuid': self.alt_flavor_uuid,
                                'controller_ip': controller_ip,
                                'controller_password': 'noir0123',
+                               'admin_project_id': self.get_admin_project_id(),
                                'external_network': self.network_uuid})
         tempest_cfg = [cfg % tempest_params for cfg in cfg_template.ALL_TEMPLATES]
         tempest_conf_file = '%s/etc/tempest.conf' % self.env_name
