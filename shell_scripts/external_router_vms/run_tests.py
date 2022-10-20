@@ -20,6 +20,8 @@ JUJU_RC='admin-openrc.sh'
 DIRECTOR_RC='overcloudrc'
 PPATH='export PYTHONPATH=/home/noiro/noirotest && '
 CMD_TIME_WAIT = 15
+with open('fab_name.txt') as f:
+    FAB_NAME = f.readline().strip()
 # Wait 3 hours max
 TEMPEST_WAIT_TIME = (60*60*3)
 NOIRO_SETUP_WAIT_TIME = (60*2)
@@ -377,6 +379,13 @@ class TempestTestRunner(Runner):
         print(image_uuid)
         return image_uuid
 
+    def get_admin_project_id(self):
+	cmd = self.KEY + "openstack project show admin -c id -f value"
+        admin_project_uuid = subprocess.check_output(['bash','-c', cmd])
+        admin_project_uuid = [puuid.strip() for puuid in admin_project_uuid.split("\n") if puuid][0]
+        print(admin_project_uuid)
+	return admin_project_uuid
+
     def configure_image_flavor(self, flavor=None):
         """Configure image flavor for tempest tests.
 
@@ -447,7 +456,7 @@ class TempestTestRunner(Runner):
         # Doesn't exist -- create it
         cmd1 = "neutron net-create sauto_l3out-2 --router:external True "
         cmd2 = "--shared --apic:distinguished_names type=dict "
-        cmd3 = "ExternalNetwork=uni/tn-common/out-sauto_l3out-2/instP-sauto_l3out-2_epg"
+        cmd3 = "ExternalNetwork=uni/tn-common/out-" + FAB_NAME + "_l3out-2/instP-" + FAB_NAME + "_l3out-2_epg"
         cmd = self.KEY + cmd1 + cmd2 + cmd3
         print cmd
         self.remote_cmd(ssh_client, cmd)
@@ -486,6 +495,7 @@ class TempestTestRunner(Runner):
                                'alt_flavor_uuid': self.alt_flavor_uuid,
                                'controller_ip': controller_ip,
                                'controller_password': 'noir0123',
+                               'admin_project_id': self.get_admin_project_id(),
                                'external_network': self.network_uuid})
         tempest_cfg = [cfg % tempest_params for cfg in cfg_template.ALL_TEMPLATES]
         tempest_conf_file = '%s/etc/tempest.conf' % self.env_name

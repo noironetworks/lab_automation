@@ -17,6 +17,13 @@ AUTH_TEMPLATE="""
 [auth]
 # un-comment for juju queens
 #admin_domain_name = admin_domain
+tempest_roles = member
+admin_username = admin
+admin_project_name = admin
+admin_domain_name = Default
+use_dynamic_credentials = true
+admin_password = noir0123
+admin_project_id = %(admin_project_id)s
 """
 
 BAREMETAL_TEMPLATE="""
