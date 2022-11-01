@@ -144,8 +144,8 @@ class Runner(object):
     def __init__(self):
         # TODO: divine this value from config
         self.plugin_type = 'aim'
-        self.undercloud_type = DIRECTOR
-        self.KEY = 'source ~/' + DIRECTOR_RC + ' && '
+        self.undercloud_type = None
+        self.KEY = None
         self.ssh_clients = {}
         localtime = datetime.datetime.now()
         env_params = {'y': datetime.datetime.now().year,
@@ -162,7 +162,7 @@ class Runner(object):
             ssh_client = paramiko.SSHClient()
             ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh_client.load_system_host_keys()
-            print "connecting to " + host
+            print("connecting to " + host)
             ssh_client.connect(host, username=username)
             self.ssh_clients[host] = ssh_client
         return ssh_client
@@ -181,15 +181,15 @@ class Runner(object):
     def setup_passwordless_ssh(self, user='root', hosts=None):
         for host in hosts:
             cmd ='ssh-keygen -f "/home/noiro/.ssh/known_hosts" -R %s' % host
-            print cmd
+            print(cmd)
             subprocess.check_output(['bash','-c', cmd])
             cmd1 = 'ssh -o "StrictHostKeyChecking no" %(user)s@%(host)s ' % {'user': user, 'host': host}
             cmd2 = "'ls -l'"
             cmd = cmd1 + cmd2
-            print cmd
+            print(cmd)
             subprocess.check_output(['bash','-c', cmd])
             cmd = "cat ~/.ssh/id_rsa.pub | ssh %(user)s@%(host)s 'cat >> .ssh/authorized_keys'" % {'user': user, 'host': host}
-            print cmd
+            print(cmd)
             subprocess.check_output(['bash','-c', cmd])
         subprocess.check_output(['bash','-c', cmd])
 
@@ -210,7 +210,7 @@ class TempestTestRunner(Runner):
 
     def __init__(self, controller = None,
                  compute1 = None, compute2 = None, ext_rtr = None,
-                 undercloud_type=DIRECTOR):
+                 undercloud_type= None):
         super(TempestTestRunner, self).__init__()
         self.controller_host = controller
         self.compute1_host = compute1
@@ -226,7 +226,7 @@ class TempestTestRunner(Runner):
             self.cli_user = 'noiro'
             self.KEY = 'source ~/' + JUJU_RC + ' && '
         else:
-            print "Unsupported undercloud type: " + undercloud_type
+            print("Unsupported undercloud type: " + undercloud_type)
 
         self.hosts = [self.external_router, self.controller_host,
                       self.compute1_host, self.compute2_host]
@@ -243,9 +243,9 @@ class TempestTestRunner(Runner):
         cmd2 = "git status | grep 'branch stable\|eol' "
         cmd3 = "| awk 'NF>1{print $NF}' && cd .."
         cmd = self.KEY + cmd1 + cmd2 + cmd3
-        print cmd
+        print(cmd)
         subprocess.check_output(['bash','-c', cmd])
-        version_string = subprocess.check_output(['bash','-c', cmd])
+        version_string = subprocess.check_output(['bash','-c', cmd]).decode()
         version_list = [version.strip()
                         for version in version_string.split("\n") if version]
         version = version_list[0]
@@ -268,7 +268,7 @@ class TempestTestRunner(Runner):
             if image['name'] is 'cirros.alt':
                 self.alt_image_uuid = image_uuid
         # for OSD and JuJu installs, we also have to configure the image flavor
-        print("undercloud type is %s" % self.undercloud_type)
+        print(("undercloud type is %s" % self.undercloud_type))
         if self.undercloud_type in [DIRECTOR, JUJU]:
             print("configuring flavor UUID")
             flavor_list = [{'name': 'm1.tiny', 'cpus': '1', 'ram': '512',
@@ -353,7 +353,7 @@ class TempestTestRunner(Runner):
         """
         cmd = self.KEY + 'openstack image show %s -c id -f value' % image_name
         try:
-            image_uuid = subprocess.check_output(['bash','-c', cmd])
+            image_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
             # Make sure it's a valid UUID
             try:
                 image_uuid = [iuuid.strip() for iuuid in image_uuid.split("\n") if iuuid][0]
@@ -371,13 +371,20 @@ class TempestTestRunner(Runner):
         cmd3 = " --container-format %s" % 'bare'
         cmd4 = " --file %s " % image_file
         cmd = self.KEY + cmd1 + cmd2 + cmd3 + cmd4 + image_name
-        print cmd
+        print(cmd)
         subprocess.check_output(['bash','-c', cmd])
         cmd = self.KEY + 'openstack image show %s -c id -f value' % image_name
-        image_uuid = subprocess.check_output(['bash','-c', cmd])
+        image_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
         image_uuid = [iuuid.strip() for iuuid in image_uuid.split("\n") if iuuid][0]
         print(image_uuid)
         return image_uuid
+
+    def get_admin_project_id(self):
+        cmd = self.KEY + "openstack project show admin -c id -f value"
+        admin_project_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+        admin_project_uuid = [puuid.strip() for puuid in admin_project_uuid.split("\n") if puuid][0]
+        print(admin_project_uuid)
+        return admin_project_uuid
 
     def configure_image_flavor(self, flavor=None):
         """Configure image flavor for tempest tests.
@@ -386,11 +393,11 @@ class TempestTestRunner(Runner):
         """
         if not flavor:
             return
-        print "configuring image flavor"
+        print("configuring image flavor")
         cmd = self.KEY + 'openstack flavor show %s -c id -f value' % flavor['name']
-        print cmd
+        print(cmd)
         try:
-            flavor_uuid = subprocess.check_output(['bash','-c', cmd])
+            flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
             # Make sure it's a valid UUID
             try:
                 flavor_uuid = [iuuid.strip() for iuuid in flavor_uuid.split("\n") if iuuid][0]
@@ -409,10 +416,10 @@ class TempestTestRunner(Runner):
         cmd4 = " --swap %s " % flavor['swap']
         cmd5 = " --public "
         cmd = self.KEY + cmd1 + cmd2 + cmd3 + cmd4 + cmd5 + flavor['name']
-        print cmd
+        print(cmd)
         subprocess.check_output(['bash','-c', cmd])
         cmd = self.KEY + 'openstack flavor show %s -c id -f value' % flavor['name']
-        flavor_uuid = subprocess.check_output(['bash','-c', cmd])
+        flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
         flavor_uuid = [iuuid.strip() for iuuid in flavor_uuid.split("\n") if iuuid][0]
         print(flavor_uuid)
         return flavor_uuid
@@ -425,7 +432,7 @@ class TempestTestRunner(Runner):
         """
         pass
 
-    def create_external_network(self, host, username='heat-admin'):
+    def create_external_network(self, host, username):
         """Create an external network for tempest testing.
 
         Tempest requires access to instances via a public network.
@@ -449,9 +456,9 @@ class TempestTestRunner(Runner):
         # Doesn't exist -- create it
         cmd1 = "neutron net-create sauto_l3out-2 --router:external True "
         cmd2 = "--shared --apic:distinguished_names type=dict "
-        cmd3 = "ExternalNetwork=uni/tn-common/out-" + FAB_NAME + "_l3out-2/instP-" + FAB_NAME + "_l3out-2_epg"
+        cmd3 = "ExternalNetwork=uni/tn-common/out-sauto_" + FAB_NAME + "_l3out-2/instP-sauto_" + FAB_NAME + "_l3out-2_epg"
         cmd = self.KEY + cmd1 + cmd2 + cmd3
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         cmd1 = "neutron subnet-create sauto_l3out-2 60.60.60.0/24 "
         cmd2 = "--name ext-subnet --disable-dhcp --gateway 60.60.60.1"
@@ -459,12 +466,13 @@ class TempestTestRunner(Runner):
         self.remote_cmd(ssh_client, cmd)
         if self.version != 'stable/newton':
             cmd1 = "neutron subnet-create sauto_l3out-2 66.66.66.0/24 "
-	    cmd2 = "--name snat-subnet --gateway 66.66.66.1 --apic:snat_host_pool True"
+            cmd2 = "--name snat-subnet --gateway 66.66.66.1 --apic:snat_host_pool True"
             cmd = self.KEY + cmd1 + cmd2
             self.remote_cmd(ssh_client, cmd)
         ssh_client = self.get_ssh_client(host)
         cmd = self.KEY + 'openstack network show sauto_l3out-2 -c id -f value'
         net_uuid, _ = self.remote_cmd(ssh_client, cmd)
+        net_uuid = net_uuid.decode()
         print(net_uuid)
         print(_)
         net_uuid = [nuuid.strip() for nuuid in net_uuid.split("\n") if nuuid][0]
@@ -474,12 +482,19 @@ class TempestTestRunner(Runner):
     def create_tempest_config(self):
         ssh_client = self.get_ssh_client(self.external_router, username='noiro')
         cmd = 'tempest init %s' % self.env_name
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         # Get the IP address of the OpenStack controller
         cmd = self.KEY + "echo $OS_AUTH_URL | awk -F'/' '{print $3}' | awk -F':' '{print $1}'"
         controller_ip, _ = self.remote_cmd(ssh_client, cmd)
+        controller_ip = controller_ip.decode()
         controller_ip = [ip.strip() for ip in controller_ip.split("\n") if ip][0]
+        if self.undercloud_type == 'juju':
+            admin_domain_name = 'admin_domain' 
+            admin_role = 'Admin'
+        else:
+            admin_domain_name = 'Default'
+            admin_role = 'admin'
         tempest_params = {}
         tempest_params.update({'cwd': os.getcwd() + '/' + self.env_name,
                                'image_uuid': self.image_uuid,
@@ -488,7 +503,10 @@ class TempestTestRunner(Runner):
                                'alt_flavor_uuid': self.alt_flavor_uuid,
                                'controller_ip': controller_ip,
                                'controller_password': 'noir0123',
-                               'external_network': self.network_uuid})
+                               'admin_project_id': self.get_admin_project_id(),
+                               'external_network': self.network_uuid,
+                               'admin_domain_name': admin_domain_name,
+                               'admin_role': admin_role})
         tempest_cfg = [cfg % tempest_params for cfg in cfg_template.ALL_TEMPLATES]
         tempest_conf_file = '%s/etc/tempest.conf' % self.env_name
         cfg_file = open(tempest_conf_file,'w') 
@@ -597,7 +615,7 @@ class NautoPostDeployRunner(Runner):
     def cleanup_dead_agents(self):
         ssh_client = self.get_ssh_client(self.controller_host)
         cmd = self.KEY + "for agent in `neutron agent-list | grep xxx | awk -F'|' '{print $2}'`; do neutron agent-delete $agent; done"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def get_dhcp_hosts(self):
@@ -607,8 +625,9 @@ class NautoPostDeployRunner(Runner):
         """
         ssh_client = self.get_ssh_client(self.controller_host)
         cmd = self.KEY + "neutron agent-list | grep dhcp | awk -F'|' '{print $4}'"
-        print cmd
+        print(cmd)
         hosts, _ = self.remote_cmd(ssh_client, cmd)
+        hosts = hosts.decode()
         return [host.strip() for host in hosts.split("\n") if host]
 
     def update_dhcp_agent_cfg(self, ssh_client):
@@ -624,10 +643,10 @@ class NautoPostDeployRunner(Runner):
         SED_REPLACE = 'force_metadata = true'
         FILE = '/etc/neutron/dhcp_agent.ini'
         cmd = "sed -i 's/" + SED_FIND + "/" + SED_REPLACE + "/g' " +  FILE
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         cmd = "service neutron-dhcp-agent restart"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def restart_metadata_agent(self, ssh_client):
@@ -641,13 +660,13 @@ class NautoPostDeployRunner(Runner):
            configuration file.
         """
         cmd = "kill `ps -ef | grep [s]upervisord | awk -F' ' '{print $2}'`"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         cmd = "ovs-ofctl del-flows br-fabric"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         cmd = "service neutron-opflex-agent restart"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def fix_br_fabric(self, ssh_client):
@@ -655,17 +674,17 @@ class NautoPostDeployRunner(Runner):
         cmd2 = "set Interface br-fab_vxlan0 type=vxlan options:remote_ip=flow "
         cmd3 = "options:key=flow options:dst_port=8472"
         cmd = cmd1 + cmd2 + cmd3
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def restart_agent_ovs(self, ssh_client):
         cmd = "service agent-ovs restart"
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def clear_iptables_rule(self, ssh_client):
         cmd = CLEAR_IP_TABLES_RULE
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def update_agent_ovs_cfg(self, ssh_client):
@@ -680,15 +699,16 @@ class NautoPostDeployRunner(Runner):
         SED_REPLACE = '"mode": "encrypted"'
         FILE = '/etc/opflex-agent-ovs/conf.d/opflex-agent-ovs.conf'
         cmd = "sed -i 's/" + SED_FIND + "/" + SED_REPLACE + "/g' " +  FILE
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
 
     def get_compute_hosts(self):
         """Return all the compute hosts in the deployment. """
         ssh_client = self.get_ssh_client(self.controller_host)
         cmd = self.KEY + "nova service-list  | grep nova-compute | awk -F'|' '{print $4}'"
-        print cmd
+        print(cmd)
         hosts, _ = self.remote_cmd(ssh_client, cmd)
+        hosts = hosts.decode()
         return [host.strip() for host in hosts.split("\n") if host]
 
     def update_metadata_agent_cfg(self, hosts):
@@ -705,13 +725,13 @@ class NautoPostDeployRunner(Runner):
         FILE = 'metadata_agent.ini'
         cmd = ('scp root@%(host)s:%(path)s%(file)s .' %
                {'host': hosts[0], 'file': FILE, 'path': PATH})
-        print cmd
+        print(cmd)
         self.remote_cmd(ssh_client, cmd)
         # now copy it back down to the other compute hosts
         for host in hosts[1:]:
             cmd = ("scp %(file)s root@%(host)s:%(path)s%(file)s" %
                    {'host': host, 'file': FILE, 'path': PATH})
-            print cmd
+            print(cmd)
             self.remote_cmd(ssh_client, cmd)
 
     def apply_fixes(self):
@@ -721,7 +741,7 @@ class NautoPostDeployRunner(Runner):
                                            self.compute2_host])
         self.cleanup_dead_agents()
         dhcp_host = self.get_dhcp_hosts()[0]
-        print "DHCP host is " + dhcp_host
+        print("DHCP host is " + dhcp_host)
         all_hosts = self.get_compute_hosts()
         self.update_metadata_agent_cfg(all_hosts)
         for host in all_hosts:
@@ -740,7 +760,7 @@ class NautoPostDeployRunner(Runner):
               help='IP address of OpenStack controller')
 @click.option('--router-ip',
               help='IP address of External Router VM')
-@click.option('--undercloud-type', default='director',
+@click.option('--undercloud-type',
               help='Type of undercloud (juju or director)')
 def make_tempest_config(controller_ip, router_ip, undercloud_type):
     if not controller_ip:
@@ -748,14 +768,21 @@ def make_tempest_config(controller_ip, router_ip, undercloud_type):
             fd = open('./controller_ip.txt', 'r')
             controller_ip = fd.readline().strip()
         except IOError as e:
-            print("Couldn't open %s" % './controller_ip.txt')
+            print(("Couldn't open %s" % './controller_ip.txt'))
             sys.exit(0)
     if not router_ip:
         try:
             fd = open('./router_ip.txt', 'r')
             router_ip = fd.readline().strip()
         except IOError as e:
-            print("Couldn't open %s" % './router_ip.txt')
+            print(("Couldn't open %s" % './router_ip.txt'))
+            sys.exit(0)
+    if not undercloud_type:
+        try:
+            fd = open('./undercloud_type.txt', 'r')
+            undercloud_type = fd.readline().strip()
+        except IOError as e:
+            print(("Couldn't open %s" % './undercloud_type.txt'))
             sys.exit(0)
     runner = TempestTestRunner(controller=controller_ip, ext_rtr=router_ip, undercloud_type=undercloud_type)
     runner.configure_setup_for_test()

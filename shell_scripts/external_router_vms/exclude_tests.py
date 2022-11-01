@@ -86,7 +86,7 @@ excluded_test_matrix = {
     ],
     'stable/queens': [
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_subnet_details',
-         "BIG: https://github.com/noironetworks/support/issues/915"),
+         "BUG: https://github.com/noironetworks/support/issues/915"),
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_update_router_admin_state',
          'BUG: https://github.com/noironetworks/support/issues/491'),
         ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_port_security_macspoofing_port',
@@ -104,17 +104,54 @@ excluded_test_matrix = {
         ('neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name',
          'This is an upstream bug (non-optimized has same failure)')
     ],
+    'stable/train': [
+        ('tempest.api.network.test_floating_ips.FloatingIPTestJSON.test_floating_ip_update_different_router',
+         "Overlapping subnets not allowed on same neutron router."),
+        ('tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_project_get_equals_list',
+	 "BUG: "),
+        ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_port_security_macspoofing_port',
+         'Why is this failing?'),
+        ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_update_router_admin_state',
+         'BUG: https://github.com/noironetworks/support/issues/491'),
+    ],
+    'stable/wallaby':[
+        ('tempest.api.network.test_floating_ips.FloatingIPTestJSON.test_floating_ip_update_different_router',
+         "Overlapping subnets not allowed on same neutron router."),
+        ('tempest.scenario.test_network_basic_ops.TestNetworkBasicOps.test_port_security_macspoofing_port',
+         'Why is this failing?'),
+        ('tempest.api.identity.admin.v3.test_groups.GroupsV3TestJSON.test_list_groups',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_groups.GroupsV3TestJSON.test_list_user_groups',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_inherits.InheritsV3TestJSON.test_inherit_assign_list_revoke_user_roles_on_domain',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_inherits.InheritsV3TestJSON.test_inherit_assign_list_revoke_user_roles_on_project_tree',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_list_projects.ListProjectsStaticTestJSON.test_list_projects',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_list_projects.ListProjectsStaticTestJSON.test_list_projects_with_domains',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_list_users.UsersV3TestJSON.test_list_user_domains',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_list_users.UsersV3TestJSON.test_list_users',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_list_users.UsersV3TestJSON.test_list_users_with_name',
+         'BUG'),
+        ('tempest.api.identity.admin.v3.test_projects.ProjectsTestJSON.test_create_is_domain_project',
+         'BUG'),
+        ('tempest.api.image.v2.admin.test_images_metadefs_namespace_properties.MetadataNamespacePropertiesTest.test_basic_meta_def_namespace_property',
+         'BUG'),
+    ],
 }
 
 
 class Excluder(object):
 
-    def __init__(self, undercloud_type=DIRECTOR):
+    def __init__(self, undercloud_type):
         if undercloud_type == DIRECTOR:
             self.KEY = 'source ~/' + DIRECTOR_RC + ' && '
         elif undercloud_type == JUJU:
             self.KEY = 'source ~/' + JUJU_RC + ' && '
-        self.KEY = 'source ~/' + DIRECTOR_RC + ' && '
         self.version = self.get_openstack_version()
 
     def get_openstack_version(self):
@@ -123,9 +160,9 @@ class Excluder(object):
         cmd2 = "git status | grep 'branch stable\|eol' "
         cmd3 = "| awk 'NF>1{print $NF}' && cd .."
         cmd = self.KEY + cmd1 + cmd2 + cmd3
-        print cmd
+        print(cmd)
         subprocess.check_output(['bash','-c', cmd])
-        version_string = subprocess.check_output(['bash','-c', cmd])
+        version_string = subprocess.check_output(['bash','-c', cmd]).decode()
         version_list = [version.strip()
                         for version in version_string.split("\n") if version]
         version = version_list[0]
