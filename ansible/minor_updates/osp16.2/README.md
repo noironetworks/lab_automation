@@ -19,6 +19,7 @@ one again if it fails.
 
 <pre><code>$ source stackrc
 $ tripleo-ansible-inventory --ansible_ssh_user heat-admin --static-yaml-inventory ~/inventory.yaml
+$ ./get-overcloud-inventory.sh inventory.txt
 </code></pre>
 
 2. ssh into each of the overcloud nodes, to add them to the undercloud's known_hosts file.
@@ -103,7 +104,7 @@ $ ansible-playbook -i inventory.txt step3.4.yaml
 $ ansible-playbook -i inventory.txt step3.5.yaml
 $ ansible-playbook -i inventory.txt step3.9.yaml
 $ ansible-playbook -i inventory.txt step3.10.yaml
-$ ansible-playbook -i inventory.txt step5.1.yaml
+$ ansible-playbook -i inventory.txt step4.1.yaml
 </code></pre>
 
 17. Reboot the overcloud nodes:
