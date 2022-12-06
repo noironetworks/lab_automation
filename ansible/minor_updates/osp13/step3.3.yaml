@@ -19,10 +19,10 @@
     shell: yum install -y "{{ tripleo_package.stdout_lines[0] }}"
   - name: Step6. Log in to the upstream registry
     become: yes
-    shell: docker login -u mcohen2@cisco.com -p Ins3965! registry.redhat.io
+    shell: docker login -u <insert your redhat username here> -p <insert your redhat registery password here> registry.redhat.io
   - name: Step6.5. Get name of openstack-ciscorpms tarball
     shell: ls /home/stack/openstack-ciscorpms-repo-13* | sort -r | awk 'NR==1{print $1}'
     register: ciscorpms_tarball
   - name: Step7. Build the OSP13 cisco containers
     become: yes
-    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
+    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -z "{{ ciscorpms_tarball.stdout_lines[0] }}" --force

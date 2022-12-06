@@ -1,6 +1,0 @@
----
-- name: Run step6.3 of OSP10 => OSP13 FFU
-  hosts: undercloud
-  tasks:
-  - name: Step2. If you use monolithic Controller nodes, run the upgrade command against the Controller role
-    command: openstack overcloud upgrade run --nodes Controller --skip-tags validation

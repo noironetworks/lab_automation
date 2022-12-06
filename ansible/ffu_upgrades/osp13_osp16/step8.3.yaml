@@ -1,6 +1,0 @@
----
-- name: Copying the Leapp data to the overcloud nodes
-  hosts: undercloud
-  tasks:
-  - name: Step3. Create a static inventory file of all the nodes in your environment
-    command: tripleo-ansible-inventory --static-yaml-inventory ~/inventory.yaml --stack overcloud

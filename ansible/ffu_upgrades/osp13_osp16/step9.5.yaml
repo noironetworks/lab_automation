@@ -1,9 +1,0 @@
----
-- name: Setting the Compute name format
-  hosts: undercloud
-  tasks:
-  - name: Step2. Set the Compute naming format
-    replace:
-      path: /home/stack/templates/aci_roles_data.yaml
-      regexp: "novacompute"
-      replace: "compute"

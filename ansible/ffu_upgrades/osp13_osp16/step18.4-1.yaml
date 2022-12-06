@@ -1,6 +1,0 @@
----
-- name: Upgrading Compute nodes
-  hosts: undercloud
-  tasks:
-  - name: Step3. Run the upgrade command with the system_upgrade tag
-    shell: openstack overcloud upgrade run -y --stack overcloud --tags system_upgrade --limit overcloud-compute-0

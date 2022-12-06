@@ -1,8 +1,0 @@
----
-- name: Installing director packages
-  hosts: undercloud
-  tasks:
-  - name: Step1. Install the command line tools for director installation and configuration
-    become: yes
-    command: dnf install -y python3-tripleoclient
-

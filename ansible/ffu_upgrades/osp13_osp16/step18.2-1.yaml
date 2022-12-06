@@ -1,9 +1,0 @@
----
-- name: Upgrading Controller nodes with director-deployed Ceph Storage
-  hosts: overcloud
-  tasks:
-  - name: Step0.1 Fix /etc/resolv.conf on overcloud hosts
-    become: yes
-    lineinfile:
-      path: /etc/resolv.conf
-      line: "nameserver 172.28.184.18"
