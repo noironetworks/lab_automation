@@ -1,0 +1,21 @@
+---
+- name: Run step5.16 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step1. Update ownership of templates directory
+    file:
+      path: /home/stack/templates
+      state: directory
+      owner: stack
+      group: stack
+      recurse: yes
+  - name: Step2. Update NIC templates for computes
+    command: |
+      /usr/share/openstack-tripleo-heat-templates/tools/yaml-nic-config-2-script.py \
+           --script-dir /usr/share/openstack-tripleo-heat-templates/network/scripts --yes \
+           /home/stack/templates/nic-configs/compute.yaml /home/stack/templates/nic-configs/compute.yaml
+  - name: Step3. Update NIC templates for controller
+    command: |
+      /usr/share/openstack-tripleo-heat-templates/tools/yaml-nic-config-2-script.py \
+          --script-dir /usr/share/openstack-tripleo-heat-templates/network/scripts --yes \
+          /home/stack/templates/nic-configs/controller.yaml /home/stack/templates/nic-configs/controller.yaml

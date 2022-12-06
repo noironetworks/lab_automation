@@ -1,0 +1,30 @@
+---
+- name: Obtaining transitional containers for upgrades
+  hosts: undercloud
+  tasks:
+  - name: Step3. Add the transitional container parameters to set in the ContainerImagePrepare parameter
+    lineinfile:
+      path: /home/stack/templates/containers-prepare-parameter.yaml
+      state: present
+      insertafter: "      tag: '16.1'"
+      line: "{{ item }}"
+    with_items:
+    - "      name_prefix_stein: openstack-"
+    - "      name_suffix_stein: ''"
+    - "      namespace_stein: registry.redhat.io/rhosp15-rhel8"
+    - "      tag_stein: 15.0"
+  - name: Step4. Change the neutron_driver parameter to openvswitch
+    become: yes
+    replace:
+      path: /home/stack/templates/containers-prepare-parameter.yaml
+      regexp: "neutron_driver: ovn"
+      replace: "neutron_driver: openvswitch"
+  - name: Step4.5 Add container registry login parameters
+    lineinfile:
+      path: /home/stack/templates/containers-prepare-parameter.yaml
+      state: present
+      line: "{{ item }}"
+    with_items:
+    - "  ContainerImageRegistryCredentials:"
+    - "     registry.redhat.io:"
+    - "       mcohen2@cisco.com: Ins3965!"

@@ -1,0 +1,12 @@
+---
+- name: Validating the post-upgrade functionality
+  hosts: undercloud
+  tasks:
+  - name: Step1.1 Use setenforce 0 on all controllers, to fix problems with glance
+    shell: for server in $(nova list | awk -F"=" /overcloud/'{print $2}' | cut -d" " -f 1); do ssh heat-admin@$server "sudo setenforce 0"; done
+  - name: Step2. Run the openstack tripleo validator run command with the --group post-upgrade option
+    shell: openstack tripleo validator run --group post-upgrade
+    register: validator_output
+  - name: Step2.5 Display the validator results
+    debug:
+      msg: "{{ validator_output }}"

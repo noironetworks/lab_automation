@@ -4,7 +4,7 @@
   become: yes
   tasks:
   - name: Step2. Log in to registry.redhat.io
-    shell: docker login registry.redhat.io --username <TODO: insert your redhat registry username here> --password <TODO: insert your redhat registry password here>
+    shell: docker login registry.redhat.io --username mcohen2@cisco.com --password Ins3965!
   - name: Step3. Create a template to upload the the images to the local registry, and the environment file to refer to those images
     command: openstack overcloud container image prepare \
                 --namespace=registry.redhat.io/rhosp13 \

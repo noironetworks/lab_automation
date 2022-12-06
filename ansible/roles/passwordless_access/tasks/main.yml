@@ -1,0 +1,22 @@
+---
+- stat:
+    path: "{{ id_rsa_file }}"
+  register: file
+
+- name: Check needed OS tools exist
+  shell: which sshpass ssh-keygen ssh-copy-id
+  register: os_tools_exist
+
+- name: Generating SSH key pair
+  shell: yes | ssh-keygen -q -t rsa -N "" -f "{{ id_rsa_file }}"
+  when:
+    - file.stat.exists == false and os_tools_exist
+
+- debug:
+    msg: "Key pair already exists..."
+  when: file.stat.exists
+
+- name: copy public key to remote servers
+  shell: sshpass -p "{{ hostvars[item]['ansible_password'] }}" ssh-copy-id -f -i "{{ id_rsa_file }}" -o StrictHostKeyChecking=no "{{ hostvars[item]['ansible_user'] }}"@"{{ item }}"
+  with_items:
+    - "{{ groups['undercloud'] }}"

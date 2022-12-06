@@ -1,0 +1,27 @@
+---
+- name: Updating the undercloud.conf file
+  hosts: undercloud
+  tasks:
+  - name: Step3. Add the following parameter to the DEFAULT section in the file
+    lineinfile:
+      path: /home/stack/undercloud.conf
+      firstmatch: yes
+      insertafter: "[DEFAULT]"
+      line: "container_images_file = /home/stack/templates/containers-prepare-parameter.yaml"
+  - name: Step4. Check the generate_service_certificate parameter. The default for this parameter changes from false to true, which enables SSL/TLS on your undercloud, during the upgrade.
+    replace:
+      path: /home/stack/undercloud.conf
+      regexp: "generate_service_certificate = true"
+      replace: "generate_service_certificate = false"
+  - name: Step5. Check the local_interface parameter if you have migrated to a predictable NIC naming convention.
+    ignore_errors: true
+    replace:
+      path: /home/stack/undercloud.conf
+      regexp: "local_interface = eth1"
+      replace: "local_interface = em1"
+  - name: Step6. If you set the masquerade_network parameter in Red Hat OpenStack Platform 13, remove this parameter and set masquerade = true for each subnet.
+    ignore_errors: true
+    replace:
+      path: /home/stack/undercloud.conf
+      regexp: "masquerade_network = True"
+      replace: "masquerade = true"

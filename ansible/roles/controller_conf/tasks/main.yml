@@ -1,0 +1,65 @@
+---
+# tasks file for controller_conf
+    - set_fact:
+        aim_conf: "{{ queen_prefix }}/aim{{ aim_conf }}"
+        neutron_conf: "{{ queen_prefix }}/neutron{{ neutron_conf }}"
+        plugin_conf: "{{ queen_prefix }}/neutron{{ plugin_conf }}"
+        neutron_service: "neutron_api"
+        aim_service: "ciscoaci_aim"
+        SILENCE: ""
+       when: rel == "queens" or rel == "train"
+
+    - set_fact:
+        restart_cmd: " docker restart "
+        aim_cmd_prefix: "docker exec -u root {{ aim_service}} "
+      when: rel == "queens"
+
+    - set_fact:
+        restart_cmd: " podman restart "
+        aim_cmd_prefix: "podman exec -u root {{ aim_service}} "
+      when: rel == "train"
+
+    - name: Changing value for dns_domain
+      lineinfile:
+        dest: "{{ neutron_conf }}" 
+        regexp: '^dns_domain=openstacklocal'
+        line: dns_domain=localdomain
+
+    - name: Changing value for extension drivers
+      lineinfile:
+        dest: "{{ plugin_conf }}"
+        regexp: '^extension_drivers=apic_aim,port_security'
+        line: extension_drivers=apic_aim,port_security,dns
+
+    - name: Changing value for global physnet mtu in Newton release
+      lineinfile:
+        dest: "{{ neutron_conf }}"
+        regexp: '^global_physnet_mtu=1496'
+        line: '#global_physnet_mtu=1496'
+        state: present
+      when: rel == "newton"
+
+    - name: Restart neutron service and copying data in aimctl conf file 
+      become: yes
+      shell: "{{ item }}" 
+      with_items:
+        - "{{ restart_cmd }} {{ neutron_service }}"
+        -  head -n -2 {{ aim_conf }} > ~/aimctl.conf
+
+    - name: Copying aimctl.conf to required location
+      become: yes
+      copy:
+        src: ~/aimctl.conf
+        dest: "{{ aim_conf }}"
+   
+    - name: Restart AIM Service for queens
+      become: yes
+      shell: "{{ restart_cmd }} {{ aim_service }}"
+      when: rel == "queens" or rel == "train"
+
+    - name: aimctl manager actions
+      shell: " {{item }}"
+      with_items:
+        - "{{ aim_cmd_prefix }} aimctl manager host-domain-mapping-v2-delete '*' pdom_physnet1 PhysDom"
+        - "{{ aim_cmd_prefix }} aimctl manager physical-domain-delete pdom_physnet1"
+        - "{{ aim_cmd_prefix }} aimctl manager load-domains"

@@ -1,0 +1,47 @@
+---
+- name: Run step3.1 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step2. Disable the current OpenStack Platform repository
+    become: yes
+    command: subscription-manager repos --disable=rhel-7-server-openstack-10-rpms
+  - name: Step3. Enable the new OpenStack Platform repository
+    become: yes
+    command: subscription-manager repos --enable=rhel-7-server-openstack-11-rpms
+  - name: Step4. Disable updates to the overcloud base images
+    become: yes
+    ignore_errors: true
+    command: systemctl stop 'openstack-*' 'neutron-*' httpd
+  - name: Step 6.1. Get start IP
+    shell: egrep "discovery_iprange =" /home/stack/undercloud.conf | awk -F"=" '{print $2}' | awk -F"," '{print $1}'
+    register: ipstart
+  - name: Step 6.1. Get end IP
+    shell: egrep "discovery_iprange =" /home/stack/undercloud.conf | awk -F"=" '{print $2}' | awk -F"," '{print $2}'
+    register: ipend
+  - name: Step 6.3. Add the new inspection range configuration variable
+    lineinfile:
+      path: /home/stack/undercloud.conf
+      insertafter: 'discovery_iprange = .*'
+      line: "inspection_iprange = {{ ipstart.stdout_lines[0] }},{{ ipend.stdout_lines[0] }}"
+  - name: Step 6.4. Get undercloud public VIP
+    shell: egrep "undercloud_public_vip =" /home/stack/undercloud.conf | awk -F"=" '{print $2}' | awk -F"," '{print $1}'
+    register: vip
+  - name: Step 6.5. Add the new public VIP configuration variable
+    lineinfile:
+      path: /home/stack/undercloud.conf
+      insertafter: 'undercloud_public_vip = .*'
+      line: "undercloud_public_host = {{ vip.stdout_lines[0] }}"
+  - name: Step 6.6. Get undercloud admin VIP
+    shell: egrep "undercloud_admin_vip =" /home/stack/undercloud.conf | awk -F"=" '{print $2}' | awk -F"," '{print $1}'
+    register: vip
+  - name: Step 6.7 Add the new undercloud admin VIP configuration variable
+    lineinfile:
+      path: /home/stack/undercloud.conf
+      insertafter: 'undercloud_admin_vip = .*'
+      line: "undercloud_admin_host = {{ vip.stdout_lines[0] }}"
+  # Note: I tried using the ansible yum module, but it failed to update openstack-tripleocommon
+  - name: Step7. Run yum to upgrade the director’s main packages
+    become: yes
+    command: yum update -y instack-undercloud openstack-puppet-modules openstack-tripleocommon python-tripleoclient
+  - name: Step8. Run the following command to upgrade the undercloud
+    command: openstack undercloud upgrade

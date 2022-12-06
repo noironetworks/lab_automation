@@ -1,0 +1,10 @@
+---
+- name: Rebooting Controller and composable nodes
+  hosts: undercloud
+  tasks:
+  - name: Step2. Optional. If the node uses Pacemaker resources, stop the cluster
+    shell: ssh heat-admin@$(openstack server list  -c Name -f value -c Networks -f value |grep controller-0  | awk -F"=" '{print $2}') "sudo pcs cluster stop"
+  - name: Step3. Reboot the node
+    become: yes
+    command: reboot
+

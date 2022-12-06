@@ -1,0 +1,6 @@
+---
+- name: Using predictable NIC names for overcloud nodes
+  hosts: undercloud
+  tasks:
+  - name: Step2.5 Remove the old udev rules from the overcloud nodes
+    shell: for server in $(nova list | awk -F"=" /overcloud/'{print $2}' | cut -d" " -f 1); do ssh heat-admin@$server "sudo rm -f /etc/udev/rules.d/70-persistent-net.rules"; done

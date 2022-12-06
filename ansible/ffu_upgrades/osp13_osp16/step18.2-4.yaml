@@ -1,0 +1,27 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: undercloud
+  tasks:
+  - name: Step0.1 Fix ansible playbook (step 1 of 2)
+    become: yes
+    lineinfile:
+        path: /usr/share/ansible/roles/redhat-subscription/tasks/main.yml
+        state: absent
+        regexp: "{{ item }}"
+    with_items:
+    - "    - name: Set rhsm_package_manager_config_file for yum"
+    - "      set_fact:"
+    - "        rhsm_package_manager_config_file: /etc/yum.conf"
+    - "      when:"
+    - "        - ansible_pkg_mgr == 'yum'"
+    - "      when:"
+    - "        - ansible_pkg_mgr == 'dnf'"
+  - name: Step0.2 Fix ansible playbook (step 2 of 2)
+    become: yes
+    lineinfile:
+      path: /usr/share/ansible/roles/redhat-subscription/tasks/main.yml
+      insertafter: "    - name: Set rhsm_package_manager_config_file for dnf"
+      line: "      set_fact:"
+  - name: Step3.5 Run the upgrade command with no tags
+    ignore_errors: yes
+    shell: openstack overcloud upgrade run -y --stack overcloud --limit overcloud-controller-0

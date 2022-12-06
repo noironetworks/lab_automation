@@ -1,0 +1,6 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: change to eus repos
+      command: subscription-manager repos --disable=rhel-8-for-x86_64-baseos-rpms --disable=rhel-8-for-x86_64-appstream-rpms --disable=rhel-8-for-x86_64-highavailability-rpms --enable=rhel-8-for-x86_64-baseos-eus-rpms --enable=rhel-8-for-x86_64-appstream-eus-rpms --enable=rhel-8-for-x86_64-highavailability-eus-rpms
+      become: true

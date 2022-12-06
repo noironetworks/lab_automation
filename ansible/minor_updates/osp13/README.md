@@ -1,9 +1,8 @@
 This directory contains ansible playbooks to perform a minor update for
 Red Hat OpenStack Platform (OSP) Director version 13 (stable/queens). The
 playbooks are numbered to match the steps in the Red Hat Documentation for
-OSP13 minor updates. However, the playbooks should be modified as needed
-to meet the needs of each istallation. Search for "<TODO...>" items to
-see where site-specific information is needed.
+OSP13 minor updates. However, the actual playbooks are specific to upgrades
+using the automation for our FABs.
 
 The playbooks should be copied to and run from the undercloud. The playbooks require
 that the latest OSP13 tripleo package and tarball are copied to the undercloud.
@@ -49,7 +48,13 @@ $ ansible-playbook -i inventory.yaml step3.2.yaml
 <pre><code>$ ansible-playbook -i inventory.yaml step3.3.yaml
 </code></pre>
 
-7. Continue running the ansible playbooks:
+7. If you are upgrading from the 5.1(3.20210217) release or older, you will need to run an
+additional playbook to split the opflex agents/services into their own containers (they were
+in the same container in these older releases):
+<pre><code>$ ansible-playbook -i inventory.yaml step4.0.yaml
+</code></pre>
+
+8. Continue running the ansible playbooks:
 <pre><code>$ ansible-playbook -i inventory.yaml step4.3.yaml
 $ ansible-playbook -i inventory.yaml step4.4.yaml
 $ ansible-playbook -i inventory.yaml step4.5.yaml
@@ -57,7 +62,7 @@ $ ansible-playbook -i inventory.yaml step4.8.yaml
 $ ansible-playbook -i inventory.yaml step5.1.yaml
 </code></pre>
 
-8. Reboot the overcloud nodes:
+9. Reboot the overcloud nodes:
 
 At this point, all the nodes have been upgraded, but may need to be rebooted before certain
 software/packages updates can take effect (e.g. openvswitch). Reboot controller nodes one

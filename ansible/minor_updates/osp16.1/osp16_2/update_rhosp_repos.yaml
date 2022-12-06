@@ -1,0 +1,6 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: change osp repos
+      command: subscription-manager repos --disable=openstack-16.1-for-rhel-8-x86_64-rpms --enable=openstack-16.2-for-rhel-8-x86_64-rpms --disable=ansible-2.8-for-rhel-8-x86_64-rpms --enable=ansible-2.9-for-rhel-8-x86_64-rpms
+      become: true
