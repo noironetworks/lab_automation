@@ -1,0 +1,8 @@
+---
+- name: Run step2.9 of OSP10 => OSP13 FFU
+  hosts: overcloud-compute-0, overcloud-compute-1
+  tasks:
+  - name: Step3.  Reboot the node
+    become: yes
+    ignore_errors: true
+    command: reboot

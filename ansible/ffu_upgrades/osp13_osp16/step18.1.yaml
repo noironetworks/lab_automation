@@ -1,0 +1,36 @@
+---
+- name: Running the overcloud upgrade preparation
+  hosts: undercloud
+  tasks:
+  - name: Step2. Run the upgrade preparation command
+    copy:
+      dest: "/home/stack/upgrade_prepare.sh"
+      content: |
+        openstack overcloud upgrade prepare -y \
+            --templates /home/stack/tripleo-heat-templates \
+            -r /home/stack/templates/aci_roles_data.yaml \
+            -e /home/stack/templates/upgrades-environment.yaml \
+            -e /home/stack/templates/rhsm.yaml \
+            -e /home/stack/templates/containers-prepare-parameter.yaml \
+            -e /home/stack/tripleo-heat-templates/environments/network-isolation.yaml \
+            -e /home/stack/templates/network-environment.yaml \
+            -e /home/stack/templates/ciscoaci_containers.yaml \
+            -e /home/stack/templates/ciscoaci_containers_stein.yaml \
+            -e /home/stack/templates/ciscoaci-config.yaml
+  - name: Step2.1 Make it executable
+    file:
+      path: /home/stack/upgrade_prepare.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step2.2 Run the upgrade prepare
+    shell: /home/stack/upgrade_prepare.sh
+    register: prepare_output
+  - name: Step2.3 Display upgrade prepare output
+    debug:
+      msg: "{{ prepare_output }}"
+  - name: Step4. Download the container images
+    shell: openstack overcloud external-upgrade run -y --stack overcloud --tags container_image_prepare
+    register: container_output
+  - name: Step4.1 Display container image prepare output
+    debug:
+      msg: "{{ container_output }}"

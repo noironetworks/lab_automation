@@ -1,0 +1,268 @@
+---
+- name: Updating network interface templates
+  hosts: undercloud
+  tasks:
+  - name: Step0.1 Fix ownership of the ciscoaci_containers.yaml file
+    become: yes
+    file:
+      path: /home/stack/templates/ciscoaci_containers.yaml
+      owner: stack
+      group: stack
+  - name: Step0.2 Fix ownership of nic-configs
+    become: yes
+    file:
+      path: /home/stack/templates/nic-configs
+      owner: stack
+      group: stack
+  - name: Step3. On the undercloud, create a file called update-nic-templates.sh and include the following content in the file
+    copy:
+      dest: "/home/stack/update-nic-templates.sh"
+      content: |
+        #!/bin/bash
+        STACK_NAME="overcloud"
+        ROLES_DATA="/usr/share/openstack-tripleo-heat-templates/roles_data.yaml"
+        NETWORK_DATA="/usr/share/openstack-tripleo-heat-templates/network_data.yaml"
+        NIC_CONFIG_LINES=$(openstack stack environment show $STACK_NAME | grep "::Net::SoftwareConfig" | sed -E 's/ *OS::TripleO::// ; s/::Net::SoftwareConfig:// ; s/ http.*user-files/ /')
+        echo "$NIC_CONFIG_LINES" | while read LINE; do
+            ROLE=$(echo "$LINE" | awk '{print $1;}')
+            NIC_CONFIG=$(echo "$LINE" | awk '{print $2;}')
+        
+            if [ -f "$NIC_CONFIG" ]; then
+                echo "Updating template for $ROLE role."
+                python3 /usr/share/openstack-tripleo-heat-templates/tools/merge-new-params-nic-config-script.py \
+                    --tht-dir /usr/share/openstack-tripleo-heat-templates \
+                    --roles-data $ROLES_DATA \
+                    --network-data $NETWORK_DATA \
+                    --role-name "$ROLE" \
+                    --discard-comments yes \
+                    --template "$NIC_CONFIG"
+            else
+                echo "No NIC template detected for $ROLE role. Skipping $ROLE role."
+            fi
+        done
+  - name: Step4. Add executable permissions to the script
+    file:
+      path: /home/stack/update-nic-templates.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step5.1 Add first block to controller.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      insertbefore: '  StorageIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #1 -->"
+      block: |
+        # This fixes the indentation of the block
+          ControlPlaneStaticRoutes:
+            default: []
+            description: >
+              Routes for the ctlplane network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+          ControlPlaneMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the network.
+              (The parameter is automatically resolved from the ctlplane network's mtu attribute.)
+            type: number
+  - name: Step5.2 Add second block to controller.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      insertbefore: '  InternalApiIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #2 -->"
+      block: |
+        # This fixes the indentation of the block
+          StorageMgmtMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              StorageMgmt network.
+            type: number
+          StorageMgmtInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the storage_mgmt network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+          StorageInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the storage network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+          StorageMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              Storage network.
+            type: number
+  - name: Step5.3 Add third block to controller.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      insertbefore: '  TenantIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #3 -->"
+      block: |
+        # This fixes the indentation of the block
+          InternalApiMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              InternalApi network.
+            type: number
+          InternalApiInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the internal_api network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+  - name: Step5.4 Add fourth block to controller.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      insertbefore: '  ExternalIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #4 -->"
+      block: |
+        # This fixes the indentation of the block
+          TenantMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              Tenant network.
+            type: number
+          TenantInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the tenant network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+  - name: Step5.5 Add fifth block to controller.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      insertbefore: '  DnsServers: # Override this via parameter_defaults'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #5 -->"
+      block: |
+        # This fixes the indentation of the block
+          ExternalMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              External network.
+            type: number
+          ExternalInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the external network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+  - name: Step5.6 Clean up irrelevant lines added to the controller.yaml
+    lineinfile:
+      path: /home/stack/templates/nic-configs/controller.yaml
+      regexp: "{{ item }}"
+      state: absent
+    with_items:
+    - '# This fixes the indentation of the block'
+    - '<!-- BEGIN ANSIBLE MANAGED BLOCK'
+    - '<!-- END ANSIBLE MANAGED BLOCK'
+  - name: Step6.1 Add first block to compute.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/compute.yaml
+      insertbefore: '  StorageIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #1 -->"
+      block: |
+        # This fixes the indentation of the block
+          ControlPlaneStaticRoutes:
+            default: []
+            description: >
+              Routes for the ctlplane network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+          ControlPlaneMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the network.
+              (The parameter is automatically resolved from the ctlplane network's mtu attribute.)
+            type: number
+  - name: Step6.2 Add second block to compute.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/compute.yaml
+      insertbefore: '  StorageMgmtIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #2 -->"
+      block: |
+        # This fixes the indentation of the block
+          StorageInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the storage network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+          StorageMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              Storage network.
+            type: number
+  - name: Step6.3 Add third block to compute.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/compute.yaml
+      insertbefore: '  TenantIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #3 -->"
+      block: |
+        # This fixes the indentation of the block
+          InternalApiMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              InternalApi network.
+            type: number
+          InternalApiInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the internal_api network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+  - name: Step6.4 Add fourth block to compute.yaml
+    blockinfile:
+      path: /home/stack/templates/nic-configs/compute.yaml
+      insertbefore: '  ExternalIpSubnet:'
+      marker: "<!-- {mark} ANSIBLE MANAGED BLOCK #4 -->"
+      block: |
+        # This fixes the indentation of the block
+          TenantMtu:
+            default: 1500
+            description: The maximum transmission unit (MTU) size(in bytes) that is
+              guaranteed to pass through the data path of the segments in the
+              Tenant network.
+            type: number
+          TenantInterfaceRoutes:
+            default: []
+            description: >
+              Routes for the tenant network traffic.
+              JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+              Unless the default is changed, the parameter is automatically resolved
+              from the subnet host_routes attribute.
+            type: json
+  - name: Step6.5 Clean up irrelevant lines added to the compute.yaml
+    lineinfile:
+      path: /home/stack/templates/nic-configs/compute.yaml
+      regexp: "{{ item }}"
+      state: absent
+    with_items:
+    - '# This fixes the indentation of the block'
+    - '<!-- BEGIN ANSIBLE MANAGED BLOCK'
+    - '<!-- END ANSIBLE MANAGED BLOCK'

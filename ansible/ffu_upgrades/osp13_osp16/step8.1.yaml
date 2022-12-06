@@ -1,0 +1,14 @@
+---
+- name: Creating an upgrades environment file
+  hosts: undercloud
+  tasks:
+  - name: Step3. Edit the file and add the following mandatory content
+    copy:
+      dest: "/home/stack/templates/upgrades-environment.yaml"
+      content: |
+        parameter_defaults:
+          UpgradeLeappDevelSkip: "LEAPP_UNSUPPORTED=1 LEAPP_DEVEL_TARGET_RELEASE=8.2"
+          LeappInitCommand: |
+             for module in pata_acpi floppy; do sudo sed -i "/^${module}$/d" /usr/share/leapp-repository/repositories/system_upgrade/el7toel8/actors/kernel/checkkerneldrivers/files/removed_drivers.txt; done
+             sudo rm -f /usr/share/leapp-repository/repositories/system_upgrade/el7toel8/actors/persistentnetnamesdisable/actor.py
+

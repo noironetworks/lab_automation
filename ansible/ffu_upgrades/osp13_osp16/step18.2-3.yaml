@@ -1,0 +1,15 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: all
+  tasks:
+  - name: Step3.4.1 Remove RHEL7 repos from yum configuration on overcloud hosts
+    become: yes
+    copy:
+      dest: "/etc/yum.repos.d/localrepo.repo"
+      content: |
+        [osp13repo]
+        name=Local osp 13 repo
+        baseurl=http://172.28.184.14/osp13repo/
+        enabled=1
+        gpgcheck=0
+        proxy=_none_

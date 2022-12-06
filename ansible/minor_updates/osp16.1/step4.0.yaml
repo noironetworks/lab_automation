@@ -1,0 +1,32 @@
+---
+- name: Updating composable services in custom environment files
+  hosts: undercloud
+  tasks:
+  - name: Step1. Add the new composable services. For controller
+    lineinfile:
+      path: /home/stack/templates/custom_roles_data.yaml
+      insertafter: '    - OS::TripleO::Services::Zaqar'
+      line: '    - OS::TripleO::Services::CiscoAciOpflexAgent'
+  - name: Step2. Add the new composable services. For compute
+    lineinfile:
+      path: /home/stack/templates/custom_roles_data.yaml
+      insertafter: '    - OS::TripleO::Services::ComputeNeutronOvsAgent'
+      line: '    - OS::TripleO::Services::ComputeCiscoAciOpflexAgent'
+  - name: Step3. Add new controller configuration to the ciscoaci-config.yaml file
+    lineinfile:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      insertafter: '  OS::TripleO::ControllerExtraConfigPre: /opt/ciscoaci-tripleo-heat-templates//nodepre.yaml'
+      line: '  OS::TripleO::Services::CiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml'
+  - name: Step4. Add new compute configuration to the ciscoaci-config.yaml file
+    lineinfile:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      insertafter: '  OS::TripleO::ComputeExtraConfigPre: /opt/ciscoaci-tripleo-heat-templates//nodepre.yaml'
+      line: '  OS::TripleO::Services::ComputeCiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml'
+  - name: Step5. Update the ciscoaci-config.yaml file
+    replace:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.line }}"
+    with_items:
+    - {regexp: '  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml', line: '  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml'}
+    - {regexp: '  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml', line: '  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml'}

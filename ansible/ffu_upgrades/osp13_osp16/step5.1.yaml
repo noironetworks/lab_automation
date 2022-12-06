@@ -1,0 +1,41 @@
+---
+- name: Removing Red Hat OpenStack Platform director packages
+  hosts: undercloud
+  tasks:
+  - name: Step2. Disable the main OpenStack services on the undercloud
+    become: yes
+    ignore_errors: true
+    systemd:
+      name: "{{ item }}"
+      state: stopped
+    with_items:
+    -  'openstack-*'
+    -  httpd
+    -  haproxy
+    -  mariadb
+    -  'rabbitmq*'
+    -  docker
+    -  xinetd
+  - name: Step3. Remove the main OpenStack services from the undercloud, except OpenvSwitch and certain Python 2 packages that are required for the upgrade
+    become: yes
+    command: yum -y remove '*el7ost*' 'galera*' 'haproxy*' \
+       httpd 'mysql*' 'pacemaker*' xinetd python-jsonpointer \
+       qemu-kvm-common-rhev qemu-img-rhev 'rabbit*' \
+       'redis*' \
+       -- \
+       -'*openvswitch*' -python-docker -python-PyMySQL \
+       -python-pysocks -python2-asn1crypto -python2-babel \
+       -python2-cffi -python2-cryptography -python2-dateutil \
+       -python2-idna -python2-ipaddress -python2-jinja2 \
+       -python2-jsonpatch -python2-markupsafe -python2-pyOpenSSL \
+       -python2-requests -python2-six -python2-urllib3 \
+       -python-httplib2 -python-passlib -python2-netaddr -ceph-ansible
+  - name: Step4. Remove the content from the /etc/httpd and /var/lib/docker directories
+    become: yes
+    file:
+        path: "{{ item }}"
+        state: absent
+    with_items:
+    - /etc/httpd
+    - /var/lib/docker
+

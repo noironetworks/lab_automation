@@ -1,0 +1,10 @@
+---
+- name: Converting to next generation power management drivers
+  hosts: undercloud
+  tasks:
+  - name: Step4. Run the following commands, substituting the OLDDRIVER and NEWDRIVER variables for your power management type
+    shell: for NODE in $(openstack baremetal node list --driver pxe_ipmitool -c UUID -f value) ; do openstack baremetal node set $NODE --driver ipmi; done
+    register: result_lines
+  - name: Step5. Display the result
+    debug:
+      msg: "{{ result_lines.stdout_lines }}"

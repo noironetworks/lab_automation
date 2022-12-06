@@ -1,0 +1,21 @@
+---
+- name: Run step3.2 of OSP10 => OSP13 FFU
+  hosts: undercloud
+  tasks:
+  - name: Step2. Disable the current OpenStack Platform repository
+    become: yes
+    command: subscription-manager repos --disable=rhel-7-server-openstack-11-rpms
+  - name: Step3. Enable the new OpenStack Platform repository
+    become: yes
+    command: subscription-manager repos --enable=rhel-7-server-openstack-12-rpms
+  - name: Step4. Disable updates to the overcloud base images
+    become: yes
+    ignore_errors: true
+    command: yum-config-manager --setopt=exclude=rhosp-director-images* --save
+  - name: Step5. Run yum to upgrade the director’s main packages
+    become: yes
+    yum:
+      name: python-tripleoclient
+      state: latest
+  - name: Step7. Run the following command to upgrade the undercloud
+    command: openstack undercloud upgrade

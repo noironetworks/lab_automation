@@ -1,0 +1,61 @@
+---
+# tasks file for noirotest_setup
+    - name:  files copy
+      copy:
+        src: '~/noirotest/testcases/f8-director.yaml'
+        dest: ~/noirotest/testcases/testconfig.yaml
+
+    - name: Replacing or Adding required values
+      lineinfile:
+        dest: ~/noirotest/testcases/testconfig.yaml
+        regexp: "{{ item.regex }}"
+        line: "{{ item.replace_with }}"
+      with_items:
+        - { regex: '^controller_ip:', replace_with: "controller_ip: cntr_rest_ip.stdout_lines.0" }
+        - { regex: '^network_node:', replace_with: "network_node: cntrl_int_ip.stdout_lines.0" }
+        - { regex: '^keystone_ip:', replace_with: "keystone_ip: keystone_ip.stdout_lines.0" }
+      when:
+        - undercloud_type == "director" 
+
+    - name: Adding values for queens or pike
+      lineinfile:
+        dest: ~/noirotest/testcases/testconfig.yaml
+        line: "{{ item }}"
+      with_items:
+        - 'containerized_services:'
+        - '  - nova'
+      when:
+        - rel == 'queens'
+
+    - name: Adding values for queens
+      lineinfile:
+        dest: ~/noirotest/testcases/testconfig.yaml 
+        line: "{{ item }}"
+      with_items:
+        - '  - aim'
+        - '  - neutron'
+        - 'rcfile: "overcloudrc"'
+      when:
+        - rel == 'queens'
+
+    - name: Adding values for director
+      lineinfile:
+        dest: ~/noirotest/testcases/testconfig.yaml
+        line: 'rest_ip: "{{ ctrlr_rest_ip }}"'
+      when:
+        - undercloud_type == "directorc"
+
+    - name: Adding no proxy value in rc file
+      lineinfile:
+        dest: '~/{{ rcfile }}.v3'
+        regexp: '^no_proxy=,'
+        line: 'no_proxy={{ no_proxy }},'
+      when:
+        - undercloud_type == "director"
+
+    - name: Adding no proxy value in rc file
+      lineinfile:
+        dest: ~/{{ rcfile }}
+        regexp: '^no_proxy=,'
+        line: "no_proxy={{ no_proxy }},"
+

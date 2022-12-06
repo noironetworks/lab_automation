@@ -1,0 +1,18 @@
+---
+- name: Configuring access to the undercloud registry
+  hosts: undercloud
+  tasks:
+  - name: Step2. Obtain the control plane host name on the undercloud
+    become: yes
+    shell: hiera container_image_prepare_node_names | awk -F'"' '{print $2}'
+    register: ucloud_host
+  - name: Step3. Edit the containers-prepare-parameter.yaml file and add the DockerInsecureRegistryAddress parameter with a YAML list that contains the control plane host name of the undercloud and the IP address of the undercloud on the provisioning network
+    lineinfile:
+      path: /home/stack/templates/containers-prepare-parameter.yaml
+      line: "{{ item }}"
+    with_items:
+    - "  DockerInsecureRegistryAddress:"
+    - "  - {{ ucloud_host.stdout_lines[0] }}:8787"
+    - "  - 1.100.1.1:8787"
+    - "  - 10.30.120.22:8787"
+

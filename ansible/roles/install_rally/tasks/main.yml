@@ -1,0 +1,49 @@
+---
+# tasks file for install_rally
+    - name: get url
+      get_url:
+        url: https://raw.githubusercontent.com/noironetworks/rally/noiro-master/install_rally.sh
+        dest: "{{ ansible_env.HOME }}/install_rally.sh"
+      environment:
+        https_proxy: "{{ proxy_env['https_proxy']  }}"
+
+    - name: Ged rid of questions
+      command: " {{ item }}"
+      with_items:
+        - sed -i 's/ask_yn "Proceed with installation anyway?"/true/g' ~/install_rally.sh
+        - sed -i 's/bootstrap.pypa.io/bootstrap.pypa.io\/pip\/2.7/g' ~/install_rally.sh
+
+    - name: Changing mode of file
+      file:
+        dest: "{{ ansible_env.HOME }}/install_rally.sh"
+        mode: a+x
+
+    - name: Running Rally Script
+      command: ./install_rally.sh
+      register: rally_run
+      environment:
+        https_proxy: "{{ proxy_env['https_proxy']  }}"
+    
+    - name: Creating rally db, deployment with existing and checking..
+      shell: 
+        cmd: |
+          source ~/overcloudrc
+          source ~/rally/bin/activate
+          rally db recreate
+          rally deployment create --fromenv --name=existing
+          rally deployment check
+      args:
+        executable: /bin/bash
+    
+    - name: Creating directory named extra
+      file:
+        path: ~/.rally/extra
+        state: directory
+
+    - name: multipe files copy
+      copy:
+        src: ~/rally/src/rally-jobs/extra/{{ item }}
+        dest: ~/.rally/extra
+      with_items:
+        - instance_test.sh
+        - install_benchmark.sh
