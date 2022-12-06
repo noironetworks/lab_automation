@@ -1,6 +1,0 @@
-- hosts: all
-  gather_facts: false
-  tasks:
-    - name: set release to 8.2
-      command: subscription-manager release --set=8.2
-      become: true

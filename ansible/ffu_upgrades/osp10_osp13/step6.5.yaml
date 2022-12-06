@@ -1,6 +1,0 @@
----
-- name: Run step6.5 of OSP10 => OSP13 FFU
-  hosts: undercloud
-  tasks:
-  - name: Step2. Run the upgrade command
-    command: openstack overcloud upgrade run --nodes Compute --skip-tags validation

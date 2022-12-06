@@ -1,9 +1,0 @@
----
-- name: Updating your container image preparation file
-  hosts: undercloud
-  tasks:
-  - name: Step2. Check the tag parameter is set to 16.1 for each rule set
-    lineinfile:
-      path: /home/stack/containers-prepare-parameter.yaml
-      state: present
-      line: "      tag: '16.1'"

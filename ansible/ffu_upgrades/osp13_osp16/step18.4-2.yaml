@@ -1,6 +1,0 @@
----
-- name: Upgrading Compute nodes
-  hosts: undercloud
-  tasks:
-  - name: Step5.2 Then perform the standard OpenStack service upgrade
-    shell: openstack overcloud upgrade run -y --stack overcloud  --limit overcloud-compute-0

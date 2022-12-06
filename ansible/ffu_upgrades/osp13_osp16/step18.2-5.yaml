@@ -1,7 +1,0 @@
----
-- name: Upgrading Controller nodes with director-deployed Ceph Storage
-  hosts: all
-  tasks:
-  - name: Step3.5.1 This step often fails. If it does, log in to the controller, run "sudo ifup ext-br"
-    become: yes
-    shell: ifup ext-br

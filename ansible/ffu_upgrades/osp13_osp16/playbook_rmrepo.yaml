@@ -1,9 +1,0 @@
----
-- name: Remove ACI Repo
-  hosts: overcloud
-  become: yes
-  tasks:
-    - name: remove_acirepo
-      ansible.builtin.file:
-        path: /etc/yum.repos.d/ciscoaci.repo
-        state: absent
