@@ -1,0 +1,24 @@
+Metadata-Version: 1.2
+Name: raritan
+Version: 20210223.0
+Summary: SDK for interacting with Raritan PDU APIs.
+Home-page: https://github.com/daxm/raritan-pdu-json-rpc
+Author: Dax Mickelson
+Author-email: dmickels@cisco.com
+License: BSD
+Description: SDK for interacting with Raritan PDU APIs.
+Keywords: raritan pdu
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Plugins
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Other Audience
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: System :: Systems Administration
+Classifier: Topic :: Utilities
+Requires-Python: >=3.8

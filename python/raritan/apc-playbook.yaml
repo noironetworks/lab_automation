@@ -1,0 +1,11 @@
+- name: run show commands
+  ansible.netcommon.telnet:
+    user: apc
+    password: apc
+    login_prompt: 'User Name : '
+    password_prompt: 'Password  : '
+    prompts:
+    - '[>#]'
+    command:
+    - 
+    - show version
