@@ -225,7 +225,14 @@ cd neutron && git checkout ${NEUTRON_GIT_HASH} && cd
 REPOS="python-openstackclient python-neutronclient"
 for repo in $REPOS; do
     ${GIT_CLONE}/openstack/$repo.git
-    cd $repo && git checkout ${RELEASE} && cd
+    if [ "$repo" = "python-openstackclient" ]; then
+	if [ "$1" = "${QUEENS}" ] || [ "${RELEASE_FILE}" = "${QUEENS}" ]; then
+            cd $repo && git checkout queens-eol && cd
+        else
+            cd $repo && git checkout ${RELEASE} && cd
+	fi
+
+    fi
 done
 if [ "$1" = "${QUEENS}" ] || [ "${RELEASE_FILE}" = "${QUEENS}" ] || [ "$1" = "${TRAIN}" ] || [ "${RELEASE_FILE}" = "${TRAIN}" ]; then
     ${GIT_CLONE}/openstack/neutron-tempest-plugin.git
@@ -290,6 +297,9 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${PIKE}" -o "${RELEASE_FILE}" = "${PIKE}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
         echo "containerized_services:" >> ~/noirotest/testcases/testconfig.yaml
         echo "  - nova" >> ~/noirotest/testcases/testconfig.yaml
+    fi
+    if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+        echo "python_interpreter: python3" >> ~/noirotest/testcases/testconfig.yaml
     fi
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
         echo "  - aim" >> ~/noirotest/testcases/testconfig.yaml
@@ -441,6 +451,6 @@ cd /home/noiro/
 sudo -E pip install python-openstackclient/
 sudo -E pip install python-novaclient/
 #fi
-if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-    sudo -E pip install paramiko==2.7
-fi
+# Need to use older paramkio - see https://github.com/paramiko/paramiko/issues/1984
+sudo -E pip install paramiko==2.7
+sudo -E pip install keystoneauth1==5.0.0
