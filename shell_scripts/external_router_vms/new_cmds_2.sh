@@ -303,6 +303,7 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    sed -i "s/rest_ip:.*/rest_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${PIKE}" -o "${RELEASE_FILE}" = "${PIKE}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
         echo "containerized_services:" >> ~/noirotest/testcases/testconfig.yaml
         echo "  - nova" >> ~/noirotest/testcases/testconfig.yaml
@@ -394,22 +395,25 @@ if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
     SILENCE=""
 fi
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
-    if [ "$1" != "${QUEENS}" -o "$1" = "${TRAIN}" ]; then
-        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null
-    fi
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/extension_drivers=apic_aim,port_security/extension_drivers=apic_aim,port_security,dns/g' ${PLUGIN_CONF}" >> /dev/null
-    if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
-        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/global_physnet_mtu=1496/#global_physnet_mtu=1496/g' ${NEUTRON_CONF}" >> /dev/null
-    fi
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${RESTART_CMD} ${NEUTRON_SERVICE}" >> /dev/null
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo head -n -2 ${AIM_CONF} > ~/aimctl.conf" >> /dev/null
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo mv ~/aimctl.conf ${AIM_CONF}" >> /dev/null
-    if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${RESTART_CMD} ${AIM_SERVICE}" >> /dev/null
-    fi
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${AIM_CMD_PREFIX} aimctl manager host-domain-mapping-v2-delete '*' pdom_physnet1 PhysDom" >> /dev/null
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${AIM_CMD_PREFIX} aimctl manager physical-domain-delete pdom_physnet1" >> /dev/null
-    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${AIM_CMD_PREFIX} aimctl manager load-domains" >> /dev/null
+    for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do 
+        if [ "$1" != "${QUEENS}" -o "$1" = "${TRAIN}" ]; then
+            #ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null
+            ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null; 
+        fi
+        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/extension_drivers=apic_aim,port_security/extension_drivers=apic_aim,port_security,dns/g' ${PLUGIN_CONF}" >> /dev/null
+        if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
+            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/global_physnet_mtu=1496/#global_physnet_mtu=1496/g' ${NEUTRON_CONF}" >> /dev/null
+        fi
+        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${RESTART_CMD} ${NEUTRON_SERVICE}" >> /dev/null
+        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo head -n -2 ${AIM_CONF} > ~/aimctl.conf" >> /dev/null
+        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo mv ~/aimctl.conf ${AIM_CONF}" >> /dev/null
+        if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${RESTART_CMD} ${AIM_SERVICE}" >> /dev/null
+        fi
+    done
+    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${AIM_CMD_PREFIX} aimctl manager host-domain-mapping-v2-delete '*' pdom_physnet1 PhysDom" >> /dev/null
+    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${AIM_CMD_PREFIX} aimctl manager physical-domain-delete pdom_physnet1" >> /dev/null
+    ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${AIM_CMD_PREFIX} aimctl manager load-domains" >> /dev/null
 fi
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" ]; then
