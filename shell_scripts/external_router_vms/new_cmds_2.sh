@@ -168,12 +168,19 @@ echo "export ${NO_PROXY_STRING}" >> .bashrc
 echo "export PYTHONPATH=/home/noiro/noirotest" >> .bashrc
 
 
-# Set up route to allow access to director internal IPs
-# (note: this is needed so we can get the keystone IP below)
-sudo route add -net ${CLOUD_NET} netmask 255.255.255.0 gateway ${CLOUD_GATEWAY}
 
 # The controllers are missing a route back to the external router VM.
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
+    # Get the internal control plane VIP
+    CTRLR_VIP=$(ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep control_virtual_ip | awk -F"'" '{print $2}')
+    # Now find which controller IP is hosting that VIP
+    CTRLR_VIP_OWNER=$(for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do if [[ "$(ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} 'sudo ip a' | grep ${CTRLR_VIP})" != '' ]]; then echo ${ip}; fi; done)
+    # Finally, get the public/external IP of that controller to use as the next hop for the private IP subnet route
+    PUB_NET_PREFIX=$(echo ${EXT_RTR_IP} | cut -d'.' -f1-3)
+    NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | awk '/${PUB_NET_PREFIX}/ {print $2}' | cut -d '/' -f 1)
+    # Set up route to allow access to director internal IPs
+    # (note: this is needed so we can get the keystone IP below)
+    sudo route add -net ${CLOUD_NET} netmask 255.255.255.0 gateway ${NEXT_HOP_IP}
     # Set up env vars for access
     CTRLR_INT_IP=`ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && nova list | grep controller-0" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'`
     KEYSTONE_IP=`ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo egrep auth_url /var/lib/config-data/neutron/etc/neutron/neutron.conf"  | head -n 1 | awk -F':' '{print $2}' | cut -c3-`
@@ -197,6 +204,8 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     CTRLR_INT_IP_NH=$(ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo ifconfig ext-br" | grep 'inet ' | awk '{print $2}')
     sudo route add -host ${VIP_CTRLR_IP} gateway ${CTRLR_INT_IP_NH}
     sudo route add -net 1.121.${MGMT_VLAN}.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
+else
+    sudo route add -net ${CLOUD_NET} netmask 255.255.255.0 gateway ${CLOUD_GATEWAY}
 fi
 
 
