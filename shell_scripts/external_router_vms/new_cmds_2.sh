@@ -5,6 +5,7 @@ FAB_NO=$4
 # Assumes eth0 is the management IP of the external router, and /24 subnet
 EXT_RTR_IP=`ip -o -4 addr | grep eth0 | awk '{print $4}' | awk -F'/' '{print $1}'`
 EXT_RTR_NET=`echo ${EXT_RTR_IP} | cut -d'.' -f1-3`".0"
+PUB_NET_PREFIX=$(echo ${EXT_RTR_IP} | cut -d'.' -f1-3)
 NOIRO_CTRLR_IP=172.28.184.8
 # Environment vars to let us access stuff
 HTTP_PROXY='http://proxy.esl.cisco.com:80'
@@ -176,7 +177,6 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Now find which controller IP is hosting that VIP
     CTRLR_VIP_OWNER=$(for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do if [[ "$(ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} 'sudo ip a' | grep ${CTRLR_VIP})" != '' ]]; then echo ${ip}; fi; done)
     # Finally, get the public/external IP of that controller to use as the next hop for the private IP subnet route
-    PUB_NET_PREFIX=$(echo ${EXT_RTR_IP} | cut -d'.' -f1-3)
     NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | awk '/${PUB_NET_PREFIX}/ {print $2}' | cut -d '/' -f 1)
     # Set up route to allow access to director internal IPs
     # (note: this is needed so we can get the keystone IP below)
@@ -300,6 +300,11 @@ ssh -o StrictHostKeyChecking=no noiro@${EXT_RTR_IP} ls >> /dev/null
 cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconfig.yaml
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
+    CTRLR_IP_LINE_NO=$(egrep -n controller_user ~/noirotest/testcases/testconfig.yaml | awk -F":" '{print $1}')
+    for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep ${PUB_NET_PREFIX} | grep -v public_virtual_ip | awk -F"'" '{print $2}'); do
+        sed -i "${CTRLR_IP_LINE_NO}i     - \"${ip}\"" testcases/testconfig.yaml
+    done
+    sed -i "${CTRLR_IP_LINE_NO}i controller_ip:" testcases/testconfig.yaml
     sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
@@ -396,6 +401,7 @@ if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
 fi
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do 
+        sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
         if [ "$1" != "${QUEENS}" -o "$1" = "${TRAIN}" ]; then
             #ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null
             ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null; 
