@@ -406,15 +406,15 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
             #ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null
             ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null; 
         fi
-        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/extension_drivers=apic_aim,port_security/extension_drivers=apic_aim,port_security,dns/g' ${PLUGIN_CONF}" >> /dev/null
+        ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/extension_drivers=apic_aim,port_security/extension_drivers=apic_aim,port_security,dns/g' ${PLUGIN_CONF}" >> /dev/null
         if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
-            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/global_physnet_mtu=1496/#global_physnet_mtu=1496/g' ${NEUTRON_CONF}" >> /dev/null
+            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/global_physnet_mtu=1496/#global_physnet_mtu=1496/g' ${NEUTRON_CONF}" >> /dev/null
         fi
         ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${RESTART_CMD} ${NEUTRON_SERVICE}" >> /dev/null
         ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo head -n -2 ${AIM_CONF} > ~/aimctl.conf" >> /dev/null
         ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "sudo mv ~/aimctl.conf ${AIM_CONF}" >> /dev/null
         if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "${RESTART_CMD} ${AIM_SERVICE}" >> /dev/null
+            ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${RESTART_CMD} ${AIM_SERVICE}" >> /dev/null
         fi
     done
     ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${ip} "${AIM_CMD_PREFIX} aimctl manager host-domain-mapping-v2-delete '*' pdom_physnet1 PhysDom" >> /dev/null
