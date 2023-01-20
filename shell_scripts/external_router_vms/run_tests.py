@@ -249,9 +249,11 @@ class TempestTestRunner(Runner):
         version_list = [version.strip()
                         for version in version_string.split("\n") if version]
         version = version_list[0]
-        if version == 'newton-eol':
-            version = 'stable/newton'
-        return version
+        if '-eol' in version:
+            branch = 'stable/' + version.split('-eol')[0]
+        else:
+            branch = version
+        return branch
         
     def configure_setup_for_test(self):
         images = [{'image': 'cirros-0.3.5-x86_64-disk.img',

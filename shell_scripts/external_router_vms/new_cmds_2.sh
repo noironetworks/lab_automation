@@ -33,6 +33,13 @@ GW1_IP='1.250.1.254'
 GW2_IP='1.251.1.254'
 EXT1_IP='1.250.1.1'
 EXT2_IP='1.251.1.1'
+# FAB2021 shares ACI fabric with 202, so it's got separate IPs
+if [[ "${FAB_NO}" = "2021" ]]; then
+    GW1_IP='1.252.1.254'
+    GW2_IP='1.253.1.254'
+    EXT1_IP='1.252.1.1'
+    EXT2_IP='1.253.1.1'
+fi
 
 # Assume opendev
 GIT_CLONE="git clone https://opendev.org"
@@ -177,7 +184,7 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Now find which controller IP is hosting that VIP
     CTRLR_VIP_OWNER=$(for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do if [[ "$(ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} 'sudo ip a' | grep ${CTRLR_VIP})" != '' ]]; then echo ${ip}; fi; done)
     # Finally, get the public/external IP of that controller to use as the next hop for the private IP subnet route
-    NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | awk '/${PUB_NET_PREFIX}/ {print $2}' | cut -d '/' -f 1)
+    NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | grep "${PUB_NET_PREFIX}" | cut -d '/' -f 1 | awk '{print $2}')
     # Set up route to allow access to director internal IPs
     # (note: this is needed so we can get the keystone IP below)
     sudo route add -net ${CLOUD_NET} netmask 255.255.255.0 gateway ${NEXT_HOP_IP}
@@ -200,7 +207,7 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # (Note: this also works even if there is only one controller)
     CLOUD_PRE=$(echo ${CLOUD_NET}  | cut -d "." -f 1-3)
     VIP_CTRLR_NAME=$(ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_REST_IP} "sudo pcs status" | grep ip-${CLOUD_PRE} | awk '{print $NF}')
-    VIP_CTRLR_IP=$(ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "nova list" | grep ${VIP_CTRLR_NAME} | awk -F'=' '{print $2}')
+    VIP_CTRLR_IP=$(ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && nova list" | grep ${VIP_CTRLR_NAME} | awk -F'=' '{print $2}')
     CTRLR_INT_IP_NH=$(ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo ifconfig ext-br" | grep 'inet ' | awk '{print $2}')
     sudo route add -host ${VIP_CTRLR_IP} gateway ${CTRLR_INT_IP_NH}
     sudo route add -net 1.121.${MGMT_VLAN}.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
@@ -302,10 +309,9 @@ cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconf
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     CTRLR_IP_LINE_NO=$(egrep -n controller_user ~/noirotest/testcases/testconfig.yaml | awk -F":" '{print $1}')
     for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep ${PUB_NET_PREFIX} | grep -v public_virtual_ip | awk -F"'" '{print $2}'); do
-        sed -i "${CTRLR_IP_LINE_NO}i     - \"${ip}\"" testcases/testconfig.yaml
+        sed -i "${CTRLR_IP_LINE_NO}i     - \"${ip}\"" ~/noirotest/testcases/testconfig.yaml
     done
-    sed -i "${CTRLR_IP_LINE_NO}i controller_ip:" testcases/testconfig.yaml
-    sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    sed -i "${CTRLR_IP_LINE_NO}i controller_ip:" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/rest_ip:.*/rest_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
@@ -401,7 +407,6 @@ if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
 fi
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do 
-        sed -i "s/controller_ip:.*/controller_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
         if [ "$1" != "${QUEENS}" -o "$1" = "${TRAIN}" ]; then
             #ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null
             ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} "sudo sed -i 's/#dns_domain.*/dns_domain=localdomain/g' ${NEUTRON_CONF}" >> /dev/null; 
