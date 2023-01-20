@@ -139,9 +139,11 @@ class Excluder(object):
         version_list = [version.strip()
                         for version in version_string.split("\n") if version]
         version = version_list[0]
-        if version == 'newton-eol':
-            version = 'stable/newton'
-        return version
+        if '-eol' in version:
+            branch = 'stable/' + version.split('-eol')[0]
+        else:
+            branch = version
+        return branch
         
     def get_test_info(self, test):
         test_pieces = test.split(".")
