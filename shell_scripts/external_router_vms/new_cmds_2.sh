@@ -315,12 +315,12 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     sed -i "s/network_node:.*/network_node: \"$CTRLR_INT_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/keystone_ip:.*/keystone_ip: \"$KEYSTONE_IP\"/g" ~/noirotest/testcases/testconfig.yaml
     sed -i "s/rest_ip:.*/rest_ip: \"$CTRLR_REST_IP\"/g" ~/noirotest/testcases/testconfig.yaml
+    if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+        echo "python_interpreter: python3" >> ~/noirotest/testcases/testconfig.yaml
+    fi
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${PIKE}" -o "${RELEASE_FILE}" = "${PIKE}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
         echo "containerized_services:" >> ~/noirotest/testcases/testconfig.yaml
         echo "  - nova" >> ~/noirotest/testcases/testconfig.yaml
-    fi
-    if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-        echo "python_interpreter: python3" >> ~/noirotest/testcases/testconfig.yaml
     fi
     if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
         echo "  - aim" >> ~/noirotest/testcases/testconfig.yaml
