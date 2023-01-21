@@ -12,7 +12,6 @@ import uuid
 
 from cleanup_tempest import cleanup_tempest
 import tempest_conf as cfg_template
-from fabric.api import sudo
 
 JUJU='juju'
 DIRECTOR='director'
@@ -21,7 +20,51 @@ DIRECTOR_RC='overcloudrc'
 PPATH='export PYTHONPATH=/home/noiro/noirotest && '
 CMD_TIME_WAIT = 15
 with open('fab_name.txt') as f:
-    FAB_NAME = f.readline().strip()
+    sysid = f.readline().strip()
+#O FIXME: we should fix these in the DB, but for now,
+# this will have to do.
+L3OUT_MAP= {
+    'fab6': {
+        'prefix': 'sauto_fab6'
+        },
+    'fab8': {
+        'prefix': 'sauto_fab8'
+        },
+    'k8s-bm-1': {
+        'prefix': 'sauto_k8s-bm-1'
+        },
+    'ostack-bm-1': {
+        'prefix': 'sauto'
+        },
+    'ostack-bm-2': {
+        'prefix': 'sauto'
+        },
+    'ostack-bm-3': {
+        'prefix': 'os-bm-3'
+        },
+    'ostack-pt-1': {
+        'prefix': 'os-pt-1'
+        },
+    'ostack-pt-1-s1': {
+        'prefix': 'os-pt-1-s1'
+        },
+    'opflex-pt-1': {
+        'prefix': 'opflex-pt-1'
+        },
+    'opflex-pt-1-s1': {
+        'prefix': 'opflex-pt-1-s1'
+        },
+    'opflex-pt-2': {
+        'prefix': 'opflex-pt-2'
+        },
+    'opflex-pt-2-s1': {
+        'prefix': 'opflex-pt-2-s1'
+        },
+    'fab201': {
+        'prefix': 'sauto'
+        }
+    }
+FAB_NAME = L3OUT_MAP[sysid]['prefix']
 # Wait 3 hours max
 TEMPEST_WAIT_TIME = (60*60*3)
 NOIRO_SETUP_WAIT_TIME = (60*2)
@@ -575,11 +618,6 @@ class NoiroTestRunner(Runner):
 
     def cleanup(self, host):
         pass
-        #ssh_client = self.get_ssh_client(host)
-        #fipsubnet1 = '50.50.50.0/24'
-        #fipsubnet2 = '60.60.60.0/24'
-        #sudo("ip route del %s " %(route))
-        #sudo("ip route add %s via %s" %(route,nexthop))
 
 
 class NautoPostDeployRunner(Runner):
