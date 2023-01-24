@@ -105,7 +105,6 @@ IDENTITY_TEMPLATE="""
 uri = http://%(controller_ip)s:5000/v2.0/
 uri_v3 = http://%(controller_ip)s:5000/v3/
 auth_version = v3
-#auth_version = v2
 username = demo
 alt_username = alt-demo
 tenant_name = demo
@@ -143,7 +142,6 @@ catalog_type=identity
 IDENTITY_FEATURES_TEMPLATE="""
 [identity-feature-enabled]
 api_v3 = true
-api_v2 = false
 """
 
 IMAGE_TEMPLATE="""

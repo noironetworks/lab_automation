@@ -524,6 +524,27 @@ class TempestTestRunner(Runner):
         print(net_uuid)
         return net_uuid
 
+    def queens_auth(self, auth_cfg):
+        split_cfg = auth_cfg.split('\n')
+        split_cfg.remove('tempest_roles = member')
+        split_cfg.remove('admin_domain_name = %(admin_domain_name)s')
+        split_cfg.remove('use_dynamic_credentials = true')
+        auth_cfg = '\n'.join(split_cfg)
+
+    def queens_identity(self, identity_cfg):
+        split_cfg = identity_cfg.split('\n')
+        for idx, cfg in enumerate(split_cfg):
+            if '= v3' in cfg:
+                split_cfg[idx] = cfg.replace('v3', 'v2')
+        identity_cfg = '\n'.join(split_cfg)
+
+    def queens_identity_feature(self, identity_feature_cfg):
+        split_cfg = identity_feature_cfg.split('\n')
+        for idx, cfg in enumerate(split_cfg):
+            if 'api_v3' in cfg:
+                split_cfg[idx] = cfg.replace('v3', 'v2')
+        identity_feature_cfg = '\n'.join(split_cfg)
+
     def create_tempest_config(self):
         ssh_client = self.get_ssh_client(self.external_router, username='noiro')
         cmd = 'tempest init %s' % self.env_name
@@ -540,6 +561,15 @@ class TempestTestRunner(Runner):
             admin_domain_name = 'Default'
             admin_role = 'admin'
         tempest_params = {}
+        # Need to fix auth for queens.
+        if self.version == 'stable/queens':
+            for cfg in cfg_template.ALL_TEMPLATES:
+                if '[auth]' in cfg:
+                    self.queens_auth(cfg)
+                elif '[identity-feature-enabled]' in cfg:
+                    self.queens_identity(cfg)
+                elif '[identity]' in cfg:
+                    self.queens_identity_feature(cfg)
         tempest_params.update({'cwd': os.getcwd() + '/' + self.env_name,
                                'image_uuid': self.image_uuid,
                                'flavor_uuid': self.flavor_uuid,
