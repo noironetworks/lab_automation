@@ -24,21 +24,28 @@ OCATA="ocata"
 PIKE="pike"
 QUEENS="queens"
 TRAIN="train"
-RELEASES="${NEWTON} ${OCATA} ${PIKE} ${QUEENS} ${TRAIN}"
+WALLABY="wallaby"
+RELEASES="${NEWTON} ${OCATA} ${PIKE} ${QUEENS} ${TRAIN} ${WALLABY}"
 DIRECTOR="director"
 JUJU="juju"
 
 # External IPs used on these FABs
-GW1_IP='1.250.1.254'
-GW2_IP='1.251.1.254'
-EXT1_IP='1.250.1.1'
-EXT2_IP='1.251.1.1'
+if [[ "${FAB_NO}" = "206" -o "${FAB_NO}" = "208" ]]; then
+    GW1_IP=`printf "1.1%02d.1.254" $(($FAB_NO%100))`
+    GW2_IP=`printf "1.1%02d.2.254" $(($FAB_NO%100))`
+    EXT1_IP=`printf "1.1%02d.1.1" $(($FAB_NO%100))`
+    EXT2_IP=`printf "1.1%02d.2.1" $(($FAB_NO%100))`
 # FAB2021 shares ACI fabric with 202, so it's got separate IPs
-if [[ "${FAB_NO}" = "2021" ]]; then
+elif [[ "${FAB_NO}" = "2021" ]]; then
     GW1_IP='1.252.1.254'
     GW2_IP='1.253.1.254'
     EXT1_IP='1.252.1.1'
     EXT2_IP='1.253.1.1'
+else
+    GW1_IP='1.250.1.254'
+    GW2_IP='1.251.1.254'
+    EXT1_IP='1.250.1.1'
+    EXT2_IP='1.251.1.1'
 fi
 
 # Assume opendev
@@ -70,6 +77,11 @@ elif [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
     TEMPEST_VERSION="21.0.0"
     NEUTRON_TEMPEST_VERSION="0.5.0"
     NEUTRON_GIT_HASH="stable/train"
+elif [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
+    RELEASE="stable/wallaby"
+    TEMPEST_VERSION="27.0.0"
+    NEUTRON_TEMPEST_VERSION="1.4.0"
+    NEUTRON_GIT_HASH="stable/wallaby"
 else
     echo "Invalid release. Must be one of ${RELEASES}"
     exit
@@ -100,6 +112,7 @@ sudo -E apt-get install apt-transport-https ca-certificates -y ; sudo update-ca-
 
 # We need python2.7 for OpenStack
 sudo -E apt-get -y --allow-unauthenticated install python2.7
+sudo -E apt-get -y --allow-unauthenticated install python3.6
 sudo -E apt-get -y --allow-unauthenticated install sshpass
 sudo -E apt-get -y --allow-unauthenticated install git
 sudo -E apt-get -y --allow-unauthenticated install jq
@@ -220,12 +233,20 @@ fi
 sudo -E apt-get -y --allow-unauthenticated update
 sudo -E apt -y --allow-unauthenticated install python-pip
 sudo -E pip install pip==20.3.4
+if [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
+    sudo -E apt -y --allow-unauthenticated install python3-pip
+    sudo -E pip3 install --upgrade --force pip
+fi
 # Install packages from pip repositories
-sudo -E pip install fabric==1.14.0  # newer versions break our code
+sudo -E pip install fabric==1.15.0  # newer versions break our code
 sudo -E pip install ddt
 sudo -E pip install click
 sudo -E pip install testscenarios
-sudo -E apt -y --allow-unauthenticated install python-os-testr
+if [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
+    sudo -E apt -y --allow-unauthenticated install python3-os-testr
+else
+    sudo -E apt -y --allow-unauthenticated install python-os-testr
+fi
 sudo -E pip install pexpect
 sudo -E pip install python-group-based-policy-client
 
@@ -250,11 +271,15 @@ for repo in $REPOS; do
 
     fi
 done
-if [ "$1" = "${QUEENS}" ] || [ "${RELEASE_FILE}" = "${QUEENS}" ] || [ "$1" = "${TRAIN}" ] || [ "${RELEASE_FILE}" = "${TRAIN}" ]; then
+if [ "$1" = "${QUEENS}" ] || [ "${RELEASE_FILE}" = "${QUEENS}" ] || [ "$1" = "${TRAIN}" ] || [ "${RELEASE_FILE}" = "${TRAIN}" ] || [ "$1" = "${WALLABY}" ] || [ "${RELEASE_FILE}" = "${WALLABY}"]; then
     ${GIT_CLONE}/openstack/neutron-tempest-plugin.git
     cd neutron-tempest-plugin && git checkout $NEUTRON_TEMPEST_VERSION && cd
 fi
-python exclude_tests.py --undercloud-type ${UNDERCLOUD_TYPE}
+if [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
+    python3 exclude_tests.py --undercloud-type ${UNDERCLOUD_TYPE}
+else
+    python exclude_tests.py --undercloud-type ${UNDERCLOUD_TYPE}
+fi
 # Special hack for juju installs -- for some reason, role is set
 # to "Admin", and not "admin"
 OCATA_FIND='self.creds_client.assign_user_role(user, project, self.admin_role)'
@@ -269,6 +294,8 @@ fi
 
 # Install packages from git repositories using pip
 sudo -E pip install tempest/
+sudo -E pip install --ignore-installed  PyYAML
+sudo -E pip install --ignore-installed  python-subunit
 
 # remaining repos use the release under test
 REPOS="python-openstackclient python-neutronclient"
@@ -276,7 +303,7 @@ for repo in $REPOS; do
     sudo -E pip install $repo/
 done
 sudo -E pip install neutron/
-if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" -o "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" -o "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}"]; then
     sudo -E pip install neutron-tempest-plugin/
 fi
 
@@ -300,11 +327,17 @@ fi
 #wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
 wget -nv http://${NOIRO_CTRLR_IP}/images/cirros-0.3.5-x86_64-disk.img
 wget -nv http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
+sudo chown noiro:noiro .ssh/authorized_keys
+chmod 700 .ssh; chmod 640 .ssh/authorized_keys
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 ssh -o StrictHostKeyChecking=no noiro@${EXT_RTR_IP} ls >> /dev/null
 
 # Set up config file for noirotest
-cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconfig.yaml
+if [ "${FAB_NO}" = "206" -o "${FAB_NO}" = "208" ]; then
+    cp ~/noirotest/testcases/f$(($FAB_NO%100))-director.yaml ~/noirotest/testcases/testconfig.yaml
+else
+    cp ~/noirotest/testcases/f${FAB_NO}-director.yaml ~/noirotest/testcases/testconfig.yaml
+fi 
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     CTRLR_IP_LINE_NO=$(egrep -n controller_user ~/noirotest/testcases/testconfig.yaml | awk -F":" '{print $1}')
@@ -441,13 +474,6 @@ fi
 
 sudo -E pip install funcsigs
 sudo -E pip install unicodecsv
-sudo -E pip install oslo.db==7.0.0
-sudo -E pip install python-cinderclient==3.5.0
-#sudo -E pip install python-openstackclient/
-sudo -E pip install oslo.config==7.0.0
-sudo -E pip install oslo.log==3.45.2
-#sudo -E pip install python-novaclient/
-sudo -E pip install ddt==1.3.1
 if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
     sudo -E pip install oslo.utils==4.1.1
     sudo -E pip install osc-lib==2.0.0
@@ -468,13 +494,25 @@ if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
     sudo -E pip install oslo.serialization==3.1.1
     sudo -E pip install oslo.service==2.1.1
     sudo -E pip install oslo.versionedobjects==2.0.2
+elif [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
+    sudo -E pip install six
+    sudo -E pip install openstacksdk==0.53.0
+    sudo -E pip install oslo.config==8.4.0
+    sudo -E pip install oslo.db==8.5.0
+    sudo -E pip install oslo.log==4.3.0
+    sudo -E pip install python-cinderclient==7.3.0
+    sudo -E pip install ddt==1.3.1
+else
+    sudo -E pip install oslo.db==7.0.0
+    sudo -E pip install python-cinderclient==3.5.0
+    sudo -E pip install oslo.config==7.0.0
+    sudo -E pip install oslo.log==3.45.2
+    sudo -E pip install ddt==1.3.1
+    sudo -E pip install openstacksdk==0.14.0
 fi
-#if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" ]; then
-sudo -E pip install openstacksdk==0.14.0
-cd /home/noiro/
-sudo -E pip install python-openstackclient/
 sudo -E pip install python-novaclient/
-#fi
+sudo -E pip install python-openstackclient/
+
 # Need to use older paramkio - see https://github.com/paramiko/paramiko/issues/1984
 sudo -E pip install paramiko==2.7
 sudo -E pip install keystoneauth1==5.0.0
