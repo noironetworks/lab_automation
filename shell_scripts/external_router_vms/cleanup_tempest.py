@@ -56,11 +56,11 @@ def cleanup_aim_tenants(ssh_client):
     # begin with prj_ prefixes (OpenStack ACI plugin convention). We
     # also exclude tenants that are still configured in openstack.
     cmd = KEY + " openstack project list -c ID  -f value"
-    print cmd
+    print(cmd)
     os_tids_raw = remote_cmd(ssh_client, cmd)
     exclude_tids = [exclude_tid.strip() for exclude_tid in os_tids_raw.split("\n") if exclude_tid]
     cmd = "aimctl manager tenant-find -p | grep prj_"
-    print cmd
+    print(cmd)
     aim_tids_raw = remote_cmd(ssh_client, cmd)
     del_tids = [aim_tid.strip() for aim_tid in aim_tids_raw.split("\n")
                 if aim_tid and aim_tid not in exclude_tids]
@@ -68,18 +68,18 @@ def cleanup_aim_tenants(ssh_client):
     
     for del_tid in del_tids:
         cmd = "aimctl manager tenant-delete %s --force --cascade" % del_tid
-        print cmd
+        print(cmd)
         remote_cmd(ssh_client, cmd)
 
 
 def cleanup_floating_ips(ssh_client):
     cmd = KEY + "neutron floatingip-list -F id -f value"
-    print cmd
+    print(cmd)
     fiplist_raw = remote_cmd(ssh_client, cmd)
     fiplist = [fip.strip() for fip in fiplist_raw.split("\n") if fip]
     for fip in fiplist:
         cmd = KEY + "neutron floatingip-delete %s" % fip
-        print cmd
+        print(cmd)
         remote_cmd(ssh_client, cmd)
 
 def cleanup_buggy_networks(ssh_client):
@@ -87,7 +87,7 @@ def cleanup_buggy_networks(ssh_client):
     #                 resource without any AIM/AID constructs left over
     #                 after a tempest run. For now, just clean it up
     cmd = KEY + "neutron net-list -F id -F name -f value | grep tempest | awk -F' ' '{print $1}'"
-    print cmd
+    print(cmd)
     netlist_raw = remote_cmd(ssh_client, cmd)
     netlist = [net.strip() for net in netlist_raw.split("\n") if net]
     for net in netlist:
@@ -95,10 +95,10 @@ def cleanup_buggy_networks(ssh_client):
         remote_cmd(ssh_client, cmd)
     if netlist:
         cmd = "mysql neutron < /tmp/delete-tempest.txt"
-        print cmd
+        print(cmd)
         remote_cmd(ssh_client, cmd)
         cmd = "rm -f /tmp/delete-tempest.txt"
-        print cmd
+        print(cmd)
         remote_cmd(ssh_client, cmd)
 
 def cleanup_tempest(plugin_type, ssh_client):
@@ -109,8 +109,8 @@ def cleanup_tempest(plugin_type, ssh_client):
     #else:
     #    cleanup_legacy_tenants(ssh_client)
     cmd = KEY + "neutron subnet-delete ext-subnet"
-    print cmd
+    print(cmd)
     remote_cmd(ssh_client, cmd)
     cmd = KEY + "neutron net-delete Datacenter-Out"
-    print cmd
+    print(cmd)
     remote_cmd(ssh_client, cmd)

@@ -15,12 +15,10 @@ ALARMING_TEMPLATE="""
 
 AUTH_TEMPLATE="""
 [auth]
-# un-comment for juju queens
-#admin_domain_name = admin_domain
 tempest_roles = member
 admin_username = admin
 admin_project_name = admin
-admin_domain_name = Default
+admin_domain_name = %(admin_domain_name)s
 use_dynamic_credentials = true
 admin_password = noir0123
 admin_project_id = %(admin_project_id)s
@@ -106,13 +104,12 @@ IDENTITY_TEMPLATE="""
 #admin_domain_scope = True
 uri = http://%(controller_ip)s:5000/v2.0/
 uri_v3 = http://%(controller_ip)s:5000/v3/
-#auth_version = v3
-auth_version = v2
+auth_version = v3
+#auth_version = v2
 username = demo
 alt_username = alt-demo
 tenant_name = demo
 password = %(controller_password)s
-admin_role = admin
 alt_tenant_name = alt-demo
 admin_tenant_name = admin
 admin_username = admin
@@ -123,7 +120,7 @@ admin_password = %(controller_password)s
 domain_name=Default
 
 # Role required to administrate keystone.
-admin_role=admin
+admin_role= %(admin_role)s
 
 # Administrative Username to use for Keystone API requests.
 admin_username=admin
@@ -133,7 +130,7 @@ admin_password=%(controller_password)s
 
 # Admin domain name for authentication (Keystone V3).The same
 # domain applies to user and project.
-admin_domain_name=Default
+admin_domain_name= %(admin_domain_name)s
 
 # The endpoint type to use for the identity service.
 endpoint_type=publicURL
@@ -145,8 +142,8 @@ catalog_type=identity
 
 IDENTITY_FEATURES_TEMPLATE="""
 [identity-feature-enabled]
-#api_v3 = true
-api_v3 = false
+api_v3 = true
+api_v2 = false
 """
 
 IMAGE_TEMPLATE="""
