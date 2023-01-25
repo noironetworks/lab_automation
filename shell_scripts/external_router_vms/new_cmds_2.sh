@@ -30,13 +30,13 @@ DIRECTOR="director"
 JUJU="juju"
 
 # External IPs used on these FABs
-if [[ "${FAB_NO}" = "206" -o "${FAB_NO}" = "208" ]]; then
+if [ "${FAB_NO}" = "206" -o "${FAB_NO}" = "208" ]; then
     GW1_IP=`printf "1.1%02d.1.254" $(($FAB_NO%100))`
     GW2_IP=`printf "1.1%02d.2.254" $(($FAB_NO%100))`
     EXT1_IP=`printf "1.1%02d.1.1" $(($FAB_NO%100))`
     EXT2_IP=`printf "1.1%02d.2.1" $(($FAB_NO%100))`
 # FAB2021 shares ACI fabric with 202, so it's got separate IPs
-elif [[ "${FAB_NO}" = "2021" ]]; then
+elif [ "${FAB_NO}" = "2021" ]; then
     GW1_IP='1.252.1.254'
     GW2_IP='1.253.1.254'
     EXT1_IP='1.252.1.1'
