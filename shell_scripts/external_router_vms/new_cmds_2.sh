@@ -194,10 +194,12 @@ echo "export PYTHONPATH=/home/noiro/noirotest" >> .bashrc
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Get the internal control plane VIP
     CTRLR_VIP=$(ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep control_virtual_ip | awk -F"'" '{print $2}')
+    # Get the public network VIP, so we can skip it when looking for our next hop
+    PUB_VIP=$(ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep public_virtual_ip | awk -F'=' '{print $2}' | awk -F"'" '{print $2}')
     # Now find which controller IP is hosting that VIP
-    CTRLR_VIP_OWNER=$(for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do if [[ "$(ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} 'sudo ip a' | grep ${CTRLR_VIP})" != '' ]]; then echo ${ip}; fi; done)
+    CTRLR_VIP_OWNER=$(for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep Controller | awk -F"'" '{print $2}'); do if [ "$(ssh  -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}  ${OVERCLOUD_USER}@${ip} 'sudo ip a' | grep ${CTRLR_VIP})" != '' ]; then echo ${ip}; fi; done)
     # Finally, get the public/external IP of that controller to use as the next hop for the private IP subnet route
-    NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | grep "${PUB_NET_PREFIX}" | cut -d '/' -f 1 | awk '{print $2}')
+    NEXT_HOP_IP=$(ssh -o StrictHostKeyChecking=no -J ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} ${OVERCLOUD_USER}@${CTRLR_VIP_OWNER} "sudo ip a" | grep ${PUB_NET_PREFIX} | grep -v ${PUB_VIP} | cut -d '/' -f 1 | awk '{print $2}')
     # Set up route to allow access to director internal IPs
     # (note: this is needed so we can get the keystone IP below)
     sudo route add -net ${CLOUD_NET} netmask 255.255.255.0 gateway ${NEXT_HOP_IP}
