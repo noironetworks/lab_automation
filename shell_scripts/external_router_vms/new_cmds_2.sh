@@ -66,12 +66,12 @@ elif [ "$1" = "${OCATA}" -o "${RELEASE_FILE}" = "${OCATA}" ]; then
 elif [ "$1" = "${PIKE}" -o "${RELEASE_FILE}" = "${PIKE}" ]; then
     RELEASE="stable/pike"
     TEMPEST_VERSION="17.0.0"
-    NEUTRON_GIT_HASH="stable/pike"
+    NEUTRON_GIT_HASH="pike-eol"
 elif [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" ]; then
     RELEASE="stable/queens"
     TEMPEST_VERSION="19.0.0"
     NEUTRON_TEMPEST_VERSION="0.5.0"
-    NEUTRON_GIT_HASH="stable/queens"
+    NEUTRON_GIT_HASH="queens-eol"
 elif [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
     RELEASE="stable/train"
     TEMPEST_VERSION="21.0.0"
