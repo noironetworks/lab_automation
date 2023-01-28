@@ -1,0 +1,11 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: all
+  tasks:
+  - name: Step4.5 Remove localrepo that references RHEL7
+    become: yes
+    file:
+        path: /etc/yum.repos.d/localrepo.repo
+        state: absent
+
+

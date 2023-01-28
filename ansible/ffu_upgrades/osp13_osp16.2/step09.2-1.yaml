@@ -1,0 +1,13 @@
+---
+- name: Updating kernel parameters or 16.2 upgrade will fail
+  hosts: undercloud
+  tasks:
+  - name: Steptemp.1
+    blockinfile:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      insertafter: 'parameter_defaults:'
+      block: |
+        #Ansible crap
+          ComputeParameters:
+             KernelArgs: "tsx=off"
+

@@ -1,0 +1,6 @@
+---
+- name: Upgrading Controller nodes with director-deployed Ceph Storage
+  hosts: undercloud
+  tasks:
+  - name: Step5.2 Run the upgrade command with the system_upgrade tag
+    shell: openstack overcloud upgrade run -y --stack overcloud --tags system_upgrade --limit overcloud-controller-2

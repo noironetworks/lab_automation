@@ -1,0 +1,16 @@
+---
+- name: Removing unnecessary packages from the undercloud
+  hosts: undercloud
+  tasks:
+  - name: Step1. Remove the unnecessary packages
+    become: yes
+    command: dnf -y remove --exclude=python-pycadf-common python2*
+  - name: Step2. Remove the content from the /httpboot and /tftpboot directories that includes old images used in Red Hat OpenStack 13
+    become: yes
+    file:
+        path: "{{ item }}"
+        state: absent
+    with_items:
+    - /httpboot
+    - /tftpboot
+

@@ -1,0 +1,7 @@
+---
+- name: Performing a Leapp upgrade on the undercloud
+  hosts: undercloud
+  tasks:
+  - name: Step16. Remove the Leapp packages from the transaction exclusion that is defined in the DNF configuration
+    become: yes
+    command: dnf config-manager --save --setopt exclude=''

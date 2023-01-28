@@ -1,0 +1,92 @@
+# A Heat environment file which can be used to enable a
+# a Neutron Cisco Aci backend on the controller, configured via puppet
+resource_registry:
+
+
+  #controller
+  OS::TripleO::ControllerExtraConfigPre: /opt/ciscoaci-tripleo-heat-templates//nodepre.yaml
+  OS::TripleO::Services::NeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml
+  OS::TripleO::Services::CiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
+  OS::TripleO::Docker::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron/neutron-ml2-ciscoaci.yaml
+  OS::TripleO::Services::CiscoAciAIM: /opt/ciscoaci-tripleo-heat-templates/deployment/aciaim/cisco-aciaim-container-puppet.yaml
+  OS::TripleO::Services::NeutronMetadataAgent: /usr/share/openstack-tripleo-heat-templates/deployment/neutron/neutron-metadata-container-puppet.yaml
+  OS::TripleO::Services::NeutronDhcpAgent: /usr/share/openstack-tripleo-heat-templates/deployment/neutron/neutron-dhcp-container-puppet.yaml
+  #compute
+  OS::TripleO::ComputeExtraConfigPre: /opt/ciscoaci-tripleo-heat-templates//nodepre.yaml
+  OS::TripleO::Services::ComputeNeutronOvsAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron_opflex/neutron-opflex-agent-container-puppet.yaml
+  OS::TripleO::Services::ComputeCiscoAciOpflexAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/opflex/opflex-agent-container-puppet.yaml
+  OS::TripleO::Services::ComputeNeutronMetadataAgent: /opt/ciscoaci-tripleo-heat-templates/deployment/compute_neutron_metadata/compute-neutron-metadata.yaml
+
+  OS::TripleO::Services::CiscoAciLldp: /opt/ciscoaci-tripleo-heat-templates/deployment/lldp/cisco_lldp.yaml
+
+  OS::TripleO::Services::OVNDBs: OS::Heat::None
+  OS::TripleO::Services::OVNController: OS::Heat::None
+  OS::TripleO::Services::OVNMetadataAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronL3Agent: OS::Heat::None
+  OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
+
+ 
+
+  
+
+parameter_defaults:
+# BEGIN ANSIBLE MANAGED BLOCK
+#Ansible crap
+  ComputeParameters:
+     KernelArgs: "tsx=off"
+# END ANSIBLE MANAGED BLOCK
+
+  EC2MetadataIp: 1.100.1.1
+  ControlPlaneDefaultRoute: 1.100.1.1
+  OvercloudControllerFlavor: control
+  OvercloudComputeFlavor: compute
+
+
+  DockerInsecureRegistryAddress:
+  - ostack-pt-1-s1-ucloud-13.ctlplane.localdomain:8787
+  - 1.100.1.1:8787
+  - 10.30.120.22:8787
+
+
+  ControllerCount: 3
+  ComputeCount: 2
+  GlanceBackend: 'swift'
+  NeutronCorePlugin: 'ml2plus'
+  NeutronServicePlugins: 'group_policy,ncp,apic_aim_l3'
+  NeutronEnableIsolatedMetadata: true
+  NeutronEnableForceMetadata: true
+  NeutronPhysicalDevMappings: physnet1:eth1,physnet2:eth2
+  EnablePackageInstall: true
+  ACIScopeNames: true
+  ACIApicHosts: 10.30.120.190
+  ACIApicUsername: admin
+  ACIApicPassword: noir0123
+  ACIApicSystemId: ostack-pt-1-s1
+  ACIMechanismDrivers: 'apic_aim'
+  ACIApicEntityProfile: sauto_ostack-pt-1-s1_aep
+  ACIApicInfraVlan: 3701
+  ACIApicInfraSubnetGateway: 10.0.0.30
+  ACIApicInfraAnycastAddr: 10.0.0.32
+  ACIOpflexUplinkInterface: bond1
+  ACIOpflexEncapMode: vxlan
+  NeutronNetworkVLANRanges: physnet1:1751:1800
+  ACIOpflexVlanRange: 751:800
+  #ACIHostLinks:  '{"101": {"host01|bond0": "vpc-101-102/sauto-po-101-1-25-and-102-1-25", "host02|bond0": "vpc-101-102/sauto-po-101-1-26-and-102-1-26"}, "102": {"host01|bond0": "vpc-101-102/sauto-po-101-1-25-and-102-1-25","host02|bond0": "vpc-101-102/sauto-po-101-1-26-and-102-1-26"}}'
+  HeatEnginePluginDirs: /usr/lib64/heat,/usr/lib/heat,/usr/local/lib/heat,/usr/local/lib64/heat,/usr/lib/python2.7/site-packages/gbpautomation/heat
+
+
+  ACIVpcPairs: 101:102
+
+
+
+  NeutronPluginMl2PuppetTags: 'neutron_plugin_ml2,neutron_plugin_cisco_aci'
+
+
+
+
+  AciVmmMcastRanges: 225.21.1.1:225.21.255.255
+  AciVmmMulticastAddress: 225.21.10.3
+
+
+  ACIYumRepo: http://1.100.1.1:8787/v2/__acirepo
+

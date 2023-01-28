@@ -1,0 +1,23 @@
+---
+- name: Upgrading the overcloud images
+  hosts: undercloud
+  tasks:
+  - name: Step3. Install the packages containing the overcloud QCOW2 archives
+    become: yes
+    command: dnf install -y rhosp-director-images rhosp-director-images-ipa-x86_64
+  - name: Step4. Remove any existing images from the images directory on the stack user’s home (/home/stack/images)
+    file:
+        path: /home/stack/images/*
+        state: absent
+  - name: Step5. Extract the archives
+    unarchive:
+      src: "{{ item }}"
+      dest: /home/stack/images
+    with_items:
+    - /usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar
+    - /usr/share/rhosp-director-images/ironic-python-agent-latest-16.2.tar
+  - name: Step6. Import the latest images into the director
+    command: openstack overcloud image upload --update-existing --image-path /home/stack/images/
+  - name: Step7. Configure your nodes to use the new images
+    shell: openstack overcloud node configure $(openstack baremetal node list -c UUID -f value)
+

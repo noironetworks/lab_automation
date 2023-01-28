@@ -1,0 +1,25 @@
+---
+- name: Run step4.2 of OSP13 => OSP16 In-Place Upgrade
+  hosts: undercloud
+  tasks:
+  - name: Step1. Create bash script to verfiy system meets minimum memory requirements
+    copy:
+      dest: "/home/stack/mem_requirement_check.sh"
+      content: |
+        MEM_MINIMUM=25165824
+        CURRENT_MEM=$(cat /proc/meminfo  | grep MemTotal | awk '{print $2}')
+        if [ "${CURRENT_MEM}" -lt "${MEM_MINIMUM}" ]; then
+            echo "${CURRENT_MEM} is less than minimum memory requirement of ${MEM_MINIMUM}"
+            exit
+        fi
+  - name: Step2. Make the bash script executable
+    file:
+      path: /home/stack/mem_requirement_check.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step3. Run the memory check script
+    shell: /home/stack/mem_requirement_check.sh
+    register: validation_data
+  - name: Step4. Display results
+    debug:
+      msg: "{{ validation_data.stdout }}"
