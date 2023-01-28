@@ -1,0 +1,39 @@
+---
+- name: Enabling repositories for the undercloud
+  hosts: undercloud
+  tasks:
+  - name: Step2. Disable all default repositories, and enable the required Red Hat Enterprise Linux repositories
+    become: yes
+    command: "{{ item }}"
+    with_items:
+    - subscription-manager repos --disable=*
+    - subscription-manager repos --enable=rhel-8-for-x86_64-baseos-eus-rpms  --enable=rhel-8-for-x86_64-appstream-eus-rpms  --enable=rhel-8-for-x86_64-highavailability-eus-rpms  --enable=ansible-2.9-for-rhel-8-x86_64-rpms  --enable=openstack-16.2-for-rhel-8-x86_64-rpms  --enable=fast-datapath-for-rhel-8-x86_64-rpms
+  - name: Step3. Set the container-tools repository module to version 3.0
+    become: yes
+    command: "{{ item }}"
+    with_items:
+    - dnf module disable -y container-tools:rhel8
+    - dnf module enable -y container-tools:3.0
+#  - name: Step4. Set the virt repository module to version 8.2
+#    become: yes
+#    command: "{{ item }}"
+#    with_items:
+#    - dnf module disable -y virt:rhel
+#    - dnf module enable -y virt:8.2
+  - name: Step4.5 Remove repo that references RHEL7
+    become: yes
+    file:
+        path: /etc/yum.repos.d/cobbler-config.repo
+        state: absent
+  - name: Step4.5 Remove localrepo that references RHEL7
+    become: yes
+    file:
+        path: /etc/yum.repos.d/localrepo.repo
+        state: absent
+  - name: Step5. Synchronize the operating system to ensure that your system packages match the operating system version
+    become: yes
+    command: "{{ item }}"
+    with_items:
+    - dnf distro-sync -y
+    - reboot
+

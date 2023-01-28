@@ -1,0 +1,9 @@
+---
+- name: Using predictable NIC names for the undercloud node (part 2)
+  hosts: undercloud
+  tasks:
+  - name: Step3.5 Remove the udev rules for the old interfaces.
+    become: yes
+    file:
+        path: /etc/udev/rules.d/70-persistent-net.rules
+        state: absent

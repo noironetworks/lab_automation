@@ -1,0 +1,10 @@
+---
+- name: Validating the pre-upgrade requirements
+  hosts: undercloud
+  tasks:
+  - name: Step2. Run the openstack tripleo validator run command with the --group pre-upgrade option and include the /usr/libexec/platform-python python runtime environment
+    shell: openstack tripleo validator run --group pre-upgrade --python-interpreter /usr/libexec/platform-python
+    register: validation_output
+  - name: Step2.5 Shw the validation output
+    debug:
+      msg: "{{ validation_output }}"

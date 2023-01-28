@@ -1,0 +1,6 @@
+---
+- name: Creating an overcloud inventory file
+  hosts: undercloud
+  tasks:
+  - name: Step3. Create a static inventory file of all nodes
+    command: tripleo-ansible-inventory --static-yaml-inventory ~/inventory.yaml --stack overcloud
