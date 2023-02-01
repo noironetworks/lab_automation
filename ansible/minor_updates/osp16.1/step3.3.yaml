@@ -25,4 +25,4 @@
     register: ciscorpms_tarball
   - name: Step7. Build the OSP16 cisco containers
     become: yes
-    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -i 16.1 -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
+    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -t latest -i 16.1 -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
