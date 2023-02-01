@@ -6,11 +6,15 @@
   - name: Step1. Set up proxy
     command: subscription-manager config --server.proxy_hostname=proxy.esl.cisco.com --server.proxy_port=80
   - name: Step2. Register
-    command: subscription-manager register --username mcohen2@cisco.com --password Ins3965! --auto-attach
-    ignore_errors: true
-  - name: Step3. Disable all repos
+    command: subscription-manager register --username mcohen2@cisco.com --password Ins3965!
+    ignore_errors: yes
+  - name: Step3. Attach pool
+    command: subscription-manager attach --pool=2c94da8b84819c4401848cf0de265937
+    ignore_errors: yes
+  - name: Step4. Disable all repos
+    ignore_errors: yes
     command: subscription-manager repos --disable=*
-  - name: Step4. Configure RHEL7 repos
+  - name: Step5. Configure RHEL8 repos
     ignore_errors: yes
     command: subscription-manager repos --enable=advanced-virt-for-rhel-8-x86_64-rpms --enable=ansible-2.9-for-rhel-8-x86_64-rpms --enable=fast-datapath-for-rhel-8-x86_64-rpms --enable=openstack-16.1-for-rhel-8-x86_64-rpms --enable=rhel-8-for-x86_64-appstream-eus-rpms --enable=rhel-8-for-x86_64-baseos-eus-rpms --enable=rhel-8-for-x86_64-highavailability-eus-rpms
   - name: Step5. Set RHEL release to 8.2
