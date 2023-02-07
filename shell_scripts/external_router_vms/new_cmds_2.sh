@@ -270,7 +270,8 @@ for repo in $REPOS; do
         else
             cd $repo && git checkout ${RELEASE} && cd
 	fi
-
+    else
+        cd $repo && git checkout ${RELEASE} && cd
     fi
 done
 if [ "$1" = "${QUEENS}" ] || [ "${RELEASE_FILE}" = "${QUEENS}" ] || [ "$1" = "${TRAIN}" ] || [ "${RELEASE_FILE}" = "${TRAIN}" ] || [ "$1" = "${WALLABY}" ] || [ "${RELEASE_FILE}" = "${WALLABY}"]; then
