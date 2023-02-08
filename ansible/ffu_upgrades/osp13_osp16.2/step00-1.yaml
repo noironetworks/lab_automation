@@ -1,0 +1,10 @@
+---
+- name: Remove any proxy settings from hosts
+  hosts: all
+  become: yes
+  tasks:
+  - name: Step1. Remove proxy settings from /etc/environment
+    lineinfile:
+      path: /etc/environment
+      regexp: "proxy+"
+      state: absent

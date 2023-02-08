@@ -25,7 +25,7 @@
     register: ciscorpms_tarball
   - name: Step7. Build the OSP16 cisco containers
     become: yes
-    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -p -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
+    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
   - name: Step7.5. Get name of transitional openstack-ciscorpms tarball
     shell: ls /home/stack/openstack-ciscorpms-repo-15* | sort -r | awk 'NR==1{print $1}'
     register: transitionalrpms_tarball
