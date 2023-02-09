@@ -103,8 +103,9 @@ in the same container in these older releases):
 17. Continue running the ansible playbooks:
 <pre><code>$ ansible-playbook -i inventory.txt step4.1.yaml
 $ ansible-playbook -i inventory.txt step4.2.yaml
+$ ansible-playbook -i inventory.txt step4.3.yaml
 $ ansible-playbook -i inventory.txt step4.4.yaml
-$ ansible-playbook -i inventory.txt step4.5.yaml
+$ ansible-playbook -i inventory.txt step4.7.yaml
 $ ansible-playbook -i inventory.txt step4.8.yaml
 $ ansible-playbook -i inventory.txt step4.9.yaml
 $ ansible-playbook -i inventory.txt step5.1.yaml
