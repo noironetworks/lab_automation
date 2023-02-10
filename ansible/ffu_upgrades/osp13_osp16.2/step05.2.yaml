@@ -5,20 +5,23 @@
     LEAPP_UNSUPPORTED: 1
     LEAPP_DEVEL_TARGET_RELEASE: 8.4
   tasks:
-  - name: Step2. Install the Leapp utility
+  - name: Step2. Install the Leapp utility and jq
     become: yes
     yum:
-      name: leapp
+      name: "{{ item }}"
       state: present
+    with_items:
+    - leapp
+    - jq
   - name: Step3. Download the additional required data files (RPM package changes and RPM repository mapping) attached to the Knowledge Base article 
     become: yes
     unarchive:
-      src: /home/stack/leapp-data17.tar.gz
+      src: /home/stack/leapp-data-21.tar.gz
       dest: /etc/leapp/files
   - name: Step3.1 Remove the tarball
     become: yes
     file:
-        path: /home/stack/leapp-data17.tar.gz
+        path: /home/stack/leapp-data-21.tar.gz
         state: absent
   - name: Step4. Update your Red Hat subscription
     become: yes
@@ -32,7 +35,11 @@
   - name: Step6. Retain the Red Hat Ceph Storage 3 version of ceph-ansible through the upgrade with the to_keep transaction file
     become: yes
     shell: echo 'ceph-ansible' | tee -a /etc/leapp/transaction/to_keep
-  - name: Step7. Adjust the kernel modules that are no longer supported in RHEL 8
+  - name: Step7.0 See if file exists
+    stat:
+        path: /usr/share/leapp-repository/repositories/system_upgrade/el7toel8/actors/kernel/checkkerneldrivers/files/removed_drivers.txt
+    register: file_status
+  - name: Step7.a Adjust the kernel modules that are no longer supported in RHEL 8
     become: yes
     lineinfile:
         path: /usr/share/leapp-repository/repositories/system_upgrade/el7toel8/actors/kernel/checkkerneldrivers/files/removed_drivers.txt
@@ -41,10 +48,30 @@
     with_items:
     - pata_acpi
     - floppy
+    when: file_status.stat.exists
+  - name: Step7.b-1 Adjust the kernel modules that are no longer supported in RHEL 8
+    copy:
+      dest: "/tmp/fix-json.sh"
+      content: |
+        for module in pata_acpi floppy; do
+            jq ". | del(.data[] | select(.driver_name == \"${module}\"))" /etc/leapp/files/device_driver_deprecation_data.json | sudo tee /etc/leapp/files/device_driver_deprecation_data.json_modified
+            mv /etc/leapp/files/device_driver_deprecation_data.json_modified /etc/leapp/files/device_driver_deprecation_data.json
+        done
+    when: not file_status.stat.exists
+  - name: Step7.b-2. Add permission to run the script
+    file:
+      path: /tmp/fix-json.sh
+      state: touch
+      mode: u+x,g+x,o+x
+    when: not file_status.stat.exists
+  - name: Step7.b-3. Run the script
+    become: yes
+    shell: /tmp/fix-json.sh
+    when: not file_status.stat.exists
   - name: Step8. Run the leapp answer command and specify the leapp answer to remove the pam_pkcs11 module
     become: yes
     command: leapp answer --add --section remove_pam_pkcs11_module_check.confirm=True
-  - name: Step10. Remove the persistent network names actor from the Leapp process
+  - name: Step11. Remove the persistent network names actor from the Leapp process
     become: yes
     file:
         path: /usr/share/leapp-repository/repositories/system_upgrade/el7toel8/actors/persistentnetnamesdisable/actor.py

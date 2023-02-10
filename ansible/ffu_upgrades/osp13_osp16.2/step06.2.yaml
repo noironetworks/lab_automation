@@ -12,7 +12,7 @@
     become: yes
     command: "{{ item }}"
     with_items:
-    - dnf module disable -y container-tools:rhel8
+    - dnf module reset -y container-tools
     - dnf module enable -y container-tools:3.0
 #  - name: Step4. Set the virt repository module to version 8.2
 #    become: yes

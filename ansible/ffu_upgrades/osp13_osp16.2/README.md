@@ -32,6 +32,7 @@ $ ./get-overcloud-inventory.sh inventory.txt
 3. Start the ansible playbooks:
 
 <pre><code>$ ansible-playbook -i inventory.txt step00.yaml
+$ ansible-playbook -i inventory.yaml -l overcloud step00-1.yaml
 $ ansible-playbook -i inventory.txt step01.yaml
 $ ansible-playbook -i inventory.txt step02.10.yaml
 $ ansible-playbook -i inventory.txt step02.11.yaml
@@ -71,6 +72,7 @@ The last step of the 5.2 playbook reboots the undercloud.
 6. ssh back into the undercloud, source the environment, and continue running the playbooks:
 
 <pre><code>$ source ~/stackrc
+$ ansible-playbook -i inventory.txt step05.2x_16.yaml
 $ ansible-playbook -i inventory.txt step06.1.yaml
 $ ansible-playbook -i inventory.txt step06.2.yaml
 </code></pre>
@@ -88,33 +90,32 @@ $ ansible-playbook -i inventory.txt step06.8.yaml
 $ ansible-playbook -i inventory.txt step06.9.yaml
 </code></pre>
 
+8. Source the environment, and continue with the playboks:
+
+<pre><code>$ source ~/stackrc
+$ ansible-playbook -i inventory.txt step06.11.yaml
+</code></pre>
+
 The last playbook adds the stack user to the docker group to ensure that the stack user has access
 to container management commands. Refresh the stack user permissions with the following command
 
     exec su -l stack
 
-8. Source the environment, and continue with the playboks:
+Continue running the playbooks:
 
-<pre><code>$ source ~/stackrc
-$ ansible-playbook -i inventory.txt step06.11.yaml
-$ ansible-playbook -i inventory.txt step07.3.yaml
+<pre><code>$ ansible-playbook -i inventory.txt step07.3.yaml
+$ ansible-playbook -i ~/inventory.yaml step07.4.yaml
 </code></pre>
 
 The last playbook may fail due to validations not passing, but in most cases
 these can be ignored.
 
 Continue running the playbooks:
-<pre><code>$ ansible-playbook -i inventory.txt step07.4.yaml
+<pre><code>
 $ ansible-playbook -i inventory.txt step07.5.yaml
 $ ansible-playbook -i inventory.txt step08.1.yaml
-$ ansible-playbook -i inventory.txt step08.3.yaml
 </code></pre>
 
-
-Use the synchronize ansible module to copy the LEAPP data to the overcloud nodes:
-
-<pre><code>$ ansible -i ~/inventory.yaml --become -m synchronize -a "src=/etc/leapp/files dest=/etc/leapp/" overcloud
-</code></pre>
 
 9. Run the playbook-nics.yaml playbook (chapter 8.4):
 
@@ -144,6 +145,14 @@ $ ansible-playbook -i inventory.txt step14.1.yaml
 $ ansible-playbook -i inventory.txt step18.0.yaml
 $ ansible-playbook -i inventory.txt step18.1.yaml
 $ ansible-playbook -i inventory.txt step18.2-1.yaml
+</code></pre>
+The last playbook fails because of the wrong kernel version. You need to ssh into the
+host and reboot it. When it comes back up, re-run the same playbook, and continue with
+the other playbooks:
+
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-1.yaml
+
+
 $ ansible-playbook -i inventory.txt step18.2-2.yaml
 $ ansible-playbook -i inventory.txt step18.2-4.yaml
 </code></pre>
@@ -158,6 +167,12 @@ $ ansible-playbook -i inventory.txt step18.2-4-1.yaml
 </code></pre>
 
 Start the LEAPP upgrade of the second controller:
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-6.yaml</code></pre>
+
+The last playbook fails because of the wrong kernel version. You need to ssh into the
+host and reboot it. When it comes back up, re-run the same playbook, and continue with
+the other playbooks:
+
 <pre><code>$ ansible-playbook -i inventory.txt step18.2-6.yaml
 $ ansible-playbook -i inventory.txt step18.2-7.yaml
 </code></pre>
@@ -172,6 +187,12 @@ $ ansible-playbook -i inventory.txt step18.2-7.yaml
 </code></pre>
 
 Start the LEAPP upgrade of the third controller:
+<pre><code>$ ansible-playbook -i inventory.txt step18.2-8.yaml</code></pre>
+
+The last playbook fails because of the wrong kernel version. You need to ssh into the
+host and reboot it. When it comes back up, re-run the same playbook, and continue with
+the other playbooks:
+
 <pre><code>$ ansible-playbook -i inventory.txt step18.2-8.yaml
 $ ansible-playbook -i inventory.txt step18.2-9.yaml
 </code></pre>
@@ -195,21 +216,33 @@ $ ansible-playbook -i inventory.txt step18.2-11.yaml
 
 15. Run the playbook to upgrade compute-0
 
-<pre><code>$ ansible-playbook -i inventory.txt step18.4-1.yaml
-$ ansible-playbook -i inventory.txt step18.4-2.yaml
+<pre><code>$ ansible-playbook -i inventory.txt step18.5-1.yaml</code></pre>
+
+The last playbook fails because of the wrong kernel version. You need to ssh into the
+host and reboot it. When it comes back up, re-run the same playbook, and continue with
+the other playbooks:
+
+<pre><code>$ ansible-playbook -i inventory.txt step18.5-1.yaml
+$ ansible-playbook -i inventory.txt step18.5-2.yaml
 </code></pre>
 
 16. Live-migrate all the instances on compute-1 to compute-0
 
 17. Run the playbook to upgrade compute-1
 
-<pre><code>$ ansible-playbook -i inventory.txt step18.4-3.yaml
-$ ansible-playbook -i inventory.txt step18.4-4.yaml
+<pre><code>$ ansible-playbook -i inventory.txt step18.5-3.yaml</code></pre>
+
+The last playbook fails because of the wrong kernel version. You need to ssh into the
+host and reboot it. When it comes back up, re-run the same playbook, and continue with
+the other playbooks:
+
+<pre><code>$ ansible-playbook -i inventory.txt step18.5-3.yaml
+$ ansible-playbook -i inventory.txt step18.5-4.yaml
 </code></pre>
 
 18. Continue running the playbooks.
 
-<pre><code>$ ansible-playbook -i inventory.txt step18.5.yaml
+<pre><code>$ ansible-playbook -i inventory.txt step18.6.yaml
 $ ansible-playbook -i inventory.txt step25.1.yaml
 $ ansible-playbook -i inventory.txt step25.3.yaml
 </code></pre>
