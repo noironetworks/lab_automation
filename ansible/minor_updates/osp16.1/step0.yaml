@@ -6,10 +6,13 @@
   - name: Step1. Set up proxy
     command: subscription-manager config --server.proxy_hostname=proxy.esl.cisco.com --server.proxy_port=80
   - name: Step2. Register
-    command: subscription-manager register --username mcohen2@cisco.com --password Ins3965!
+    command: subscription-manager register --force --username mcohen2@cisco.com --password Ins3965!
+    ignore_errors: yes
+  - name: Step3. Refresh
+    command: subscription-manager refresh
     ignore_errors: yes
   - name: Step3. Attach pool
-    command: subscription-manager attach --pool=2c94da8b84819c4401848cf0de265937
+    command: subscription-manager attach --pool=2c948a4d826915ce01826935839e0850
     ignore_errors: yes
   - name: Step4. Disable all repos
     ignore_errors: yes
