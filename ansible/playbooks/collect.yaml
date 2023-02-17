@@ -1,0 +1,17 @@
+---
+- name: Set up subscription manager for the nodes
+  hosts: all
+  become: yes
+  tasks:
+  - name: Step1. Make snapshot directory
+    file:
+        path: "/home/heat-admin/snap-{{ ansible_date_time.time }}"
+        state: directory
+    register: snapshot_dir
+  - name: Step2. Collect GBP policy
+    shell: podman exec -u root ciscoaci_opflex_agent gbp_inspect -fprq DmtreeRoot -t dump --socket /var/run/opflex/opflex-agent-inspect.sock > "{{ snapshot_dir.path }}/gbp.json"
+  - name: Step3. Collect EP file snapshot
+    synchronize:
+        src: /var/lib/opflex/files/
+        dest: "{{ snapshot_dir.path }}"
+    delegate_to: "{{ inventory_hostname }}"
