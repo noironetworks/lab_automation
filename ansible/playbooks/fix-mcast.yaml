@@ -1,0 +1,7 @@
+---
+- name: Fix IGMP membership limits
+  hosts: all
+  become: yes
+  tasks:
+  - name: Step1. Fix max IGMP memberships
+    shell: echo 100 > /proc/sys/net/ipv4/igmp_max_memberships
