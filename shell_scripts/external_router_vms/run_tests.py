@@ -320,7 +320,7 @@ class TempestTestRunner(Runner):
                             'disk': '1', 'swap': '0'},
                            {'name': 'm1.alt_tiny', 'cpus': '1', 'ram': '512',
                             'disk': '1', 'swap': '0'},
-                           {'name': 'm1.noirotest', 'cpus': '1', 'ram': '2048',
+                           {'name': 'm1.noirotest', 'cpus': '1', 'ram': '1024',
                             'disk': '8', 'swap': '0'},
                            {'name': 'm1.medium', 'cpus': '2', 'ram': '4096',
                             'disk': '40', 'swap': '0'},
