@@ -28,19 +28,6 @@
         content: "{{ second_values | join('\n') }}"
         dest: ~/{{ tempest_dir }}/etc/tempest.conf
 
-    - name: Replace lines that begin with specific patterns
-      lineinfile:
-        path: ~/{{ tempest_dir }}/etc/tempest.conf
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.replace }}"
-      loop:
-        - { regexp: '^\s*tempest_roles\s*=\s*member\s*$', replace: '' }
-        - { regexp: '^\s*admin_domain_name\s*=\s*%(admin_domain_name)s\s*$', replace: '' }
-        - { regexp: '^\s*use_dynamic_credentials\s*=\s*true\s*$', replace: '' }
-        - { regexp: '^\s*auth_version\s*=\s*v3\s*$', replace: 'auth_version = v2' }
-        - { regexp: '^\s*api_v3\s*=\s*true\s*$', replace: 'api_v2 = true' }
-      when: 
-
     - name: Remove consecutive empty lines from tempest.conf
       replace:
         path: ~/{{ tempest_dir }}/etc/tempest.conf
@@ -61,10 +48,21 @@
         content: "{{ formatted_contents }}"
         dest: ~/{{ tempest_dir }}/etc/tempest.conf
 
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^tempest_roles = member$'
+
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^use_dynamic_credentials = true$'
+
     - name: Display Tempest Parameters
       debug:
         var: tempest_params
-
 
     - name: Update cwd in tempest.conf
       lineinfile:
@@ -144,11 +142,23 @@
         regexp: '^alt_password = .*'
         line: "alt_password = {{ tempest_params.controller_password }}"
 
-    - name: Update alt password in tempest.conf
-      lineinfile:
+    - name: Update admin_role in tempest.conf
+      ansible.builtin.replace:
         path: ~/{{ tempest_dir }}/etc/tempest.conf
-        regexp: '^\s*admin_password\s*=\s*%\(([^)]+)\)s\s*$'
-        line: "admin_password = {{ tempest_params.controller_password }}"
+        regexp: '^admin_password.*'
+        replace: "admin_password = {{ tempest_params.controller_password }}"
+
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^admin_domain_name.*'
+
+    - name: Add line after pattern
+      ansible.builtin.lineinfile:
+        path:  ~/{{ tempest_dir }}/etc/tempest.conf
+        insertafter: 'admin_password = noir0123'
+        line: "admin_domain_name = {{ tempest_params.admin_domain_name }}"
 
     - name: Update admin_project_id in tempest.conf
       lineinfile:
@@ -162,15 +172,8 @@
         regexp: '^public_network_id = .*'
         line: "public_network_id = {{ tempest_params.external_network }}"
 
-    - name: Update admin_domain_name in tempest.conf
-      lineinfile:
-        path: ~/{{ tempest_dir }}/etc/tempest.conf
-        regexp: '^admin_domain_name = %\(([^)]+)\)s$'
-        line: "admin_domain_name = {{ tempest_params.admin_domain_name }}"
-
     - name: Update admin_role in tempest.conf
-      lineinfile:
+      ansible.builtin.replace:
         path: ~/{{ tempest_dir }}/etc/tempest.conf
-        regexp: '^admin_role = .*'
-        line: "admin_role = {{ tempest_params.admin_role }}"
-
+        regexp: '^admin_role.*'
+        replace: "admin_role = {{ tempest_params.admin_role }}"
