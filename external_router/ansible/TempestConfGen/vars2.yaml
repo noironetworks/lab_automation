@@ -18,15 +18,19 @@
 
   tasks:
     - name: Get Admin Project ID
-      command: >
-        bash -c "source ~/overcloudrc && openstack project show admin -c id -f value"
-      register: admin_project_id_result
+      openstack.cloud.project_info:
+        name: admin
+      register: admin_project_check
+
+    - name: Extract Admin Project ID
+      set_fact:
+        project_uuid: "{{ admin_project_check.projects[0].id }}"
 
     - name: Print admin project id
       debug:
-        var: admin_project_id_result.stdout
+        var: project_uuid
 
     - name: Update Tempest Parameters with Admin Project ID
       set_fact:
-        tempest_params: "{{ tempest_params | combine({'admin_project_id': admin_project_id_result.stdout | trim}) }}"
+        tempest_params: "{{ tempest_params | combine({'admin_project_id': project_uuid | trim}) }}"
 
