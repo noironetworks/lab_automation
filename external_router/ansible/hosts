@@ -1,0 +1,11 @@
+[localhost]
+
+[all:vars]
+cirros_img=cirros-0.3.5-x86_64-disk.img
+ubuntu_img=ubuntu_multi_nics.qcow2
+FAB_NAME=206
+tempest_dir=tempest004
+controller_ip=172.28.184.56
+admin_domain_name=Default
+admin_role=admin
+branch=stable/queens

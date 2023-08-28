@@ -1,0 +1,6 @@
+- name: Modify tempest configuration
+  hosts: localhost
+  tasks:
+    - name: generate tempest conf file
+      command: >
+        bash -c "source ~/overcloudrc && discover-tempest-config --out ~/{{ tempest_dir }}/etc/tempest.conf"
