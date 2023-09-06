@@ -1,7 +1,6 @@
 ---
 - name: Configure IP Tunnel Connection
-  connection: local
-  hosts: hostname
+  hosts: overcloud-controller-0
   become: yes
   tasks:
    - name: Add IP Tunnel Connection
