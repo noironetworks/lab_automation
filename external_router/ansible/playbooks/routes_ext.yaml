@@ -1,0 +1,25 @@
+---
+- name: Configure static routes
+  connection: local
+  hosts: localhost
+  become: yes
+  tasks:
+   - name: Add routes for external network
+     community.general.nmcli:
+      type: ethernet
+      ifname: "{{ EXT_NET_DEV }}"
+      conn_name: "cloud-init {{ EXT_NET_DEV }}"
+      routes4: 
+        - 60.60.60.0/24 1.251.1.254
+        - 66.66.66.0/24 1.251.1.254
+      state: present
+
+#TODO fix below
+   - name: Rload service since this module sucks
+     command: 
+      cmd: "systemctl restart NetworkManager"
+
+   - name: Reapply config since this module sucks
+     command: 
+      cmd: "nmcli device reapply {{ EXT_NET_DEV }}"
+

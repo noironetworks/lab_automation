@@ -1,0 +1,15 @@
+---
+- name: Configure IP Tunnel Connection
+  connection: local
+  hosts: localhost
+  become: yes
+  tasks:
+   - name: Add IP Tunnel Connection
+     community.general.nmcli:
+      type: ipip
+      conn_name: tun0
+      ip_tunnel_local: "{{ EXT_RTR_IP }}"
+      ip_tunnel_remote: "{{ CONTROLLER0_IP }}"
+      ip4: 10.42.1.2/30
+      routes4: "{{ INTERNAL_API_SUBNET }}"
+      state: present
