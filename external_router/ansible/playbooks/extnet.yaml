@@ -1,0 +1,41 @@
+---
+- name: Create external router for tempest
+  hosts: localhost
+  vars:
+          debug: false
+  tasks:
+   - name: Network info
+     openstack.cloud.networks_info:
+        name: sauto_l3out-2
+     register: network_check
+
+   - name: Debug
+     ansible.builtin.debug:
+      var: network_check
+     when: debug is true
+
+   - name: Create external network if not present
+     command: 
+        bash -c "source ~/overcloudrc && neutron net-create sauto_l3out-2 --router:external True --shared --apic:distinguished_names type=dict ExternalNetwork=uni/tn-common/out-{{ FAB_NAME }}_l3out-2/instP-{{ FAB_NAME }}_l3out-2_epg"
+     when: network_check.networks[0] is not defined
+
+   - name: Execute subnet create
+     command:
+        bash -c "source ~/overcloudrc && neutron subnet-create sauto_l3out-2 60.60.60.0/24 --name ext-subnet --disable-dhcp --gateway 60.60.60.1"
+     ignore_errors: yes
+
+   - name: Execute subnet create
+     command:
+        bash -c "source ~/overcloudrc && neutron subnet-create sauto_l3out-2 66.66.66.0/24 --name snat-subnet --gateway 66.66.66.1 --apic:snat_host_pool True"
+     ignore_errors: yes
+
+   - name: Extract UUID from network info
+     set_fact:
+        external_network_uuid: "{{ network_check.networks[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+     when: network_check.networks[0] is defined
+
+   - name: Print network uuid
+     debug:
+        var: external_network_uuid
+     when: network_check.networks[0] is defined
+ 
