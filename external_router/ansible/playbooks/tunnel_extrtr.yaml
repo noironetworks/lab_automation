@@ -9,7 +9,7 @@
       type: ipip
       conn_name: tun0
       ip_tunnel_local: "{{ EXT_RTR_IP }}"
-      ip_tunnel_remote: "{{ CONTROLLER0_IP }}"
+      ip_tunnel_remote: "{{ hostvars['overcloud-controller-0']['external_ip'] }}"
       ip4: 10.42.1.2/30
       routes4: "{{ INTERNAL_API_SUBNET }}"
       state: present
