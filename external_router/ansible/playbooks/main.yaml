@@ -1,0 +1,12 @@
+---
+- name: Create external network
+  import_playbook: extnet.yaml
+- name: Create external routes
+  import_playbook: routes_ext.yaml
+- name: Get glance images
+  import_playbook: fetch_images.yaml
+- name: Create glance images
+  import_playbook: image.yaml
+- name: Create flavors
+  import_playbook: flavor.yaml
+
