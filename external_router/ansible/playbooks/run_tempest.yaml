@@ -1,0 +1,15 @@
+---
+- name: Run tempest job in tmux
+  hosts: localhost
+  vars:
+          debug: false
+  tasks:
+   - name: Gen tempest config
+     command: 
+        bash -c "source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf"
+
+   - name: Run tempest
+     command:
+        bash -c "source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd tempest_run && tempest run'"
+     ignore_errors: yes
+
