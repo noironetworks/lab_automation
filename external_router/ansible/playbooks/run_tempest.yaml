@@ -10,6 +10,6 @@
 
    - name: Run tempest
      command:
-        bash -c "source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd ~/tempest_run && tempest run'"
+        bash -c "source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout'"
      ignore_errors: yes
 
