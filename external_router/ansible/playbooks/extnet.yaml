@@ -16,7 +16,7 @@
 
    - name: Create external network if not present
      command: 
-        bash -c "source ~/overcloudrc && neutron net-create sauto_l3out-2 --router:external True --shared --apic:distinguished_names type=dict ExternalNetwork=uni/tn-common/out-{{ FAB_NAME }}_l3out-2/instP-{{ FAB_NAME }}_l3out-2_epg"
+        bash -c "source ~/overcloudrc && neutron net-create sauto_l3out-2 --router:external True --shared --apic:distinguished_names type=dict ExternalNetwork=uni/tn-common/out-fab{{ FAB_ID }}_2/instP-fab{{ FAB_ID }}_2"
      when: network_check.networks[0] is not defined
 
    - name: Execute subnet create
