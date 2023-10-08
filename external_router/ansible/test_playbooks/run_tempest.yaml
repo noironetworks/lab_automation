@@ -1,6 +1,6 @@
 ---
 - name: Run tempest job in tmux
-  hosts: localhost
+  hosts: all
   vars:
           debug: false
   tasks:

@@ -1,0 +1,13 @@
+[fab204]
+10.30.120.59
+
+[fab2041]
+172.28.184.128
+
+[localhost]
+
+[all:vars]
+ansible_user=noiro
+ansible_password=noir0123
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
