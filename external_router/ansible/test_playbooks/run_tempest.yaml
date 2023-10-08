@@ -6,10 +6,10 @@
   tasks:
    - name: Gen tempest config
      command: 
-        bash -c "source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf"
+        bash -c "source ~/.venv/bin/activate && source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf"
 
    - name: Run tempest
      command:
-        bash -c "source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout'"
+        bash -c "source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout'"
      ignore_errors: yes
 
