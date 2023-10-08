@@ -4,12 +4,25 @@
   vars:
           debug: false
   tasks:
+   - name: Export timestamp
+     ansible.builtin.shell: date +%s
+     register: my_result
+
+   - name: Save timestamp
+     set_fact:
+        timestamp: "/tmp/tempest_{{ my_result.stdout_lines[0] }}"
+
    - name: Gen tempest config
-     command: 
-        bash -c "source ~/.venv/bin/activate && source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf"
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf
+     args:
+       executable: /bin/bash
 
    - name: Run tempest
-     command:
-        bash -c "source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tests -d -n tempest 'cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout'"
-     ignore_errors: yes
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tests -d -n tempest "cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout;touch {{ timestamp }}"
+     args:
+       executable: /bin/bash
+
+   - name: Wait until the file {{ timestamp }} is present before continuing
+     ansible.builtin.wait_for:
+       path: "{{ timestamp }}"
 
