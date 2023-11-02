@@ -24,5 +24,6 @@
 
    - name: Wait until the file {{ timestamp }} is present before continuing
      ansible.builtin.wait_for:
+       timeout: 3600
        path: "{{ timestamp }}"
 
