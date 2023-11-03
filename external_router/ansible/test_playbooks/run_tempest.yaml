@@ -13,7 +13,7 @@
         timestamp: "/tmp/tempest_{{ my_result.stdout_lines[0] }}"
 
    - name: Gen tempest config
-     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && discover-tempest-config network-feature-enabled.ipv6 false service_enabled.cinder false service_available.cinder false service_enabled.ceilometer false --out /home/noiro/tempest_run/etc/tempest.conf
      args:
        executable: /bin/bash
 
