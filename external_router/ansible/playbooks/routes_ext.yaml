@@ -10,8 +10,8 @@
       ifname: "{{ EXT_NET_DEV }}"
       conn_name: "cloud-init {{ EXT_NET_DEV }}"
       routes4: 
-        - 60.60.60.0/24 "{{ EXT_NEXT_HOP }}"
-        - 66.66.66.0/24 "{{ EXT_NEXT_HOP }}"
+        - 60.60.60.0/24 {{ EXT_NEXT_HOP }}
+        - 66.66.66.0/24 {{ EXT_NEXT_HOP }}
       state: present
 
 #TODO fix below
