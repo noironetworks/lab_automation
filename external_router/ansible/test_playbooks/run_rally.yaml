@@ -1,0 +1,33 @@
+---
+- name: Run rally job in tmux
+  hosts: all
+  vars:
+          debug: false
+  tasks:
+   - name: Create rally DB
+     ansible.builtin.shell:  source ~/.venv/bin/activate && rally db recreate
+
+   - name: Destroy previous rally
+     ansible.builtin.file:
+       state: absent
+       path: /home/noiro/.rally
+
+   - name: Create rally env
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && rally  deployment create --fromenv --name=myrally
+     args:
+       executable: /bin/bash
+
+   - name: Create rally conf
+     copy:
+      dest: "/home/noiro/.rally/rally.conf"
+      content: |
+        [openstack]
+        neutron_bind_l2_agent_types = Open vSwitch agent,Linux bridge agent, OpFlex Open vSwitch agent
+     args:
+
+   - name: Run rally
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/.rally/openrc && tmux new-session -s tests -d -n rally "rally --config-file ~/.rally/rally.conf task start neutron.yaml;sleep 120"
+     args:
+       executable: /bin/bash
+
+
