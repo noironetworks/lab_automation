@@ -288,7 +288,7 @@ class TempestTestRunner(Runner):
         cmd = self.KEY + cmd1 + cmd2 + cmd3
         print(cmd)
         subprocess.check_output(['bash','-c', cmd])
-        version_string = subprocess.check_output(['bash','-c', cmd]).decode()
+        version_string = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
         version_list = [version.strip()
                         for version in version_string.split("\n") if version]
         version = version_list[0]
@@ -308,9 +308,9 @@ class TempestTestRunner(Runner):
         for image in images:
             image_uuid = self.upload_test_image(image_file=image['image'],
                                                 image_name=image['name'])
-            if image['name'] is 'cirros.new':
+            if image['name'] == 'cirros.new':
                 self.image_uuid = image_uuid
-            if image['name'] is 'cirros.alt':
+            if image['name'] == 'cirros.alt':
                 self.alt_image_uuid = image_uuid
         # for OSD and JuJu installs, we also have to configure the image flavor
         print(("undercloud type is %s" % self.undercloud_type))
@@ -320,7 +320,7 @@ class TempestTestRunner(Runner):
                             'disk': '1', 'swap': '0'},
                            {'name': 'm1.alt_tiny', 'cpus': '1', 'ram': '512',
                             'disk': '1', 'swap': '0'},
-                           {'name': 'm1.noirotest', 'cpus': '1', 'ram': '2048',
+                           {'name': 'm1.noirotest', 'cpus': '1', 'ram': '1024',
                             'disk': '8', 'swap': '0'},
                            {'name': 'm1.medium', 'cpus': '2', 'ram': '4096',
                             'disk': '40', 'swap': '0'},
@@ -328,9 +328,9 @@ class TempestTestRunner(Runner):
                             'disk': '80', 'swap': '0'}]
             for flavor in flavor_list:
                 flavor_uuid = self.configure_image_flavor(flavor)
-                if flavor['name'] is 'm1.tiny':
+                if flavor['name'] == 'm1.tiny':
                     self.flavor_uuid = flavor_uuid
-                if flavor['name'] is 'm1.alt_tiny':
+                if flavor['name'] == 'm1.alt_tiny':
                     self.alt_flavor_uuid = flavor_uuid
         self.configure_neutron()
 
@@ -398,7 +398,7 @@ class TempestTestRunner(Runner):
         """
         cmd = self.KEY + 'openstack image show %s -c id -f value' % image_name
         try:
-            image_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+            image_uuid = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
             # Make sure it's a valid UUID
             try:
                 image_uuid = [iuuid.strip() for iuuid in image_uuid.split("\n") if iuuid][0]
@@ -419,14 +419,14 @@ class TempestTestRunner(Runner):
         print(cmd)
         subprocess.check_output(['bash','-c', cmd])
         cmd = self.KEY + 'openstack image show %s -c id -f value' % image_name
-        image_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+        image_uuid = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
         image_uuid = [iuuid.strip() for iuuid in image_uuid.split("\n") if iuuid][0]
         print(image_uuid)
         return image_uuid
 
     def get_admin_project_id(self):
         cmd = self.KEY + "openstack project show admin -c id -f value"
-        admin_project_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+        admin_project_uuid = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
         admin_project_uuid = [puuid.strip() for puuid in admin_project_uuid.split("\n") if puuid][0]
         print(admin_project_uuid)
         return admin_project_uuid
@@ -442,7 +442,7 @@ class TempestTestRunner(Runner):
         cmd = self.KEY + 'openstack flavor show %s -c id -f value' % flavor['name']
         print(cmd)
         try:
-            flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+            flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
             # Make sure it's a valid UUID
             try:
                 flavor_uuid = [iuuid.strip() for iuuid in flavor_uuid.split("\n") if iuuid][0]
@@ -464,7 +464,7 @@ class TempestTestRunner(Runner):
         print(cmd)
         subprocess.check_output(['bash','-c', cmd])
         cmd = self.KEY + 'openstack flavor show %s -c id -f value' % flavor['name']
-        flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode()
+        flavor_uuid = subprocess.check_output(['bash','-c', cmd]).decode('utf-8')
         flavor_uuid = [iuuid.strip() for iuuid in flavor_uuid.split("\n") if iuuid][0]
         print(flavor_uuid)
         return flavor_uuid
@@ -488,7 +488,7 @@ class TempestTestRunner(Runner):
         cmd = self.KEY + 'openstack network show sauto_l3out-2 -c id -f value'
         net_uuid, stderr = self.remote_cmd(ssh_client, cmd)
         if not stderr:
-            net_uuid = [nuuid.strip() for nuuid in net_uuid.split("\n") if nuuid][0]
+            net_uuid = [nuuid.strip() for nuuid in net_uuid.decode('utf-8').split("\n") if nuuid][0]
             # Make sure it's a valid UUID
             try:
                 valid_uuid = uuid.UUID(net_uuid)
@@ -517,7 +517,7 @@ class TempestTestRunner(Runner):
         ssh_client = self.get_ssh_client(host)
         cmd = self.KEY + 'openstack network show sauto_l3out-2 -c id -f value'
         net_uuid, _ = self.remote_cmd(ssh_client, cmd)
-        net_uuid = net_uuid.decode()
+        net_uuid = net_uuid.decode('utf-8')
         print(net_uuid)
         print(_)
         net_uuid = [nuuid.strip() for nuuid in net_uuid.split("\n") if nuuid][0]
@@ -553,7 +553,7 @@ class TempestTestRunner(Runner):
         # Get the IP address of the OpenStack controller
         cmd = self.KEY + "echo $OS_AUTH_URL | awk -F'/' '{print $3}' | awk -F':' '{print $1}'"
         controller_ip, _ = self.remote_cmd(ssh_client, cmd)
-        controller_ip = [ip.strip() for ip in controller_ip.split("\n") if ip][0]
+        controller_ip = [ip.strip() for ip in controller_ip.decode('utf-8').split("\n") if ip][0]
         if self.undercloud_type == 'juju':
             admin_domain_name = 'admin_domain'
             admin_role = 'Admin'
@@ -696,7 +696,7 @@ class NautoPostDeployRunner(Runner):
         cmd = self.KEY + "neutron agent-list | grep dhcp | awk -F'|' '{print $4}'"
         print(cmd)
         hosts, _ = self.remote_cmd(ssh_client, cmd)
-        hosts = hosts.decode()
+        hosts = hosts.decode('utf-8')
         return [host.strip() for host in hosts.split("\n") if host]
 
     def update_dhcp_agent_cfg(self, ssh_client):
@@ -777,7 +777,7 @@ class NautoPostDeployRunner(Runner):
         cmd = self.KEY + "nova service-list  | grep nova-compute | awk -F'|' '{print $4}'"
         print(cmd)
         hosts, _ = self.remote_cmd(ssh_client, cmd)
-        hosts = hosts.decode()
+        hosts = hosts.decode('utf-8')
         return [host.strip() for host in hosts.split("\n") if host]
 
     def update_metadata_agent_cfg(self, hosts):
