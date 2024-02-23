@@ -1,0 +1,23 @@
+---
+  - name: Crate firmware policy
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Delete the firmwareOSource
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: get
+           path: /api/mo/uni/controller/ctrlrfwpol.json
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . > /tmp/ctrlr-fw-policy.txt
+        args:
+              executable: /bin/sh

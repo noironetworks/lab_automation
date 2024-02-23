@@ -1,0 +1,21 @@
+---
+   - name: Get EP path state, and save as a JSON file
+     gather_facts: false
+     hosts: localhost
+     tasks:
+       - name: Get paths to endpoints using password authentication
+         aci_rest:
+           host: 172.21.84.28
+           username: admin
+           password: ins3965!
+           method: get
+           path: /api/mo/uni/tn-common/ap-sauto-osd-app/epg-sauto-osd-epg-vlan301.json?query-target=subtree&target-subtree-class=fvRsCEpToPathEp
+           validate_certs: false
+           timeout: 30
+         delegate_to: localhost
+         register: query_result
+       - name: Save the path state as JSON
+         shell: |
+              echo '{{ query_result | to_json }}' | jq -r .imdata > /tmp/sauto-osd-epg-vlan301.json
+         args:
+              executable: /bin/sh

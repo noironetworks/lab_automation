@@ -1,0 +1,47 @@
+---
+  - name: Query all firmware sources
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Delete the firmwareOSource
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: delete
+           path: /api/mo/uni/fabric/fwrepop/osrc-aci-apic-dk9.5.0.1k.iso.json
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . > /tmp/fw-inventory.txt
+        args:
+              executable: /bin/sh
+      - name: Delete the image as well
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/fwrepo/fw-aci-apic-dk9.5.0.1k.json
+           validate_certs: false
+           content:
+               "firmwareFirmware": {
+                 "attributes": {
+                   "deleteIt": "yes",
+                 }
+               }
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . >> /tmp/fw-inventory.txt
+        args:
+              executable: /bin/sh

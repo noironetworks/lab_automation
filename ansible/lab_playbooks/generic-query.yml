@@ -1,0 +1,23 @@
+---
+  - name: Generic Query playbook
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Generic Query task
+        aci_rest:
+           host: 10.30.120.120
+           username: admin
+           password: noir0123
+           method: delete
+           path: /api/mo/uni/phys-openupi-pdom.json
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . > /tmp/generic-query.txt
+        args:
+              executable: /bin/sh

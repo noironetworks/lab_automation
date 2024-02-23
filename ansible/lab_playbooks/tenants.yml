@@ -1,0 +1,20 @@
+---
+   - name: Get tenants using password authentication
+     gather_facts: false
+     hosts: localhost
+     tasks:
+       - name: Get tenants using password authentication
+         aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: get
+           path: /api/node/class/fvTenant.json
+           validate_certs: false
+           timeout: 120
+         delegate_to: localhost
+         register: query_result
+       - name: Display the config
+         debug:
+           msg: "The tenants are {{ query_result }}"
+

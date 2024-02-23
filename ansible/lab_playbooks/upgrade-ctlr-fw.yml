@@ -1,0 +1,55 @@
+---
+  - name: Trigger a Controller FW update
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Configure the firmware Version
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/uni/controller/ctrlrfwpol.json
+           validate_certs: false
+           content:
+               "firmwareCtrlrFwP": {
+                 "attributes": {
+                   "version": "apic-4.2(4i)",
+                   "ignoreCompat": "yes"
+                 }
+               }
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . > /tmp/ctrlr-fw-policy.txt
+        args:
+              executable: /bin/sh
+      - name: Trigger the firmware update
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: post
+           path: /api/mo/uni/controller/ctrlrmaintpol.json
+           validate_certs: false
+           content:
+               "maintCtrlrMaintP": {
+                 "attributes": {
+                   "adminState": "up",
+                   "adminSt": "triggered"
+                 }
+               }
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r . >> /tmp/ctrlr-fw-policy.txt
+        args:
+              executable: /bin/sh

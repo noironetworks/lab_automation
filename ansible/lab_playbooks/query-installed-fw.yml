@@ -1,0 +1,46 @@
+---
+  - name: Query for the DNs of all the installed firmware
+    gather_facts: false
+    hosts: localhost
+    tasks:
+      - name: Query for the DNs of all the installed switch firmware
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: get
+           path: /api/mo/fwrepo.json?query-target=subtree&target-subtree-class=firmwareFirmware
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r .imdata[] | jq 'select(.firmwareFirmware.attributes.type=="switch")' | jq -r .firmwareFirmware.attributes.dn  > /tmp/switch-fw.txt
+        args:
+              executable: /bin/sh
+      - name: Query for the DNs of all the installed controller firmware
+        aci_rest:
+           host: 172.28.184.50
+           username: admin
+           password: noir0123
+           method: get
+           path: /api/mo/fwrepo.json?query-target=subtree&target-subtree-class=firmwareFirmware
+           validate_certs: false
+        delegate_to: localhost
+        register: query_result
+      - name: Save the path state as JSON
+        debug:
+           msg: 'Result is {{ query_result | to_json }}'
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r .imdata[] | jq 'select(.firmwareFirmware.attributes.type=="controller")' | jq -r .firmwareFirmware.attributes.dn > /tmp/controller-fw.txt
+        args:
+              executable: /bin/sh
+      - name: Save the path state as JSON
+        shell: |
+              echo '{{ query_result | to_json }}' | jq -r .imdata[] > /tmp/installed-fw.txt
+        args:
+              executable: /bin/sh
