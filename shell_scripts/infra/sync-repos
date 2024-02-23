@@ -1,0 +1,36 @@
+#!/bin/bash
+exec 1>/tmp/sync-repos.out 2>/tmp/sync-repos.err
+
+#
+# Globals
+#
+REPOSDIR=/home/madhami/repos
+
+#
+# main script
+#
+echo "Started: " `date`
+cd "${REPOSDIR}"
+REPOS=
+for repo in `find . -name .git -type d -print`
+do
+  (
+    repo=`dirname "${repo}"`
+    echo "Syncing: '${repo}'"
+    cd "${repo}"
+    git checkout temp
+    git fetch --all -p
+    for branch in `git branch -a --list | grep '^  remotes/origin/' | grep -v HEAD | cut -d/ -f3-`
+    do
+      git branch --track -f "$branch" "origin/$branch"
+      git checkout "$branch" && git show --stat && git push downstream "$branch"
+    done
+    echo "Completed: '$branch'"
+    echo "--------------------"
+    echo ""
+  )
+done
+echo "Completed: " `date`
+echo "------------------------------------------------------------"
+echo ""
+echo ""
