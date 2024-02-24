@@ -1,0 +1,68 @@
+--- 
+- name: Create Image for tempest
+  hosts: localhost
+  tasks:
+
+    - name: Create new image if not present
+      openstack.cloud.image:
+        name: cirros.new
+        disk_format: qcow2
+        container_format: bare
+        filename: "{{ cirros_img }}"
+        is_public: true
+
+    - name: Gather previously created image named cirros_new
+      openstack.cloud.image_info:
+        image: cirros.new
+      register: new_image_check
+
+    - name: Extract UUID from direct_url
+      set_fact:
+        new_image_uuid: "{{ new_image_check.images[0].direct_url | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print new image UUID
+      debug:
+        var: new_image_uuid
+
+    - name: Create alt image if not present
+      openstack.cloud.image:
+        name: cirros.alt
+        disk_format: qcow2
+        container_format: bare
+        filename: "{{ cirros_img }}"
+        is_public: true
+
+    - name: Gather previously created image named cirros_alt
+      openstack.cloud.image_info:
+        image: cirros.alt
+      register: alt_image_check
+
+    - name: Extract UUID from direct_url
+      set_fact:
+        alt_image_uuid: "{{ alt_image_check.images[0].direct_url | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print new image UUID
+      debug:
+        var: alt_image_uuid
+
+    - name: Create multi nics image if not present
+      openstack.cloud.image:
+        name: ubuntu_multi_nics
+        disk_format: qcow2
+        container_format: bare
+        filename: "{{ ubuntu_img }}"
+        is_public: true
+
+    - name: Gather previously created image named cirros_alt
+      openstack.cloud.image_info:
+        image: ubuntu_multi_nics
+      register: nics_image_check
+
+    - name: Extract UUID from direct_url
+      set_fact:
+        nics_image_uuid: "{{ nics_image_check.images[0].direct_url | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print new image UUID
+      debug:
+        var: nics_image_uuid
+
