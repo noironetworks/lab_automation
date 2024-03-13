@@ -6,6 +6,8 @@
   tasks:
    - name: Create rally DB
      ansible.builtin.shell:  source ~/.venv/bin/activate && rally db recreate
+     args:
+       executable: /bin/bash
 
    - name: Destroy previous rally
      ansible.builtin.file:
