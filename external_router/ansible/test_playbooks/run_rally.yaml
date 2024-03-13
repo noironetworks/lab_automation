@@ -28,7 +28,7 @@
      args:
 
    - name: Run rally
-     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/.rally/openrc && tmux new-session -s tests -d -n rally "rally --config-file ~/.rally/rally.conf task start neutron.yaml;sleep 120"
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tests -d -n rally "rally --config-file ~/.rally/rally.conf task start neutron.yaml;sleep 120"
      args:
        executable: /bin/bash
 
