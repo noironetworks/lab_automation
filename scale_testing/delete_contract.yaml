@@ -1,0 +1,140 @@
+# This playbook deletes an APIC contract, contract subject,
+# and contract subject filter reference (Rs managed object),
+# as well as the corresponding filter and child filter entry
+# managed objects. It only supports parameterization of the
+# name and nameAlias fields, but it can easily be extended
+# to support additional parameters.
+#
+# Here are variables for APIC credentials:
+# * apic_ip: ip address of the APIC
+# * apic_username: username for APIC login
+# * apic_password: password for APIC login
+#
+# Those parameters can also be passed in a file:
+# * apic_info: full path to file containing apic credentials
+#
+# Here are the variables for the contract and filter:
+# * filter_dn_name: distinguished name for filter
+# * filter_namealias: user-visible name for filter
+# * vzentry_dn_name: distinguished name for filter entry
+# * vzentry_namealias: user-visible name for filter entry
+# * contract_dn_name: distinguished name for contract
+# * contract_namealias: user-visible name for contract
+# * subject_dn_name: distinguished name for contract subject
+# * subject_namealias: user-visible name for contract subject
+#
+# Those parameters can also be passed in a file:
+# * contract_info: full path to file containin contract info
+#
+# There is an additional parameter that affects whether or not
+# the filter entry MOs. The reason is that filter and filter entry
+# MOs are often shared with other contracts, so deleting them may
+# not be desired. The ansible variable to control this is:
+# * delete_filter
+# 
+# The default value for this is False, but it can be overriden
+# when invoking the playbook using --extra_config '{"delete_filter": False}'
+---
+   - name: Delete Contract and filter resources in ACI
+     gather_facts: false
+     hosts: localhost
+     connection: local
+     vars:
+        delete_filter: False
+        apic_info: /tmp/apic_info.yaml
+        contract_info: /tmp/contract_info.yaml
+     vars_files:
+        - "{{ apic_info }}"
+        - "{{ contract_info }}"
+     tasks:
+       - name: Create a vzEntry for the filter in ACI
+         aci_rest:
+           host: "{{ apic_ip }}"
+           username: "{{ apic_username }}"
+           password: "{{ apic_password }}"
+           method: delete
+           path: "/api/mo/uni/tn-common/flt-{{ filter_dn_name }}/e-{{ vzentry_dn_name }}.json"
+           validate_certs: false
+           timeout: 30
+           content:
+              "vzEntry": {
+                "attributes": {
+                   "name": "{{ vzentry_dn_name }}",
+                   "nameAlias": "{{ vzentry_namealias }}",
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True
+         when: delete_filter == True
+       - name: Delete a filter for the contract in ACI
+         aci_rest:
+           host: "{{ apic_ip }}"
+           username: "{{ apic_username }}"
+           password: "{{ apic_password }}"
+           method: delete
+           path: "/api/mo/uni/tn-common/flt-{{ filter_dn_name }}.json"
+           validate_certs: false
+           timeout: 30
+           content:
+              "vzFilter": {
+                "attributes": {
+                   "name": "{{ filter_dn_name }}",
+                   "nameAlias": "{{ filter_namealias }}",
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True
+         when: delete_filter == True
+       - name: Delete the filter reference
+         aci_rest:
+           host: "{{ apic_ip }}"
+           username: "{{ apic_username }}"
+           password: "{{ apic_password }}"
+           method: delete
+           path: "/api/mo/uni/tn-common/brc-{{ contract_dn_name }}/subj-{{ subject_dn_name }}/rssubjFiltAtt-{{ filter_dn_name }}.json"
+           validate_certs: false
+           timeout: 30
+           content:
+              "vzRsSubjFiltAtt": {
+                 "attributes": {
+                   "tnVzFilterName": "{{ filter_dn_name }}",
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True
+       - name: Delete a subject under the contract in ACI
+         aci_rest:
+           host: "{{ apic_ip }}"
+           username: "{{ apic_username }}"
+           password: "{{ apic_password }}"
+           method: delete
+           path: "/api/mo/uni/tn-common/brc-{{ contract_dn_name }}/subj-{{ subject_dn_name }}.json"
+           validate_certs: false
+           timeout: 30
+           content:
+              "vzSubj": {
+                "attributes": {
+                  "name": "{{ subject_dn_name }}",
+                  "nameAlias": "{{ subject_namealias }}"
+                }
+              }
+         delegate_to: localhost
+         ignore_errors: True
+       - name: Delete a contract in ACI
+         aci_rest:
+           host: "{{ apic_ip }}"
+           username: "{{ apic_username }}"
+           password: "{{ apic_password }}"
+           method: delete
+           path: "/api/mo/uni/tn-common/brc-{{ contract_dn_name }}.json"
+           validate_certs: false
+           timeout: 30
+           content:
+              "vzBrCP": {
+                "attributes": {
+                   "name": "{{ contract_dn_name }}",
+                   "nameAlias": "{{ contract_namealias }}",
+                 }
+               }
+         delegate_to: localhost
+         ignore_errors: True
