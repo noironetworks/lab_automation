@@ -1,0 +1,24 @@
+- name: Run Shell Script to create VMs
+  hosts: localhost
+  gather_facts: no
+  ignore_errors: true
+  tasks:
+    - name: Read VM details from file
+      include_vars:
+        file: config.yaml
+        name: vm_config
+
+    - name: Need to delete if any vm_session.yaml already exists
+      shell: rm vm_sessions.yaml
+
+    - name: Run Shell Script to create VMs
+      shell: $HOME/openstack_automation_scripts/vm_create_and_update_in_maas/vm_creation.sh "{{ vm.name }}" "{{ vm.cpu }}" "{{ vm.memory }}" "{{ vm.disk_size }}" "{{vm_config.bridge}}"
+      loop: "{{ vm_config.vms }}"
+      loop_control:
+        loop_var: vm
+
+    - name: changing all vms to running state
+      shell: virsh start "{{ vm.name }}"
+      loop: "{{ vm_config.vms }}"
+      loop_control:
+        loop_var: vm

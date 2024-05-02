@@ -1,0 +1,11 @@
+juju add-machine dashboard.maas  --series jammy
+sleep 20
+juju add-machine controller.maas  --series jammy
+sleep 20
+juju add-machine Gateway.maas  --series jammy
+sleep 20
+juju add-machine Compute01.maas  --series jammy
+sleep 20
+juju add-machine Compute02.maas  --series jammy
+
+

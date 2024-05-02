@@ -1,0 +1,2 @@
+cp ~/openstack_automation_scripts/install_openstack/openrc.template ~/openrc
+echo export OS_AUTH_URL=http://`juju status --format=yaml keystone/0 | grep public-address | awk '{print $2}'`:5000/v3 >> ~/openrc

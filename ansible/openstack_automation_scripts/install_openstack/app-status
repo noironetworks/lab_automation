@@ -1,0 +1,17 @@
+STATUS=0
+
+while [ $STATUS -eq 0 ]
+do
+for status in `juju status --format=json| jq .applications[].\"application-status\".current`
+do
+if [ $status = "\"active\"" ] || [ $status = "\"unknown\"" ]
+   then
+   STATUS=1
+   else
+   STATUS=0
+   break
+   fi
+done
+sleep 5
+done
+

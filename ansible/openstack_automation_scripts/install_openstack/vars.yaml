@@ -1,0 +1,9 @@
+# valid opentack versions : ["antelope","bionic-queens","bionic-rocky","bionic-stein","bionic-train","bionic-ussuri","focal-ussuri","focal-wallaby","focal-xena","focal-yoga","focal-zed"]
+openstack_version: focal-yoga
+cloud: "fab8-cloud"
+juju: "juju" 
+dashboard : "dashboard"
+controller: "controller"
+Compute01: "Compute01"
+Compute02: "Compute02"
+Gateway: "Gateway"

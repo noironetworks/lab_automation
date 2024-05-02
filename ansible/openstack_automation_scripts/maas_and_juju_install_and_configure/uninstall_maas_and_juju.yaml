@@ -1,0 +1,28 @@
+- name: Uninstall MAAS, JUJU
+  hosts: localhost
+  tasks:
+    - name: Uninstall JUJU
+      become: yes
+      shell: |
+        snap remove juju
+        rm -rf ./local/share/juju/
+
+    - name: Uninstall MAAS
+      become: yes
+      shell: |
+        apt-get purge maas -y
+        apt purge maas-* -y
+        apt-get purge maas-dns maas-dhcp -y
+        apt-get remove postgresql -y
+        apt-get autoremove -y
+
+    - name: Verify uninstall
+      become: yes
+      shell: |
+        dpkg -l | grep 'maas\|postgresql'
+      register: uninstall_output
+
+    - name: Display content
+      debug:
+        var: uninstall_output.stdout
+

@@ -1,0 +1,25 @@
+- name: Run shell to update maas machine power settings and wait till machine moves to Ready state
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Read VM configurations from file
+      include_vars:
+        file: vm_sessions.yaml
+        name: vm_config
+
+    - name: Read Power Parameters from file
+      include_vars:
+        file: config.yaml
+        name: config
+
+    - name: Update maas machine power settings
+      shell: $HOME/openstack_automation_scripts/vm_create_and_update_in_maas/maas_machine_update.sh "{{ vm.name }}" "{{ vm.uuid }}" "{{ vm.mac_address }}" "{{config.hypervisor_user}}" "{{config.maas_user}}" "{{config.hypervisor_password}}" "{{config.hypervisor_ip}}"
+      loop: "{{ vm_config.vms }}"
+      loop_control:
+        loop_var: vm
+
+    - name: Waiting for all the machines to go to Ready state
+      shell: $HOME/openstack_automation_scripts/vm_create_and_update_in_maas/maas_machine_status.sh "{{ vm.mac_address }}"
+      loop: "{{ vm_config.vms }}"
+      loop_control:
+        loop_var: vm

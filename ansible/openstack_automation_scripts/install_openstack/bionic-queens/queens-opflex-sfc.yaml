@@ -1,0 +1,97 @@
+mysql:
+  max-connections: 1300
+keystone:
+  admin-password: 'noir0123'
+  log-level: 'DEBUG'
+  verbose: true
+  debug: true
+placement:
+  openstack-origin: 'distro'
+nova-cloud-controller:
+  openstack-origin: 'distro'
+  network-manager: Neutron
+  console-access-protocol: novnc
+#  aci-repo: 'deb http://172.28.184.224/queens queens main'
+#  enable-sriov-nic-selection: true
+##
+neutron-gateway:
+  plugin: aci
+  openstack-origin: 'distro'
+  data-port: 'br-data:ens8'
+  vlan-ranges: physnet1:1701:1750
+  enable-isolated-metadata: true
+  enable-metadata-network: true
+neutron-aci-opflex:
+  aci-repo: 'deb http://172.28.184.224/fab8/queens queens main'
+  aci-apic-system-id: juju-fab8
+  aci-encap: vxlan
+  aci-uplink-interface:  enp130s0f0
+  aci-infra-vlan: 4093
+neutron-api:
+  openstack-origin: 'distro'
+  neutron-plugin: aci
+  neutron-security-groups: true
+  vlan-ranges: physnet1:1701:1750
+rabbitmq-server:
+        #openstack-origin: 'distro'
+  ssl: 'off'
+
+#  min-cluster-size: 3
+## Cinder is deployed in two parts: one for the API and scheduler
+## (which can live in a container), one for the volume service (which
+## cannot, at least not for the LVM/iSCSI backend)
+cinder-api:
+  openstack-origin: 'distro'
+  enabled-services: api,scheduler
+cinder-volume:
+  openstack-origin: 'distro'
+  enabled-services: volume
+  # Adjust this to match the block device on your volume host
+  block-device: vdb
+glance:
+  openstack-origin: 'distro'
+heat:
+  openstack-origin: 'distro'
+openstack-dashboard:
+  openstack-origin: 'distro'
+  webroot: /
+  vip_iface: ens8
+nova-compute:
+  openstack-origin: 'distro'
+  virt-type: kvm
+## ACI
+## IFTI
+neutron-api-plugin-aci:
+  aci-repo: 'deb http://172.28.184.224/fab8/queens queens main'
+  aci-apic-hosts: 10.30.120.110
+  aci-apic-username: admin
+  aci-apic-password: "noir0123"
+ #  aci-enable-sfc: True
+  aci-apic-entity-profile: sauto_fab8_aep
+  aci-apic-system-id: juju-fab8
+  aci-enable-optimized-metadata: true
+  aci-default-opflex-physnet: physnet1
+  aci-encap: vxlan
+  aci-physdom-id: pdom_physnet1
+  #aci-connection-json: '{"101": ["compute02|ens8:1/34", "gateway|eth2:1/37"], "102": ["compute01|eth2:1/38"]}'
+  aci-neutron-service-plugins: group_policy,ncp,apic_aim_l3,sfc,flow_classifier,trunk
+  aci-group-policy-extension-drivers: aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
+  neutron-vlan-ranges: physnet1:1701:1750
+  aci-external-l3-domain: juju-l3out-dom
+
+
+#  aci-mechanism-drivers: openvswitch,sriovnicswitch,apic_aim
+#  aci-group-policy-extension-drivers: aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
+#  neutron-vlan-ranges: physnet1:104:109,physnet2:1001:1100,physnet2:1101:1109
+#  neutron-vlan-ranges: physnet2:104:109
+#  aci-disable-vmdom: True
+#  aci-physnet-host-mapping: '{ "physnet1": "srv1:bond0,srv2:bond0,srv3:bond0", "physnet2": "srv1:bond1,srv2:bond1,srv4:bond1" }'
+#  aci-physdom-id: ifti_pdom
+#  aci-vlan-ranges: 250:300
+#  aci-connection-json: '{"101": ["srv1|bond0:vpc-1-25/101-102-1-25", "srv2|bond0:vpc-1-26/101-102-1-26", "srv3|bond0:vpc-1-27/101-102-1-27", "srv1|bond1:vpc-1-28/101-102-1-28", "srv2|bond1:vpc-1-29/101-102-1-29", "srv4|bond1:vpc-1-30/101-102-1-30"], "102": ["srv1|bond0:vpc-1-25/101-102-1-25", "srv2|bond0:vpc-1-26/101-102-1-26", "srv3|bond0:vpc-1-27/101-102-1-27", "srv1|bond1:vpc-1-28/101-102-1-28", "srv2|bond1:vpc-1-29/101-102-1-29", "srv4|bond1:vpc-1-30/101-102-1-30"]}'
+#  aci-vpc-pairs: ''
+#
+openstack-dashboard-plugin-gbp:
+  aci-repo: 'deb http://172.28.184.224/fab8/queens queens main'
+
+

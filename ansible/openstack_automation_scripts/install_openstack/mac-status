@@ -1,0 +1,15 @@
+MACHINES=0
+while [ $MACHINES -eq 0 ]
+do
+for i in `juju machines --format json|jq .machines'[]'.\"juju-status\".current`
+ do 
+#  echo $i
+  if [ $i = "\"started\"" ]; then
+      MACHINES=1
+ else 
+      MACHINES=0
+      break
+ fi
+done
+sleep 5
+done
