@@ -1,0 +1,29 @@
+- name: Install MAAS, JUJU
+  hosts: localhost
+  vars_files:
+    - config.yaml
+  tasks:
+    # assuming
+
+    # - name: Set proxy
+    #   shell: |
+    #     export no_proxy={{no_proxy}}
+    #     export http_proxy={{http_proxy}}
+    #     export https_proxy={{http_proxy}}
+
+    - name: Install MAAS
+      shell: |
+        sudo -E apt-add-repository ppa:maas/3.3
+        sudo -E apt update
+        sudo -E apt-get -y install maas maas-dns
+
+    - name: create admin for MAAS
+      shell: |
+        sudo maas createadmin --username={{MAAS_USR}} --password={{MAAS_PASS}} --email={{MAAS_EMAIL}}
+      ignore_errors: yes
+      
+    - name: Install JUJU
+      shell: |
+        sudo -E snap install juju --channel=2.9/stable --classic
+
+        

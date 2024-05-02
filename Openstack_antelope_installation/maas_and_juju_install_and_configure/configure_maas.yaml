@@ -1,0 +1,102 @@
+- name: Configure MAAS
+  hosts: localhost
+  vars_files:
+    - config.yaml
+
+  tasks:
+    - name: Login to MAAS
+      shell: |
+        export APIKEY=$(sudo maas apikey --username {{MAAS_USR}})
+        maas login {{MAAS_USR}} 'http://{{MACHINE_IP}}:5240/MAAS/' $APIKEY
+      ignore_errors: yes
+
+    - name: set DNS
+      shell: |
+        maas {{MAAS_USR}} maas set-config name=upstream_dns value={{DNS_SERVER}}
+
+    - name: enable proxy
+      shell: |
+        maas "{{MAAS_USR}}" maas set-config name=enable_http_proxy value=true
+
+    - name: set proxy
+      shell: |
+        maas "{{MAAS_USR}}" maas set-config name=http_proxy value="{{http_proxy}}"
+
+    - name: set NTP
+      shell: |
+        maas "{{MAAS_USR}}" maas set-config name=ntp_servers value={{NTP_SERVER}}
+
+    - name: Generate SSH key pair
+      shell: ssh-keygen -t rsa -b 2048 -N "" -f ~/.ssh/id_rsa
+      args:
+        creates: ~/.ssh/id_rsa.pub
+
+    - name: Print content of id_rsa.pub
+      shell: "cat ~/.ssh/id_rsa.pub"
+      register: id_rsa_pub_content
+
+    - name: Display content
+      debug:
+        var: id_rsa_pub_content.stdout
+
+    - name: Upload SSH key
+      shell: maas {{ MAAS_USR }} sshkeys create key={{ id_rsa_pub_content.stdout | quote }}
+      ignore_errors: yes
+
+    - name: enable external NTP
+      shell: |
+        maas {{MAAS_USR}} maas set-config name=ntp_external_only value=true
+
+    - name: get images
+      shell: |
+        maas "{{MAAS_USR}}" boot-source-selections create 1 os="ubuntu" release="focal" arches="amd64" subarches="*"  labels="*"
+      ignore_errors: yes
+
+    - name: Import selected image
+      shell: |
+        maas "{{MAAS_USR}}" boot-resources import
+
+    - name: Wait for Images to sync with rack controller
+      shell: maas {{MAAS_USR}} boot-resources is-importing
+      register: import_status
+      until: '"false" in import_status.stdout'
+      retries: 10
+      delay: 60
+      changed_when: false
+
+    - name: set subnet gateway
+      shell: |
+        maas {{MAAS_USR}} subnet update {{SUBNET_CIDR}} gateway_ip={{GATEWAY_IP}}
+
+
+    - name: Get fabric Id
+      shell: |
+        maas {{MAAS_USR}} subnet read {{SUBNET_CIDR}} | grep "fabric_id" | awk -F ': ' '{print $2}' | sed 's/,//g'
+      register: fabric_id
+
+    - name: Display content
+      debug:
+        var: fabric_id.stdout
+
+    - name: Get rack controller name
+      shell: |
+        maas "{{MAAS_USR}}" rack-controllers read | grep hostname | cut -d '"' -f 4
+      register: rack_controller
+
+    - name: Display content
+      debug:
+        var: rack_controller.stdout
+
+    - name: Create an IP range for DHCP
+      shell: |
+        maas "{{MAAS_USR}}" ipranges create type=dynamic start_ip="{{START_IP}}" end_ip="{{END_IP}}"
+      ignore_errors: yes
+
+    - name: Enable DHCP
+      shell: |
+        maas {{MAAS_USR}} vlan update {{fabric_id.stdout}} untagged dhcp_on=True primary_rack={{rack_controller.stdout}}
+
+    - name: Display content
+      debug:
+        msg: "MaaS configuration completed. Login to Maas UI and click 'skip setup'"
+        

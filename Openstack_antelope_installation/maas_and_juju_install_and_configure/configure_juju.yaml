@@ -1,0 +1,17 @@
+- name: Configure JUJU
+  hosts: localhost
+  vars_files:
+    - config.yaml
+
+  tasks:
+    - name: juju add cloud
+      command: juju add-cloud
+      args:
+        stdin: |
+          maas
+          fab8-cloud
+          http://{{MACHINE_IP}}:5240/MAAS/
+
+    - name: juju add credentials
+      command: >
+        juju add-credential

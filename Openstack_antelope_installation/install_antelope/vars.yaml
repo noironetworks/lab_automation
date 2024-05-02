@@ -1,0 +1,6 @@
+cloud: "fab8-cloud"
+juju: "juju" 
+dashboard : "dashboard"
+controller: "controller"
+Compute01: "Compute01"
+Compute02: "Compute02"
