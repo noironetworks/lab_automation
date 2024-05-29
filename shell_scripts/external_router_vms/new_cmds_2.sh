@@ -148,8 +148,8 @@ fi
 
 # Images we'll need for tempest and noirotest testing (installed in OpenStack by test scripts)
 #wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
-wget -nv http://${NOIRO_CTRLR_IP}/images/cirros-0.3.5-x86_64-disk.img
-wget -nv http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
+#wget -nv http://${NOIRO_CTRLR_IP}/images/cirros-0.3.5-x86_64-disk.img
+#wget -nv http://${NOIRO_CTRLR_IP}/images/ubuntu_multi_nics.qcow2
 sudo chown noiro:noiro .ssh/authorized_keys
 chmod 700 .ssh; chmod 640 .ssh/authorized_keys
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
