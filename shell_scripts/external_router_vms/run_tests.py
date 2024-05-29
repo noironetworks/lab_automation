@@ -19,7 +19,7 @@ JUJU_RC='admin-openrc.sh'
 DIRECTOR_RC='overcloudrc'
 PPATH='export PYTHONPATH=/home/noiro/noirotest && '
 CMD_TIME_WAIT = 15
-with open('~/junk/fab_name.txt') as f:
+with open('/home/noiro/junk/fab_name.txt') as f:
     sysid = f.readline().strip()
 #O FIXME: we should fix these in the DB, but for now,
 # this will have to do.
@@ -196,24 +196,24 @@ class NoiroTestRunner(Runner):
 def helper(controller_ip, router_ip, undercloud_type):
     if not controller_ip:
         try:
-            fd = open('~/junk/controller_ip.txt', 'r')
+            fd = open('/home/noiro/junk/controller_ip.txt', 'r')
             controller_ip = fd.readline().strip()
         except IOError as e:
             print(("Couldn't open %s" % './controller_ip.txt'))
             sys.exit(0)
     if not router_ip:
         try:
-            fd = open('~/junk/router_ip.txt', 'r')
+            fd = open('/home/noiro/junk/router_ip.txt', 'r')
             router_ip = fd.readline().strip()
         except IOError as e:
             print(("Couldn't open %s" % './router_ip.txt'))
             sys.exit(0)
     if not undercloud_type:
         try:
-            fd = open('~/junk/undercloud_type.txt', 'r')
+            fd = open('/home/noiro/junk/undercloud_type.txt', 'r')
             undercloud_type = fd.readline().strip()
         except IOError as e:
-            print(("Couldn't open %s" % '~/junk/undercloud_type.txt'))
+            print(("Couldn't open %s" % '/home/noiro/junk/undercloud_type.txt'))
             sys.exit(0)
     runner = NoiroTestRunner(ext_rtr=router_ip)
     runner.configure_setup_for_test()
