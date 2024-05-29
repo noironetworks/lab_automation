@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Host name contains the FAB number
 #FAB_NO=`hostname | cut -d "-" -f 1 | cut -b 4-`
 FAB_NO=$4
@@ -55,21 +55,21 @@ UNDERCLOUD_IP=$3
 echo "undercloud ip set to ${UNDERCLOUD_IP}."
 
 
-sudo -- sh -c "echo 127.0.0.1       $(hostname) >> /etc/hosts"
-sudo -- sh -c "echo 'nameserver 172.28.184.18' >> /etc/resolv.conf"
-sudo -- sh -c "echo 'search noiro.lab nested.lab' >> /etc/resolv.conf"
+#sudo -- sh -c "echo 127.0.0.1       $(hostname) >> /etc/hosts"
+#sudo -- sh -c "echo 'nameserver 172.28.184.18' >> /etc/resolv.conf"
+#sudo -- sh -c "echo 'search noiro.lab nested.lab' >> /etc/resolv.conf"
 # Ensure we only use IPv4 to resolve hostnames - doesn't seem to wwork with IPv6
-sudo -- sh -c "echo 'Acquire::ForceIPv4 \"true\";' >> /etc/apt/apt.conf.d/99only-ipv4"
-sudo -E apt-get update
+#sudo -- sh -c "echo 'Acquire::ForceIPv4 \"true\";' >> /etc/apt/apt.conf.d/99only-ipv4"
+#sudo -E apt-get update
 # Get the new "Let's Encrypt" certificate, since the one we have has expired
-sudo -E apt-get install apt-transport-https ca-certificates -y ; sudo update-ca-certificates
+#sudo -E apt-get install apt-transport-https ca-certificates -y ; sudo update-ca-certificates
 
 
 # Fix certs
-sudo apt-get install apt-transport-https ca-certificates -y
-sudo update-ca-certificates
-openssl s_client -showcerts -servername $(hostname).noiro.lab -connect $(hostname).noiro.lab:443 </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p'  > git-mycompany-com.pem
-cat git-mycompany-com.pem | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+#sudo apt-get install apt-transport-https ca-certificates -y
+#sudo update-ca-certificates
+#openssl s_client -showcerts -servername $(hostname).noiro.lab -connect $(hostname).noiro.lab:443 </dev/null 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p'  > git-mycompany-com.pem
+#cat git-mycompany-com.pem | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
@@ -82,7 +82,7 @@ else
 fi
 
 # We need keypairs
-ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+#ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
 
 # Add ourselves to the undercloud authorized hosts
 cat ~/.ssh/id_rsa.pub | sshpass -p noir0123 ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
