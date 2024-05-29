@@ -48,41 +48,6 @@ else
     EXT2_IP='1.251.1.1'
 fi
 
-# Assume opendev
-GIT_CLONE="git clone https://opendev.org"
-# Make sure things are set up
-if [ "$1" = "${NEWTON}" -o "${RELEASE_FILE}" = "${NEWTON}" ]; then
-    RELEASE="newton-eol"
-    TEMPEST_VERSION="13.0.0"
-    NEUTRON_GIT_HASH="1766a8ee18bf1e0351d965571c8e3434b87a74ee"
-    GIT_CLONE="git clone https://github.com"
-elif [ "$1" = "${OCATA}" -o "${RELEASE_FILE}" = "${OCATA}" ]; then
-    RELEASE="stable/ocata"
-    TEMPEST_VERSION="15.0.0"
-    NEUTRON_GIT_HASH="243108232f4f8a4eb578643bf9aa38e918100311"
-elif [ "$1" = "${PIKE}" -o "${RELEASE_FILE}" = "${PIKE}" ]; then
-    RELEASE="stable/pike"
-    TEMPEST_VERSION="17.0.0"
-    NEUTRON_GIT_HASH="pike-eol"
-elif [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" ]; then
-    RELEASE="stable/queens"
-    TEMPEST_VERSION="19.0.0"
-    NEUTRON_TEMPEST_VERSION="0.5.0"
-    NEUTRON_GIT_HASH="queens-eol"
-elif [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
-    RELEASE="stable/train"
-    TEMPEST_VERSION="21.0.0"
-    NEUTRON_TEMPEST_VERSION="0.5.0"
-    NEUTRON_GIT_HASH="stable/train"
-elif [ "$1" = "${WALLABY}" -o "${RELEASE_FILE}" = "${WALLABY}" ]; then
-    RELEASE="stable/wallaby"
-    TEMPEST_VERSION="27.0.0"
-    NEUTRON_TEMPEST_VERSION="1.4.0"
-    NEUTRON_GIT_HASH="stable/wallaby"
-else
-    echo "Invalid release. Must be one of ${RELEASES}"
-    exit
-fi
 echo "release set to ${RELEASE}."
 UNDERCLOUD_TYPE=$2
 echo "undercloud type set to ${UNDERCLOUD_TYPE}."
