@@ -95,8 +95,8 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Set up passwordless access to the openstack controller
     KEY=`cat ~/.ssh/id_rsa.pub`
     #echo "CTRL_IP=\`source stackrc && nova list | grep controller | awk -F'|' '{print \$7}' | cut -c11-\`" > test.sh
-    #echo "for CIP in \$CTRL_IP; do" >> test.sh
-    echo "for CIP in \`source stackrc && nova list | grep controller | awk -F'|' '{print \$7}' | cut -c11-\`; do " > test.sh
+    echo '#!/bin/bash -x' > test.sh
+    echo "for CIP in \`source stackrc && nova list | grep controller | awk -F'|' '{print \$7}' | cut -c11-\`; do " >> test.sh
     echo -n "ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\$CIP " >> test.sh
     echo "\"echo $KEY >> .ssh/authorized_keys\"" >> test.sh
     echo "scp -o StrictHostKeyChecking=no ${RCFILE} ${OVERCLOUD_USER}@\$CIP: " >> test.sh
