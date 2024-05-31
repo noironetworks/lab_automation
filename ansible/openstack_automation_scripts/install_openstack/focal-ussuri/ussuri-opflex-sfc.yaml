@@ -1,0 +1,68 @@
+cinder-api:
+  enabled-services: api,scheduler
+  openstack-origin: ussuri
+cinder-volume:
+  block-device: vdb
+  enabled-services: volume
+  openstack-origin: ussuri
+glance:
+  openstack-origin: ussuri
+heat:
+  openstack-origin: ussuri
+keystone:
+  admin-password: noir0123
+  debug: true
+  log-level: DEBUG
+  verbose: true
+mysql:
+  max-connections: 1300
+neutron-aci-opflex:
+  aci-apic-system-id: juju-fab8
+  aci-encap: vxlan
+  aci-infra-vlan: 4093
+  aci-repo: deb http://172.28.184.224/fab8/ussuri ussuri main
+  aci-uplink-interface: enp130s0f0
+neutron-api:
+  neutron-plugin: aci
+  neutron-security-groups: true
+  openstack-origin: ussuri
+  vlan-ranges: physnet1:1701:1750
+neutron-api-plugin-aci:
+  aci-apic-entity-profile: sauto_fab8_aep
+  aci-apic-hosts: 10.30.120.110
+  aci-apic-password: noir0123
+  aci-apic-system-id: juju-fab8
+  aci-apic-username: admin
+  aci-default-opflex-physnet: physnet1
+  aci-enable-optimized-metadata: true
+  aci-encap: vxlan
+  aci-external-l3-domain: juju-l3out-dom
+  aci-group-policy-extension-drivers: aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
+  aci-neutron-service-plugins: group_policy,ncp,apic_aim_l3,sfc,flow_classifier,trunk
+  aci-physdom-id: pdom_physnet1
+  aci-repo: deb http://172.28.184.224/fab8/ussuri ussuri main
+  neutron-vlan-ranges: physnet1:1701:1750
+neutron-gateway:
+  data-port: br-data:ens8
+  enable-isolated-metadata: true
+  enable-metadata-network: true
+  openstack-origin: ussuri
+  plugin: aci
+  vlan-ranges: physnet1:1701:1750
+nova-cloud-controller:
+  console-access-protocol: novnc
+  network-manager: Neutron
+  openstack-origin: ussuri
+nova-compute:
+  openstack-origin: ussuri
+  virt-type: kvm
+openstack-dashboard:
+  openstack-origin: ussuri
+  vip_iface: ens8
+  webroot: /
+openstack-dashboard-plugin-gbp:
+  aci-repo: deb http://172.28.184.224/fab8/ussuri ussuri main
+placement:
+  openstack-origin: ussuri
+rabbitmq-server:
+  ssl: 'off'

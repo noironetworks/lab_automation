@@ -1,0 +1,32 @@
+# pxe bridge
+bridge: br-208
+
+# openstack cluster vm details
+vms:
+  - name: juju
+    cpu: 2
+    memory: 4096
+    disk_size: 50
+  - name: dashboard
+    cpu: 1
+    memory: 4096
+    disk_size: 20
+  # - name: controller
+  #   cpu: 4
+  #   memory: 16384
+  #   disk_size: 100
+  # - name: Compute01
+  #   cpu: 4
+  #   memory: 8192
+  #   disk_size: 100
+  # - name: Compute02
+  #   cpu: 4
+  #   memory: 8192
+  #   disk_size: 100
+
+# Hypervisor machine details
+hypervisor_ip: 172.28.184.224
+hypervisor_user: noiro
+hypervisor_password: noir0123
+
+maas_user: admin

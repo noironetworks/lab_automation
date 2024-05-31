@@ -1,0 +1,10 @@
+juju add-machine dashboard.maas --series bionic
+sleep 80
+juju add-machine controller.maas --series bionic
+sleep 80
+juju add-machine Gateway.maas --series bionic
+sleep 80
+juju add-machine Compute01.maas --series bionic
+sleep 80
+juju add-machine Compute02.maas --series bionic
+

@@ -1,0 +1,28 @@
+---
+- name: Call install Openstack script
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+    - name: Giving executable permission to installation script
+      shell: chmod +777 $HOME/openstack_automation_scripts/install_openstack/{{openstack_version}}/install_openstack_charms.sh
+    - name: Adding required charms 
+      shell: $HOME/openstack_automation_scripts/install_openstack/add-charms.sh
+    - name: Export variables and run install script
+      shell: $HOME/openstack_automation_scripts/install_openstack/{{openstack_version}}/install_openstack_charms.sh
+      args:
+        executable: /bin/bash
+      environment:
+        cloud: "{{ cloud }}"
+        juju: "{{ juju }}"
+        dashboard: "{{ dashboard }}"
+        controller: "{{ controller }}"
+        Compute01: "{{ Compute01 }}"
+        Compute02: "{{ Compute02 }}"
+      register: script_output
+    - name: Removing the Charms directory
+      shell: rm -rf $HOME/charms
+    - name: Debug script output
+      debug:
+        var: script_output

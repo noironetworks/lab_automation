@@ -1,0 +1,24 @@
+- name: Install MAAS, JUJU
+  hosts: localhost
+  vars_files:
+    - config.yaml
+  tasks:
+    - name: Install MAAS
+      become: yes
+      shell: |
+        apt-add-repository ppa:maas/3.3
+        apt update
+        apt-get -y install maas maas-dns
+
+    - name: create admin for MAAS
+      become: yes
+      shell: |
+        maas createadmin --username={{MAAS_USR}} --password={{MAAS_PASS}} --email={{MAAS_EMAIL}}
+      ignore_errors: yes
+      
+    - name: Install JUJU
+      become: yes
+      shell: |
+        snap install juju --channel=2.9/stable --classic
+
+        

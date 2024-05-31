@@ -1,0 +1,17 @@
+# call_postInstallation_antelop.sh
+---
+- name: Call post installation script
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+    - name: Run the Post Installation Antelop script
+      shell: ~/openstack_automation_scripts/install_openstack/openstack_post_installation.sh
+      args:
+        executable: /bin/bash
+      register: script_output
+    
+    - name: Debug script output
+      debug:
+        var: script_output
