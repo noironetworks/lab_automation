@@ -199,14 +199,14 @@ def helper(controller_ip, router_ip, undercloud_type):
             fd = open('/home/noiro/junk/controller_ip.txt', 'r')
             controller_ip = fd.readline().strip()
         except IOError as e:
-            print(("Couldn't open %s" % './controller_ip.txt'))
+            print(("Couldn't open %s" % '/home/noiro/junk/controller_ip.txt'))
             sys.exit(0)
     if not router_ip:
         try:
             fd = open('/home/noiro/junk/router_ip.txt', 'r')
             router_ip = fd.readline().strip()
         except IOError as e:
-            print(("Couldn't open %s" % './router_ip.txt'))
+            print(("Couldn't open %s" % '/home/noiro/junk/router_ip.txt'))
             sys.exit(0)
     if not undercloud_type:
         try:
