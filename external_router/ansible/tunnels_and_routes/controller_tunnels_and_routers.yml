@@ -1,0 +1,27 @@
+---
+- name: Configure IP Tunnel Connection
+  connection: local
+  hosts: hostname
+  become: yes
+  tasks:
+    - name: Add IP Tunnel Connection
+      ansible.builtin.shell: >
+        nmcli connection add type ip-tunnel con-name tun0 ifname tun0 mode ipip remote {{ EXT_RTR_IP }} local {{ CONTROLLER0_IP }}
+      register: tunnel_result
+      changed_when: tunnel_result.rc == 0
+      when: UNDERCLOUD_TYPE == DIRECTOR
+   
+    - name: Modify IP Tunnel IPv4 Address
+      ansible.builtin.shell: >
+        nmcli connection modify tun0 ipv4.addresses '10.42.1.1/30'
+      when: tunnel_result.rc == 0
+
+    - name: Modify IP Tunnel IPv4 Method
+      ansible.builtin.shell: >
+        nmcli connection modify tun0 ipv4.method manual
+      when: tunnel_result.rc == 0
+
+    - name: Activate IP Tunnel Connection
+      ansible.builtin.shell: >
+        nmcli connection up tun0
+      when: tunnel_result.rc == 0
