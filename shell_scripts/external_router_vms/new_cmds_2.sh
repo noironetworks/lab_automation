@@ -133,18 +133,19 @@ fi
 #echo "export PYTHONPATH=/home/noiro/noirotest" >> .bashrc
 
 # Routes we'll need for noirotest tests
-RTR_IPS=`ip -o addr | grep eth2`
-if [ "$RTR_IPS" = "" ]; then
-    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
-    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
-    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth1
-    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth1
-else
-    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
-    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
-    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth2
-    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth2
-fi
+# Temporarily removing them to fix in playbooks
+#RTR_IPS=`ip -o addr | grep eth2`
+#if [ "$RTR_IPS" = "" ]; then
+#    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
+#    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
+#    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth1
+#    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth1
+#else
+#    sudo route add -net 50.50.50.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
+#    sudo route add -net 55.55.55.0 netmask 255.255.255.0 gateway ${GW1_IP} dev eth1
+#    sudo route add -net 60.60.60.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth2
+#    sudo route add -net 66.66.66.0 netmask 255.255.255.0 gateway ${GW2_IP} dev eth2
+#fi
 
 # Images we'll need for tempest and noirotest testing (installed in OpenStack by test scripts)
 #wget https://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
