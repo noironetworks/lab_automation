@@ -1,0 +1,114 @@
+--- 
+- name: Create Flavor for tempest
+  hosts: localhost
+  tasks:
+
+    - name: Create tiny flavor
+      openstack.cloud.compute_flavor:
+        ram: 512
+        disk: 1
+        vcpus: 1
+        swap: 0
+        is_public: true
+        name: m1.tiny
+
+    - name: Gather tiny flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.tiny
+      register: tiny_flavor_check
+
+    - name: Extract UUID from tiny flavor
+      set_fact:
+        tiny_flavor_uuid: "{{ tiny_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print tiny flavor uuid
+      debug:
+        var: tiny_flavor_uuid
+
+    - name: Create alt tiny flavor
+      openstack.cloud.compute_flavor:
+        ram: 512
+        disk: 1
+        vcpus: 1
+        swap: 0
+        is_public: true
+        name: m1.alt_tiny
+
+    - name: Gather alt tiny flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.alt_tiny
+      register: alt_tiny_flavor_check
+
+    - name: Extract UUID from alt tiny flavor
+      set_fact:
+        alt_tiny_flavor_uuid: "{{ alt_tiny_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print alt tiny flavor uuid
+      debug:
+        var: alt_tiny_flavor_uuid
+
+    - name: Create noirotest flavor
+      openstack.cloud.compute_flavor:
+        ram: 2048
+        disk: 8
+        vcpus: 1
+        swap: 0
+        is_public: true
+        name: m1.noirotest
+
+    - name: Gather noirotest flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.noirotest
+      register: noirotest_flavor_check
+
+    - name: Extract UUID from noirotest flavor
+      set_fact:
+        noirotest_flavor_uuid: "{{ noirotest_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print noirotest flavor uuid
+      debug:
+        var: noirotest_flavor_uuid
+
+    - name: Create medium flavor
+      openstack.cloud.compute_flavor:
+        ram: 4096
+        disk: 40
+        vcpus: 2
+        swap: 0
+        is_public: true
+        name: m1.medium
+
+    - name: Gather medium flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.medium
+      register: medium_flavor_check
+
+    - name: Extract UUID from medium flavor
+      set_fact:
+        medium_flavor_uuid: "{{ medium_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print medium flavor uuid
+      debug:
+        var: medium_flavor_uuid
+        
+    - name: Create large flavor
+      openstack.cloud.compute_flavor:
+        ram: 8192
+        disk: 80
+        vcpus: 4
+        swap: 0
+        is_public: true
+        name: m1.large
+
+    - name: Gather large flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.large
+      register: large_flavor_check
+
+    - name: Extract UUID from large flavor
+      set_fact:
+        large_flavor_uuid: "{{ large_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print large flavor uuid
+      debug:
+        var: large_flavor_uuid
