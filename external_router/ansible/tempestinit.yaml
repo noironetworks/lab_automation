@@ -1,0 +1,7 @@
+--- 
+- name: Initialize tempest directory
+  hosts: localhost
+  tasks:
+    - name: Initialize Tempest
+      command: >
+        bash -c "cd && tempest init {{ tempest_dir }}"
