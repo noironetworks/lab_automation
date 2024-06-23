@@ -89,7 +89,7 @@ cat ~/.ssh/id_rsa.pub | sshpass -p noir0123 ssh -o StrictHostKeyChecking=no ${UN
 sshpass -p noir0123 ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "chmod 700 .ssh; chmod 640 .ssh/authorized_keys"
 
 #scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/${RCFILE}* .
-CTRLR_REST_IP=`egrep OS_AUTH_URL ${RCFILE} | awk -F'/' '{print $3}' | awk -F ':' '{print $1}'`
+CTRLR_REST_IP=`egrep OS_AUTH_URL ~/${RCFILE} | awk -F'/' '{print $3}' | awk -F ':' '{print $1}'`
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Set up passwordless access to the openstack controller
@@ -102,7 +102,7 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     echo "scp -o StrictHostKeyChecking=no ${RCFILE} ${OVERCLOUD_USER}@\$CIP: " >> test.sh
     echo "NH_IP=\`ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\${CIP} \"sudo ifconfig ext-br\" | grep 'inet ' | awk '{print \$2}'\`" >> test.sh
     echo "echo \"sudo route add -host \$CIP gateway \$NH_IP\" >> routes.sh" >> test.sh
-    echo "echo conf[\\\"network_node\\\"]=\\\"$NH_IP\\\" > localconf.py" >> test.sh
+    echo "echo conf[\\\"network_node\\\"]=\\\"\$CIP\\\" > localconf.py" >> test.sh
     if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
 	UNDERCLOUD_NET=`echo ${UNDERCLOUD_IP} | cut -d'.' -f1-3`".0"
         echo "ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@\$CIP \"sudo iptables -I INPUT 4 -s ${UNDERCLOUD_NET}/24 -p tcp -m multiport --dports 22 -m state --state NEW -m comment --comment '003 accept ssh from ctlplane subnet ${UNDERCLOUD_NET}/24 ipv4' -j ACCEPT\"" >> test.sh
@@ -117,6 +117,8 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/localconf.py /home/noiro
     chmod +x ~/routes.sh
     ~/routes.sh
+    echo conf[\"ketstone_ip\"]=\"$CTRLR_REST_IP\" >> ~/localconf.py
+    echo conf[\"rest_ip\"]=\"$CTRLR_REST_IP\" >> ~/localconf.py
 fi
 
 
