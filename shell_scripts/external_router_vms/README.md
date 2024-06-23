@@ -11,6 +11,8 @@ These features are currently disabled and will be provided elswhere.
 5. Package installation
 6. /etc/hosts setup
 7. Containers and non-containers logic
+8. Routing to overcloud through undercloud (Assumes (incorrecty) extrtr and undercloud are l2 adjecent) 
+9. Add routes to many individual nodes instead of  -net even though they are all on same network.
 
 
 ## To revisit
@@ -18,6 +20,6 @@ These features are currently disabled and will be provided elswhere.
 1. Fix routes logic based on fab type (to be done in playbooks)
 2. Add juju support
 3. Containers and non containers logic
-
+4. Fix routing through undercloud logic
 
 

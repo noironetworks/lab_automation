@@ -112,6 +112,9 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     scp -o StrictHostKeyChecking=no test.sh ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/
     ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "chmod +x test.sh"
     ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "./test.sh"
+    scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/routes.sh .
+    chmod +x ~/routes.sh
+    ~/routes.sh
 fi
 
 
