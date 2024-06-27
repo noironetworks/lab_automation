@@ -115,8 +115,8 @@ if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "./test.sh"
     scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/routes.sh .
     scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/localconf.py /home/noiro
-    chmod +x ~/routes.sh
-    ~/routes.sh
+    chmod +x routes.sh
+    ./routes.sh
     echo conf[\"ketstone_ip\"]=\"$CTRLR_REST_IP\" >> ~/localconf.py
     echo conf[\"rest_ip\"]=\"$CTRLR_REST_IP\" >> ~/localconf.py
 fi
