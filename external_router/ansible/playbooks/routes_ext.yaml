@@ -1,10 +1,10 @@
 ---
-- name: Configure static routes
+- name: Configure static routes TODO fix eth1
   connection: local
   hosts: localhost
   become: yes
   tasks:
-   - name: Add routes for external network
+   - name: Add NAT routes for external network
      community.general.nmcli:
       type: ethernet
       ifname: "{{ EXT_NET_DEV }}"
@@ -12,6 +12,16 @@
       routes4: 
         - 60.60.60.0/24 {{ EXT_NEXT_HOP }}
         - 66.66.66.0/24 {{ EXT_NEXT_HOP }}
+      state: present
+
+   - name: Add NoNAT routes for external network
+     community.general.nmcli:
+      type: ethernet
+      ifname: eth1
+      conn_name: "cloud-init eth1"
+      routes4: 
+        - 50.50.50.0/24 1.250.1.254
+        - 55.55.55.0/24 1.250.1.254
       state: present
 
 #TODO fix below
@@ -22,4 +32,8 @@
    - name: Reapply config since this module sucks
      command: 
       cmd: "nmcli device reapply {{ EXT_NET_DEV }}"
+
+   - name: Reapply config eth1 since this module sucks
+     command: 
+      cmd: "nmcli device reapply eth1"
 
