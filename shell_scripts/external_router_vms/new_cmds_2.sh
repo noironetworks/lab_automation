@@ -171,6 +171,19 @@ else
 fi 
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
+    if [ "$1" = "${QUEENS}" -o "${RELEASE_FILE}" = "${QUEENS}" ]; then
+	ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "tar -xvzf openstack-ciscorpms-repo-* ./python-gbp*"
+	ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "scp python-gbp* ${OVERCLOUD_USER}@${CTRLR_INT_IP}:~"
+	ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo yum install python-gbp* -y"
+    fi
+    if [ "$1" = "${TRAIN}" -o "${RELEASE_FILE}" = "${TRAIN}" ]; then
+	ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "tar -xvzf openstack-ciscorpms-repo-* ./python3-gbp*"
+	ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "scp python3-gbp* ${OVERCLOUD_USER}@${CTRLR_INT_IP}:~"
+	ssh -o StrictHostKeyChecking=no ${OVERCLOUD_USER}@${CTRLR_INT_IP} "sudo yum install python3-gbp* -y"
+    fi
+fi
+
+if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     CTRLR_IP_LINE_NO=$(egrep -n controller_user ~/noirotest/testcases/testconfig.yaml | awk -F":" '{print $1}')
     for ip in $(ssh -o StrictHostKeyChecking=no  ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && openstack port list" | grep ${PUB_NET_PREFIX} | grep -v public_virtual_ip | awk -F"'" '{print $2}'); do
         sed -i "${CTRLR_IP_LINE_NO}i     - \"${ip}\"" ~/noirotest/testcases/testconfig.yaml
