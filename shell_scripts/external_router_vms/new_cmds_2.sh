@@ -90,6 +90,7 @@ sshpass -p noir0123 ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCL
 
 #scp -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP}:~/${RCFILE}* .
 CTRLR_REST_IP=`egrep OS_AUTH_URL ~/${RCFILE} | awk -F'/' '{print $3}' | awk -F ':' '{print $1}'`
+CTRLR_INT_IP=`ssh -o StrictHostKeyChecking=no ${UNDERCLOUD_USER}@${UNDERCLOUD_IP} "source stackrc && nova list | grep controller-0" | awk -F'|' '{print $7}' | cut -c11- | tr -d '[:space:]'`
 
 if [ "${UNDERCLOUD_TYPE}" = "${DIRECTOR}" ]; then
     # Set up passwordless access to the openstack controller
