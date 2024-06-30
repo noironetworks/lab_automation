@@ -1,0 +1,11 @@
+---
+- name: Setup External Router
+  hosts: all
+  vars:
+          debug: false
+  tasks:
+   - name: Run main playbook
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && cd playbooks && ansible-playbook -i ../hosts main.yaml
+     args:
+       executable: /bin/bash
+
