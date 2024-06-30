@@ -2,6 +2,8 @@
 
 This directory contains bash scripts that are used to set up software on lab external router VMs.
 
+### new_cmds_2.sh has been remaned nt_pre_setup.sh a symlink new_cmds_2.sh is careted for compatibillity.
+
 These features are currently disabled and will be provided elswhere.
 
 1. Routes to external net (they are not persistant)
