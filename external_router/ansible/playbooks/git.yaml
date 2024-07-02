@@ -1,0 +1,11 @@
+--- 
+- name: Get noirotest
+  hosts: localhost
+  tasks:
+
+    - name: Example clone of a single branch
+      ansible.builtin.git:
+        repo: https://github.com/noironetworks/noirotest
+        dest: /home/noiro/noirotest
+        single_branch: yes
+        version: new_extrtr_scripts

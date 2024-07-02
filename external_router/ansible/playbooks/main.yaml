@@ -9,4 +9,6 @@
   import_playbook: image.yaml
 - name: Create flavors
   import_playbook: flavor.yaml
+- name: Pull git repos
+  import_playbook: git.yaml
 
