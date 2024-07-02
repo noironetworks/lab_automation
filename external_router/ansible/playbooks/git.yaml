@@ -1,9 +1,8 @@
 --- 
-- name: Get noirotest
+- name: Get git repos
   hosts: localhost
   tasks:
-
-    - name: Example clone of a single branch
+    - name: Clone noirotest
       ansible.builtin.git:
         repo: https://github.com/noironetworks/noirotest
         dest: /home/noiro/noirotest

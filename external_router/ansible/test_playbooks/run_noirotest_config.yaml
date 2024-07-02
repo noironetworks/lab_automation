@@ -1,0 +1,16 @@
+---
+- name: Setup noirotests
+  hosts: all
+  vars:
+          debug: false
+  tasks:
+   - name: Run nt_pre_setup
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && cd ~/noirotest && ./nt_pre_setup.sh {{ RELEASE }} {{ UNDERCLOUD_TYPE }} {{ RTR_IP }} {{ FAB_NUMBER }}
+     args:
+       executable: /bin/bash
+
+   - name: Run setup.py
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && cd ~/noirotest && python setup.py
+     args:
+       executable: /bin/bash
+
