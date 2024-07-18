@@ -1,10 +1,16 @@
---- 
-- name: Get git repos
+---
+- name: Get noirotest
   hosts: localhost
   tasks:
-    - name: Clone noirotest
+    - name: Check noirotest directory
+      stat:
+        path: '/home/noiro/noirotest'
+      register: directory_data
+
+    - name: Clone noirotest if the noirotest dir doesnt exist
       ansible.builtin.git:
         repo: https://github.com/noironetworks/noirotest
         dest: /home/noiro/noirotest
         single_branch: yes
         version: new_extrtr_scripts
+      when: not directory_data.stat.exists
