@@ -7,21 +7,21 @@
    - name: Add NAT routes for external network
      community.general.nmcli:
       type: ethernet
-      ifname: "{{ EXT_NET_DEV }}"
-      conn_name: "cloud-init {{ EXT_NET_DEV }}"
+      ifname: "{{ EXT_NET_DEV2 }}"
+      conn_name: "cloud-init {{ EXT_NET_DEV2 }}"
       routes4: 
-        - 60.60.60.0/24 {{ EXT_NEXT_HOP }}
-        - 66.66.66.0/24 {{ EXT_NEXT_HOP }}
+        - 60.60.60.0/24 {{ EXT_NEXT_HOP2 }}
+        - 66.66.66.0/24 {{ EXT_NEXT_HOP2 }}
       state: present
 
    - name: Add NoNAT routes for external network
      community.general.nmcli:
       type: ethernet
-      ifname: eth1
-      conn_name: "cloud-init eth1"
+      ifname: "{{ EXT_NET_DEV1 }}"
+      conn_name: "cloud-init {{ EXT_NET_DEV1 }}"
       routes4: 
-        - 50.50.50.0/24 1.250.1.254
-        - 55.55.55.0/24 1.250.1.254
+        - 50.50.50.0/24 {{ EXT_NEXT_HOP1 }}
+        - 55.55.55.0/24 {{ EXT_NEXT_HOP1 }}
       state: present
 
 #TODO fix below
