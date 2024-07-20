@@ -31,9 +31,9 @@
 
    - name: Reapply config since this module sucks
      command: 
-      cmd: "nmcli device reapply {{ EXT_NET_DEV }}"
+      cmd: "nmcli device reapply {{ EXT_NET_DEV2 }}"
 
    - name: Reapply config eth1 since this module sucks
      command: 
-      cmd: "nmcli device reapply eth1"
+      cmd: "nmcli device reapply {{ EXT_NET_DEV1 }}"
 
