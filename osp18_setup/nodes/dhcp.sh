@@ -1,0 +1,13 @@
+sudo cobbler system add \
+--name fab205-bootstrap \
+--profile rhcos-x86_64-4.14.0-profile \
+--netboot-enabled=true \
+--hostname bootstrap \
+--dns-name bootstrap.fab205.local \
+--ip-address 1.100.1.17  \
+--static=false \
+--interface eno5 \
+--netmask 255.255.255.0 \
+--mac ec:f4:0c:43:e1:52 \
+--gateway 1.100.1.1 \
+--kernel-options="coreos.live.rootfs_url=http://1.100.1.1:8080/rootfs/rhcos-x86_64-4.14.0/rhcos-live-rootfs.x86_64.img coreos.inst.install_dev=/dev/sde coreos.inst.ignition_url=http://10.100.1.10:8080/ignition/fab205/bootstrap.ign ip=eno1:dhcp:1500 ip=ens9f0.4001:dhcp:9000 vlan=ens9f0.4001:ens9f0"

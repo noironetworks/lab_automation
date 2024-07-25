@@ -1,0 +1,18 @@
+variant: openshift
+version: 4.12.0
+metadata:
+  name: 99-master-chrony 
+  labels:
+    machineconfiguration.openshift.io/role: master 
+storage:
+  files:
+  - path: /etc/chrony.conf
+    mode: 0644 
+    overwrite: true
+    contents:
+      inline: |
+        pool sjc05-73a-dci06n-ntp1.cisco.com iburst 
+        driftfile /var/lib/chrony/drift
+        makestep 1.0 3
+        rtcsync
+        logdir /var/log/chrony

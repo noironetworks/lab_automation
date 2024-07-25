@@ -1,0 +1,41 @@
+# Preparation
+#Create  EPGs
+
+kubectl create namespace demo-netpol
+kubectl create namespace demo
+
+kubectl annotate namespace demo opflex.cisco.com/endpoint-group='{"policy-space": "kube01", "name": "demo|demo-default"}'
+kubectl annotate namespace demo-netpol opflex.cisco.com/endpoint-group='{"policy-space": "kube01", "name": "demo-netpol|demo-default"}'
+
+
+#Demo
+kubectl get pods --all-namespaces
+kubectl get services --all-namespaces
+
+kubectl --namespace=demo create -f ~/demos/guestbook-all-in-one.yaml
+
+kubectl --namespace=demo get pods
+kubectl --namespace=demo get services
+
+kubectl --namespace=demo annotate deployment redis-master opflex.cisco.com/endpoint-group='{"policy-space": "kube01", "name": "demo|guestbook-backend"}'
+kubectl --namespace=demo annotate deployment redis-slave opflex.cisco.com/endpoint-group='{"policy-space": "kube01", "name": "demo|guestbook-backend"}'
+kubectl --namespace=demo annotate deployment frontend opflex.cisco.com/endpoint-group='{"policy-space": "kube01", "name": "demo|guestbook-frontend"}'
+
+
+kubectl --namespace=demo-netpol create -f ~/demos/guestbook-all-in-one.yaml
+
+kubectl annotate ns demo-netpol "net.beta.kubernetes.io/network-policy={\"ingress\": {\"isolation\": \"DefaultDeny\"}}"
+
+kubectl --namespace=demo-netpol create -f ~/demos/guestbook-netpol.yaml
+
+
+#Cleanup
+
+kubectl --namespace=demo delete -f ~/demos/guestbook-all-in-one.yaml
+kubectl --namespace=demo-netpol delete -f ~/demos/guestbook-all-in-one.yaml
+kubectl --namespace=demo-netpol delete -f ~/demos/guestbook-netpol.yaml
+kubectl annotate ns demo-netpol "net.beta.kubernetes.io/network-policy"-
+
+
+
+

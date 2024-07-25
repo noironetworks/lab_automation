@@ -1,0 +1,13 @@
+sudo cobbler system add \
+--name fab205-temp \
+--profile rhcos-x86_64-4.14.0-profile \
+--netboot-enabled=true \
+--hostname temp \
+--dns-name boottmp.fab205.local \
+--ip-address 1.100.1.18  \
+--static=false \
+--interface eno5 \
+--netmask 255.255.255.0 \
+--mac 52:54:00:17:f7:3d \
+--gateway 1.100.1.1 \
+--kernel-options="coreos.live.rootfs_url=http://1.100.1.1:8080/rootfs/rhcos-x86_64-4.14.0/rhcos-live-rootfs.x86_64.img coreos.inst.install_dev=/dev/sde coreos.inst.ignition_url=http://10.100.1.10:8080/ignition/fab205/master.ign. ip=enp1s0:dhcp:1500 ip=10.100.1.17::10.100.1.1:255.255.255.0:ens9f0.4001::9000 vlan=ens9f0.4001:ens9f0"

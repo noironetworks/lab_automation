@@ -1,0 +1,27 @@
+apiVersion: v1
+baseDomain: ciscolive.lab
+compute:
+- hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  name: ocp
+networking:
+  clusterNetwork:
+  - cidr: 10.2.0.0/16
+    hostPrefix: 23
+  networkType: CiscoACI
+  machineNetwork:
+  - cidr: 192.168.1.0/24
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  none: {}
+pullSecret: '{"auths":{"cloud.openshift.com":{...},"quay.io":{...},"registry.connect.redhat.com":{...},"registry.redhat.io":{...}}}'
+sshKey: 'ssh-rsa AAAAB3N...'

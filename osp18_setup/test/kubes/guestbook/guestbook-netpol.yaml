@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: redis-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+---
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: frontend-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: guestbook
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 80

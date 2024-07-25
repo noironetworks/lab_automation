@@ -1,0 +1,51 @@
+#
+# Configuration for ACI Fabric
+#
+aci_config:
+  system_id: ifti_kube01             # Every opflex cluster must have a distict ID
+  apic_hosts:                   # List of APIC hosts to connect for APIC API
+  - 10.104.1.10
+  vmm_domain:                   # Kubernetes VMM domain configuration
+    encap_type: vxlan           # Encap mode: vxlan or vlan
+    mcast_range:                # Every opflex VMM must use a distinct range
+      start: 225.2.1.1
+      end: 225.2.255.255
+
+  # The following resources must already exist on the APIC,
+  # they are used, but not created by the provisioning tool.
+  aep: ifti_kube01-AEP             # The AEP for ports/VPCs used by this cluster
+  vrf:                          # This VRF used to create all kubernetes EPs
+    name: ifti_kube01-vrf
+    tenant: common              # This can be system-id or common
+  l3out:
+    name: DR-Out          # Used to provision external IPs
+    external_networks:
+    - DR-Out-EPG             # Used for external contracts
+
+#
+# Networks used by Kubernetes
+#
+net_config:
+  node_subnet: 10.1.0.1/16      # Subnet to use for nodes
+  pod_subnet: 10.2.0.1/16       # Subnet to use for Kubernetes Pods
+  extern_dynamic: 10.3.0.1/24   # Subnet to use for dynamic external IPs
+  extern_static: 10.4.0.1/24    # Subnet to use for static external IPs
+  node_svc_subnet: 10.5.0.1/24  # Subnet to use for service graph
+  kubeapi_vlan: 4001            # The VLAN used by the physdom for nodes
+  service_vlan: 4003            # The VLAN used by LoadBalancer services
+  infra_vlan: 4093              # THe VLAN used by ACI infra
+
+#
+# Configuration that applies to each kubernetes node
+#
+node_config:
+  uplink_iface: ens7            # The name of the uplink interface to ACI
+  vxlan_uplink_iface: ens7.4093 # for vxlan, the infra-vlan subinterface
+
+#
+# Configuration for container registry
+# Update if a custom container registry has been setup
+#
+registry:
+  image_prefix: 10.30.120.20/noiro
+  image_pull_secret: noiro-docker-registry-secret

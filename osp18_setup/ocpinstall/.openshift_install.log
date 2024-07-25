@@ -1,0 +1,6 @@
+time="2024-04-14T23:26:24Z" level=debug msg="OpenShift Installer 4.13.27"
+time="2024-04-14T23:26:24Z" level=debug msg="Built from commit 293f6a2fd4b7e8039f8163354409683ba7a072e2"
+time="2024-04-14T23:26:24Z" level=fatal msg="loading kubeconfig: stat auth/kubeconfig: no such file or directory"
+time="2024-04-27T17:07:48Z" level=debug msg="OpenShift Installer 4.13.27"
+time="2024-04-27T17:07:48Z" level=debug msg="Built from commit 293f6a2fd4b7e8039f8163354409683ba7a072e2"
+time="2024-04-27T17:07:48Z" level=fatal msg="loading kubeconfig: stat auth/kubeconfig: no such file or directory"
