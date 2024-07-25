@@ -268,4 +268,4 @@ spec:
       logging:
         enabled: false
         network: internalapi
-        ipaddr: <ip_address>
+        ipaddr: 1.121.101.87
