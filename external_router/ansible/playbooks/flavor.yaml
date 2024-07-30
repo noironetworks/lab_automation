@@ -69,6 +69,28 @@
       debug:
         var: noirotest_flavor_uuid
 
+    - name: Create noirolite flavor
+      openstack.cloud.compute_flavor:
+        ram: 1024
+        disk: 8
+        vcpus: 1
+        swap: 0
+        is_public: true
+        name: m1.noirolite
+
+    - name: Gather noirolite flavor info
+      openstack.cloud.compute_flavor_info:
+        name: m1.noirolite
+      register: noirolite_flavor_check
+
+    - name: Extract UUID from noirolite flavor
+      set_fact:
+        noirolite_flavor_uuid: "{{ noirotest_flavor_check.flavors[0].id | regex_search('[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}') }}"
+
+    - name: Print noirolite flavor uuid
+      debug:
+        var: noirolite_flavor_uuid
+
     - name: Create medium flavor
       openstack.cloud.compute_flavor:
         ram: 4096
