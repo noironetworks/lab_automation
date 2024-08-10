@@ -23,7 +23,7 @@ networking:
   - 172.30.0.0/16
 platform:
   none: {}
-pullSecret: '{"auths":{"quay.ocp.ciscolive.lab:8443": {"auth": "Y2lzY286Y2xhbXMyMDI0", "email": "cisco@example.com"}}}'
+pullSecret: ''
 imageContentSources:
 - mirrors:
   - quay.ocp.ciscolive.lab:8443/cisco/ocp413
@@ -31,4 +31,4 @@ imageContentSources:
 - mirrors:
   - quay.ocp.ciscolive.lab:8443/cisco/ocp413
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
-sshKey: 'ssh-rsa AAAAB3N...'
+sshKey: ''
