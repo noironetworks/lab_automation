@@ -1,0 +1,32 @@
+# Cobbler generated configuration file for dnsmasq
+# $date 
+#
+
+# resolve.conf .. ?
+#no-poll
+#enable-dbus
+read-ethers
+domain-needed
+addn-hosts = /var/lib/cobbler/cobbler_hosts
+
+dhcp-range=1.100.1.50,1.100.1.59
+dhcp-option=66,$next_server_v4
+dhcp-lease-max=1000
+dhcp-authoritative
+dhcp-boot=grub/grubx64.efi
+dhcp-boot=net:normalarch,pxelinux.0
+dhcp-option=3
+dhcp-option=6,10.100.1.10
+dhcp-option=42,172.28.184.8
+
+expand-hosts
+domain=fab205.local,10.100.1.0
+srv-host=_etcd-server-ssl._tcp.fab205.local,10.100.1.12,2300,1
+srv-host=_etcd-server-ssl._tcp.fab205.local,10.100.1.13,2300,2
+srv-host=_etcd-server-ssl._tcp.fab205.local,10.100.1.14,2300,3
+srv-host=_etcd-server-ssl._tcp,10.100.1.12,2300,1
+srv-host=_etcd-server-ssl._tcp,10.100.1.13,2300,2
+srv-host=_etcd-server-ssl._tcp,10.100.1.14,2300,3
+
+$insert_cobbler_system_definitions
+

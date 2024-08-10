@@ -1,0 +1,650 @@
+visudo 
+vi /etc/default/grub 
+grub2-mkconfig -o /boot/grub2/grub.cfg 
+ifco
+ifconfig
+yum install net-tools
+ifconfig 
+cd /etc/NetworkManager/system-connections/
+ls
+rm ens3.nmconnection 
+reboot
+subscription-manager unregister
+cd /etc/NetworkManager/
+ls
+cd system-connections/
+ls
+cd
+ifconfig 
+halt
+export HTTPS_PROXY=http://proxy.esl.cisco.com:80/
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+/usr/bin/crb enable
+vi /etc/yum.conf 
+cd /etc/cobbler/
+ls
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ pip install acc-provision
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ pip3 install acc-provision
+yum install python-pip
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ pip install acc-provision
+systemctl enable https
+systemctl enable httpd
+ifconfig 
+coul localhost
+curl localhost
+systemctl start httpd
+curl localhost
+yum install ipmitool
+rpm -qa|grep tft
+rpm -qa|grep dhc
+rpm -qa|grep djan
+rpm -qa|grep simple
+sudo vi /etc/cobbler/settings.
+sudo vi /etc/cobbler/settings.yaml 
+yum install cobbler-web
+cd /etc/httpd/
+ls
+cd conf.d/
+ls
+vi cobbler_web.conf 
+sudo vi /etc/cobbler/settings.yaml 
+cd /etc/httpd/conf.d/
+ls
+vi cobbler.conf 
+vi cobbler_web.conf 
+ls -l /var/lib/cobbler/
+chown -R apache:apache /var/lib/cobbler/*
+chmod a+rw /var/lib/cobbler/*
+cd /var/log/httpd/
+ls
+ls -l
+vi error_log 
+curl 127.0.0.1:25151
+getenforce 
+setenforce 0
+systemctl stop firewalld
+systemctl disable firewalld
+yum install bind
+yum install named
+yum list \*bind\*
+yum info bind
+yum install bind
+rndc
+vi /etc/selinux/config 
+reboot
+ls
+cd /etc/sysconfig/network-scripts/
+ls
+cd /etc/NetworkManager/system-connections/
+ls
+vi eth1.connection 
+reboot
+yum install lldpd
+sudo lldpd restart
+ldpctl
+lldpctl
+cd /etc/NetworkManager/system-connections/
+ls
+ifconfig 
+ls
+vi eth0.connection 
+vi eth1.connection 
+vi eth2.connection 
+cd
+reboot
+vi /etc/hostname 
+vi /etc/hosts
+vi /etc/hostname 
+ifconfig 
+vi /etc/hostname 
+vi /etc/hosts
+reboot\
+subscription-manager unregister
+lldpctl
+systemctl start lldpd
+lldpctl
+ifconfig 
+cd /etc/NetworkManager/system-connections/
+ls
+vi eth1.connection 
+vi eth2.connection 
+cd
+rebot
+reboot
+vi /etc/cobbler/settings.yaml 
+ifconfig 
+vi /etc/cobbler/settings.yaml 
+reboot
+vi /etc/cobbler/dhcp.template 
+ifconfig 
+ls /etc/dhcp/dhcpd.conf 
+vi /etc/dhcp/dhcpd.conf 
+systemctl status dhcpd
+systemctl  --no-pager -u dhcpd
+journalctl  --no-pager -u dhcpd
+cobbler sync
+vi /etc/dhcp/dhcpd.conf 
+cobbler sync
+journalctl  --no-pager -u dhcpd
+vi /etc/dhcp/dhcpd.conf 
+vi /etc/cobbler/dhcp.template 
+cobbler sync
+cd /var/www/html/
+ls
+mkdir -p images/rhcos-x86_64-4.14.0/
+cp ~stack/Downloads/rhcos-4.14.0-x86_64-live-rootfs.x86_64.img images/rhcos-x86_64-4.14.0/
+ls ls images/rhcos-x86_64-4.14.0/rhcos-live-rootfs.x86_64.img
+ls -l
+ls -l images/
+cd images/rhcos-x86_64-4.14.0/
+ls
+mv rhcos-4.14.0-x86_64-live-rootfs.x86_64.img  rhcos-live-rootfs.x86_64.img
+cd ../..
+ls
+ls images/rhcos-x86_64-4.14.0/rhcos-live-rootfs.x86_64.img
+cd
+cd /var/log/httpd/
+ls
+cat error_log 
+cat access_log 
+ls
+cd /var/www/
+ls
+mv html/images .
+surl http://10.100.1.10/images/rhcos-x86_64-4.14.0
+curl http://10.100.1.10/images/rhcos-x86_64-4.14.0
+curl http://10.100.1.10/images
+curl http://10.100.1.10/images/
+curl http://10.100.1.10/images/rhcos-x86_64-4.14.0-distro/
+ls
+ls -l images/
+ls -l images/rhcos-x86_64-4.14.0/
+mv images rootfs
+mv rootfs html/
+ls
+tail -f /var/log/cobbler/cobbler.log 
+journalctl -f
+journalctl -f -u dhcpd
+vi /etc/dhcp/dhcpd.conf 
+cd /var/lib/tftpboot/
+ls
+cd pxelinux.cfg/
+ls
+cat default 
+cat 01-b4-96-91-d8-b3-fc 
+cd /etc/named/
+ls
+vi /etc/cobbler/settings.yaml 
+cobbler sync
+vi /etc/cobbler/settings.yaml 
+cd /etc/cobbler/
+ls
+vi dnsmasq.template 
+vi /etc/cobbler/modules.conf 
+pwd
+mv modules.conf modules.conf.default
+cp modules.conf.default modules.conf
+yum remove bash-completion
+ls
+vi modules.conf
+cobbler sync
+sudo yum install dnsmasq
+systemctl disable dhcpd
+systemctl stop dhcpd
+cobbler sync
+vi /etc/dnsmasq.conf
+vi /etc/cobbler/dnsmasq.template 
+cd
+cobbler sync
+vi /etc/dnsmasq.conf
+ls /var/lib/cobbler/cobbler_hosts
+ls /var/lib/cobbler
+vi /etc/dnsmasq.conf
+nslookup
+vi /etc/cobbler/modules.conf
+rpm -qa|grep cobbler
+ls
+vi /etc/cobbler/settings.yaml 
+ps ax|grep dnsmas
+ls
+vi /etc/cobbler/dnsmasq.template 
+cobbler sync
+nslookup
+vi /etc/cobbler/dnsmasq.template 
+cat /etc/dnsmasq.conf
+ls
+cat /var/lib/cobbler/cobbler_hosts
+ps ax|grep named
+ps ax|grep bind
+netstat -atu
+netstat -au
+netstat -aup
+netstat -aupn
+vi /etc/cobbler/dnsmasq.template 
+cobbler check
+getenforce
+cd /var/log/
+ls
+systemctl restart dnsmasq
+systemctl status dnsmasq
+cat /etc/hosts 
+vi /etc/cobbler/dnsmasq.template 
+cobbler sync
+systemctl status dnsmasq
+nslookup
+ls -l /var/lib/cobbler/cobbler_hosts
+touch /var/lib/cobbler/cobbler_hosts
+cobbler sync
+systemctl status dnsmasq
+vi /etc/cobbler/dnsmasq.template 
+cobbler sync
+cat /etc/dnsmasq.conf
+host 
+host bootstrap.fab205.local
+nslookup
+journalctl -f -u dhcpd
+systemctl status dnsmasq
+journalctl --no-pager -u dnsmasq
+cat /etc/hosts 
+nslookup
+vi /etc/hostname 
+cat /etc/hosts 
+vi /etc/hosts 
+cobbler sync
+cat /etc/hosts 
+nslokup
+nslookup
+vi /etc/cobbler/modules.conf
+journalctl --no-pager -u dnsmasq
+journalctl -f -u dnsmasq
+vi /etc/hosts 
+cat /etc/dnsmasq.conf
+vi /etc/hosts 
+cobbler sync
+nslookup 
+vi /etc/cobbler/dnsmasq.template 
+cobbler sync
+nslookup
+vi /etc/hosts 
+cobbler sync
+nslookup
+ls
+vi /etc/cobbler/dnsmasq.template 
+vi /etc/dnsmasq.conf
+top
+ifconfig 
+ping 10.100.1.1
+ifconfig 
+ping 10.250.1.254
+ping 1.250.1.254
+tcpdump
+yum install tcpdump
+tcpdump -eni eth2
+ps ax|grep dnsmasq
+systemctl enable dnsmasq
+reboot
+ps ax|grep dnsmasq
+vi /etc/cobbler/dnsmasq.template 
+cobbler sync
+tcpdump -eni eth0
+tcpdump -eni eth1
+ifconfig 
+tcpdump -eni eth2
+tcpdump -eni eth1
+tcpdump -eni eth1 no ip arp
+tcpdump -eni eth1 ! ip arp
+tcpdump -eni eth1  ip arp
+tcpdump -eni eth1  arp
+tcpdump -eni eth1  no arp
+tcpdump -eni eth1  ! arp
+ls
+pwd
+cd /etc/NetworkManager/system-connections/
+ls
+vi eth1.connection 
+reboot
+cd /etc/
+ls
+cd cobbler/
+ls
+grep uefi  *
+grep -r uefi  *
+grep -ir uefi  *
+ls
+vi dhcp.template 
+ls
+cd /var/lib/tftpboot/
+ls
+ls grub
+ls grub/images/
+ls grub/images/rhcos-x86_64-4.14.0-distro/
+ls images
+ls -l
+ls boot/
+ls grub
+rp -qa
+rpp -qa|grep syslinux
+rpm -qa|grep syslinux
+rpm -ql syslinux
+rpm -ql pxelinux
+rpm -qa|grep pxe
+yum list \*pxe\*
+ls
+ls pxelinux.cfg/
+ls pxelinux.cfg/default 
+cat pxelinux.cfg/default 
+cd /usr/share/syslinux/
+ls
+cp pxelinux.0 ldlinux.c32 /var/lib/tftpboot/boot
+cd /var/lib/tftpboot/
+ls
+ls boot/
+cp boot/pxelinux.0 .
+vi dhcp.template 
+cd /var/lib/tftpboot/
+ls
+ls boot/
+rm pxelinux.0 
+cd /var/lib/tftpboot/
+ls
+grub
+ls grub
+sudo yum provides '*/grubx64.efi'
+ls /boot/efi/EFI/redhat/grubx64.efi
+/boot/efi/EFI/redhat/grubx64.efi boot/
+cp /boot/efi/EFI/redhat/grubx64.efi boot/
+ls -l boot/
+cd /var/lib/tftpboot/
+ls boot/grubx64.efi
+ls -l
+ls -l boot/
+cd boot/
+chmod g+r grubx64.efi 
+chmod a+r grubx64.efi 
+ls -l 
+ls /var/lib/cobbler/
+ls /var/lib/cobbler/loaders/
+yum list \*cobbler\*
+cobbler get-loaders
+cd /etc/
+du -sh cobbler/
+cp -r cobbler /usr/src/
+ls
+cd
+yum  remove cobbler
+yum remove grub2-efi-x64
+yum  remove cobbler --skip-broken
+yum  remove cobbler --firce
+yum  remove cobbler --force
+yum  remove cobbler -f
+rpm -e grub2-efi-x64
+yum  remove cobbler 
+yum install grub2-efi-x64
+dnf install cobbler
+cobbler --version
+systemctl enable cobblerd
+systemctl start cobblerd
+cobbler --version
+ps ax|grep cobblers
+ps ax|grep cobbler
+systemctl status cobblerd
+cd /etc/modules-load.d/
+cd /etc/cobbler/
+ls
+vi settings.yaml
+vi modules.conf
+vi settings.yaml
+yum list \*cobbler\*
+dnf module enable cobbler
+dnf module enable cobbler 3.3
+vi /etc/cobbler/modules.conf
+cobbler-settings -c /etc/cobbler/settings.yaml validate
+cd /etc/cobbler/
+ls
+grep -r remote_boot_initrd *
+cd
+dnf remove cobbler
+dnf update
+cd /etc/cobbler/
+ls
+cd ..
+mv cobbler cobbler.old
+cd ..
+cd /var/lib/
+mv cobbler cobbler.old
+cd
+cd /e
+cd /
+find . -name cobbler
+getenforce 
+cd /var/www/cobbler/
+ls
+cd
+yum list \*cobbler\*
+yum install cobbler
+systemctl start cobblerd
+systemctl status cobblerd
+cobbler --version
+cobbler check
+ls
+vi /etc/cobbler/settings.yaml 
+vi /usr/src/cobbler/settings.yaml 
+vi /etc/cobbler/settings.yaml 
+cobbler check
+vi /etc/cobbler/settings.yaml 
+systemctl restart cobbler
+systemctl restart cobblerd
+cobbler check
+ls /var/lib/cobbler/loaders
+cobbler check
+sudo yum instal pykickstart
+sudo yum install pykickstart
+cobbler check
+cd /usr/share/syslinux/
+ls
+cp pxelinux.0 ldlinux.c32 /var/lib/tftpboot/boot
+cd
+vi /etc/cobbler/modules.conf 
+systemctl restart cobblerd
+cobbler sync
+vi /etc/dnsmasq.conf
+vi /etc/cobbler/dnsmasq.template 
+vi /etc/cobbler/settings.yaml 
+cobbler sync
+vi /etc/dnsmasq.conf
+systemctl restart cobblerd
+cobbler sync
+vi /etc/dnsmasq.conf
+ls /var/lib/tftpboot/
+ls
+cd /var/lib/tftpboot/
+ls
+ls boot/
+vi /etc/cobbler/settings.yaml 
+vi /etc/cobbler/boot_loader_conf
+vi /etc/cobbler/boot_loader_conf/bootcfg.template 
+pwd
+cd etc/
+ls
+cd /etc/cobbler
+ls
+pwd
+mv dnsmasq.template dnsmasq.template.orig
+cp /usr/src/cobbler/dnsmasq.template .
+ls
+cd
+systemctl restart cobblerd
+cobbler sync
+cd /var/lib/tftpboot/
+ls
+cd boot/
+ls
+mv grubx64.efi /usr/src/
+cd
+cobbler sync
+ls
+cd -
+ls
+cd ..
+ls
+find . -name '*.efi'
+tail -f /var/log/httpd/access_log
+cd /etc/cobbler
+mv dnsmasq.template dnsmasq.template.bad
+mv /usr/src/cobbler/dnsmasq.template .
+diff dnsmasq.template dnsmasq.template.bad 
+cobbler sync
+vi /etc/dnsmasq.conf
+systemctl status dnsmasq
+journalctl -f
+journalctl --no-pager 
+vi /etc/dnsmasq.conf
+systemctl restart cobblerd
+cobbler sync
+vi /etc/dnsmasq.conf
+vi /etc/cobbler/settings.yaml 
+mv /usr/src/cobbler/dnsmasq.template .
+vi dnsmasq.template
+mv /usr/src/cobbler/dnsmasq.template .
+vi /etc/cobbler/settings.yaml 
+vi dnsmasq.template
+cobbler sync
+ls
+cd /var/www/
+ls
+cd html/
+ls
+ls rootfs/
+cd /var/www/html/
+ls
+cd ignition/
+ls
+mkdir fab205
+ls
+mv * fab205/
+ls
+cd /usr/local/bin
+vi power_off_all
+cp power_off_all power_on_all_pxe
+vi power_on_all_pxe 
+vi power_off_all 
+vi power_on_all_pxe 
+vi power_off_all 
+ls
+chmod +x power_o*
+ls
+cd /usr/local/bin/
+ls
+mv power_on_all_pxe on_all_power_pxe 
+mv power_off_all off_all_power
+cd /usr/local/bin/
+ls
+cp off_all_power status_all_power 
+vi status_all_power 
+cd /var/log/
+ls
+timedatectl
+timedatectl -h
+timedatectl set-timezone utc
+timedatectl set-timezone UTC
+date
+cd /var/www/html/
+l
+ls
+cd ignition/
+ls
+cd fab205/
+ls
+rm -rf *
+ls
+cd
+route add -net 172.30.0.0/16  10.100.1.1
+route add -net 172.30.0.0/16  gw 10.100.1.1
+route add -net 10.3.0.0/16  gw 10.100.1.1
+route del -net 172.30.0.0/16  gw 10.100.1.1
+route add -net 10.3.0.0/16  gw 10.100.1.12
+route del -net 10.3.0.0/16  gw 10.100.1.1
+route add -net 172.30.0.0/16  gw 10.100.1.12
+route add -net 10.2.0.0/16  gw 10.100.1.12
+curl 10.2.0.15
+nmcli con
+nmcli connection modify eth2 +ipv4.routes "192.168.122.0/24 10.10.10.1"
+systemctl restart NetworkManager
+nmcli connection modify eth2 -ipv4.routes "192.168.122.0/24 10.10.10.1"
+nmcli connection modify eth2 +ipv4.routes "10.2.0.0/16 10.100.1.12""
+nmcli connection modify eth2 +ipv4.routes "10.2.0.0/16 10.100.1.12"
+nmcli connection modify eth2 +ipv4.routes "10.3.0.0/16 10.100.1.12"
+nmcli connection modify eth2 +ipv4.routes "172.30.0.0/16 10.100.1.12"
+reboot
+cd /etc/httpd/
+ls
+grep -r 80 *
+grep -r 80 conf
+netstat -atpn
+netstat -atpn|grep LIST
+ps ax|grep http
+netstat -atpn|grep LIST
+ls
+vi /etc/haproxy/haproxy.cfg 
+vi /etc/httpd/conf/httpd.conf 
+systemctl restart https
+systemctl restart httpd
+systemctl restart haproxy
+netstat -atpn|grep LIST
+cd /etc/httpd/modules/
+ks
+ls
+cd ..
+ls
+cd conf.d/
+ls
+vi *
+grep 80 *
+vi cobbler.conf 
+systemctl restart httpd
+oc get pods -n
+cd ..
+ls 
+kubectl get pods
+exit
+cd named
+ls -ltr
+pwd
+ls -ltr
+exit
+cd named
+ls -ltr
+cat named.lo
+cat named.localhost 
+cat named.loopback 
+cat named.empty 
+cat named.ca
+cd slaves
+ls -ltr
+cd ..
+cd dynamic/
+ls
+cd ..
+cd data
+ls
+cd ,,
+cd ..
+cd /etc/
+pwd
+ls
+cd named/
+ls
+ls -ltr
+cd ..
+ls | grep name
+cat named.conf
+cat named.rfc1912.zones
+grep -r noiro.lab
+grep -r noiro
+cat resolv.conf 
+exit
+sudo yum install sosreport
+sudo yum install sos
+sos
+sos report

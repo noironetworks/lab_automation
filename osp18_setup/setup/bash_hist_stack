@@ -1,0 +1,1000 @@
+oc delete pvc check1-pvc-volume
+oc delete pvc check1-pvc-volume -n default
+oc get pvc -A -o wide
+oc get pv -A -o wide
+oc delete pv check1-pv-volume
+oc get pv -A -o wide
+oc get dv -A -o wide
+oc delete pvc task-pvc-six-volume
+oc delete pvc task-pvc-six-volume -n default
+oc delete pv task-pv-six-volume
+oc get dv -A -o wide
+oc get pv -A -o wide
+oc get pvc -A -o wide
+ssh core@10.100.1.14
+ls -ltr
+cat dv_check1.yaml 
+oc apply -f dv_check1.yaml 
+vim dv_check1.yaml 
+cat dv_check1.yaml 
+oc apply -f dv_check1.yaml 
+cat blank_dv1.yaml 
+cat dv4_check.yaml 
+vim dv_check1.yaml 
+cat dv_check1.yaml 
+cat dv4_check.yaml 
+oc apply -f dv_check1.yaml 
+oc get pv -A -o wide
+oc get pvc -A -o wide
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc get pv -A -o wide
+ssh core@10.100.1.14
+ssh core@10.100.1.13
+ssh core@10.100.1.12
+vim demo_dv.yaml
+cat demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+vim demo_dv.yaml
+cat demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+vim demo_dv.yaml
+oc apply -f demo_dv.yaml 
+oc get pv -A -o wide
+oc get pvc -A -o wide
+oc get dv -A -o wide
+cat demo_dv.yaml 
+ls -ltr
+cat dv_check1.yaml
+oc get dv -A -o wide
+oc delete dv dv4-new
+oc get dv -A -o wide
+oc get pvc -A
+oc get pv -A
+cat dv-check1-volume
+dv_check1
+dv_check1.yaml
+cat dv_check1.yaml
+ls -ltr
+vim demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+cat demo_dv.yaml 
+oc get dv -A -o wide
+cat dv_check1.yaml 
+cat demo_dv.yaml 
+vim demo_dv.yaml 
+cat demo_dv.yaml 
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc get pv -A -o wide
+cat demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc get pv -A -o wide
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+exit
+cd operators/
+ls
+oc get pods -n cert
+oc get pods -n cert-manager-opearot
+oc get pods | grep cert
+oc get pods -A | grep cert
+oc get pods -n cert-manager-operator
+oc get pods -n cert-manager
+oc get pods -n cert-manager-operator
+oc get pods -n cert-manager
+oc get pods -n cert-manager-operator
+oc get pods -n cert-manager
+oc get pods -n cert-manager-operator
+oc get pods -n cert-manager
+oc get operators
+oc get pods -n cert-manager
+oc get pods -n cert-manager-operator
+oc get pods -n cert-manager
+oc get operators
+ oc get pods -n cert-manager
+oc get operators
+oc get pods -n cert-manager-operator
+ oc get pods -n cert-manager
+ls -ltr
+cd operators/
+ls -ltr
+cd
+cd test
+cd storage/
+ls -ltr
+rm 1
+ls -ltr
+cat pv_check1
+cat pv_check1.yaml 
+cat dv_check1.yaml 
+cat pv_check1.yaml 
+cat pvc_check1.yaml 
+cat pv_six.yaml 
+vim pv_check1.yaml 
+oc apply -f pv_check1.yaml 
+oc get pv -A -o wide
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc apply -f pvc_check1.yaml 
+oc get pv -A -o wide
+oc get pvc -A -o wide
+oc get pv -A -o wide
+oc get pvc -A -o wide
+oc get dv -A -o wide
+oc get pv -A -o wide
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+cat pv_check1.yaml 
+cat pvc_check1.yaml 
+oc get pvc -A -o wide
+oc get pv -A -o wide
+oc get dv -A -o wide
+ls -ltr
+vim pod_check.yaml
+oc apply -f test-pod.yaml
+ls -ltr
+cat pod_check.yaml 
+oc apply -f pod_check.yaml 
+oc get pods -A | grep test
+oc delete -f pod_check.yaml 
+oc get pods -A | grep test
+oc get dv -A
+oc get pvc -A
+vim pod_check.yaml 
+cat pod_c
+cat pod_check.yaml 
+oc apply -f pod_check.yaml 
+oc get pods -A | grep test
+watch oc get pods -A | grep test
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc delete -f pod_check.yaml 
+vim pod_check.yaml 
+oc apply -f pod_check.yaml 
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+docker images
+crictl images
+cat pod_check.yaml 
+oc get pods -A | grep test
+oc delete -f  pod_check.yaml
+vim pod_check.yaml 
+cat pod_check.yaml 
+oc apply -f pod_check.yaml 
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc get pods -A | grep test
+oc describe pod test-pod -n default
+oc delete -f  pod_check.yaml
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc get pv -A -o wide
+cat storageclass.yaml 
+  
+cat demo_dv.yaml 
+ 
+oc get pods -n cdi
+oc get pods -A | grep cdi
+oc get pods -A | grep hostpath
+oc get pv -A
+ssh core@10.100.1.12
+oc get pods -A
+ls -ltr
+cd test
+cd storage/
+ls -ltr
+oc gte pods -A -o wide
+oc get pods -A -o wide
+oc get pods -n hostpath-provisioner 
+oc get pods -n cdi
+cat machine-config.yaml 
+oc get dv -A
+oc get pvc -A
+cat hostpathprovisioner.yaml 
+cat storageclass.yaml 
+oc get pv -A
+reset
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+cd ocpinstall/
+ls
+vi install-config.yaml
+oc edit proxy/cluster
+ls
+cd
+oc get proxy/cluster
+oc edit proxy/cluster
+oc describe pods -n openstack-operators
+ls
+cd operators/openstack/
+ls
+oc delete -f  openstack-operator.yaml 
+oc describe pods -n openstack-operators
+oc get pods -n openstack-operators
+oc apply -f  openstack-operator.yaml 
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+oc edit image.config.openshift.io/cluster
+ssh core@10.100.1.12
+ssh core@10.100.1.12
+oc edit image.config.openshift.io/cluster
+ssh core@10.100.1.12
+oc get proxy/cluster
+oc edit image.config.openshift.io/cluster
+ssh core@10.100.1.12
+oc get proxy -o yaml 
+oc edit image.config.openshift.io/cluster
+ssh core@10.100.1.12
+oc get pods -n openstack-operators
+oc describe pods-n openstack-operators
+oc describe podss -n openstack-operators
+oc describe pods -n openstack-operators
+ls
+cd ocpinstall/
+ls
+cat install-config.yaml
+ssh core@10.100.1.12
+oc create secret docker-registry noiro-docker-registry-secret --docker-server=noiro-quay.cisco.com --docker-username=noiro --docker-password=noir0123 -n aci-containers-system 
+ls
+ssh core@10.100.1.12
+ls
+cd ..
+ls
+cd operators/openstack/
+ls
+oc delete -f  openstack-operator.yaml 
+watch oc get pods -A | grep test
+oc get pods -n openstack-operators
+watch oc get pods -n openstack-operators
+oc apply -f  openstack-operator.yaml 
+watch oc get pods -n openstack-operators
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ssh core@10.100.1.13
+watch oc get pods -n openstack-operators
+oc get operators openstack-operator.openstack-operators
+ oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+oc describe pods -n openstack-operators designate-operator-controller-manager-655987df97-jfqn6
+oc describe pods -n openstack-operators
+ oc get pods -n openstack-operators
+watch  oc get pods -n openstack-operators
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators glance-operator-controller-manager-7cf9f8d957-gz5xw
+oc restart pods -n openstack-operators glance-operator-controller-manager-
+watch  oc get pods -n openstack-operators
+oc describe pods -n openstack-operators ovn-operator-controller-manager-6bc9f68579-gdg42
+oc logs -n openstack-operators ovn-operator-controller-manager-6bc9f68579-gdg42
+watch  oc get pods -n openstack-operators
+oc get pods -n openstack-operators
+ssh core@10.100.1.13
+oc get pods -n openstack-operators
+cd operators/openstack/
+ls
+vi openstack-service-secret.yaml
+echo -n <password> | base64
+echo -n noir0123 | base64
+vi openstack-service-secret.yaml
+oc create -f openstack-service-secret.yaml
+vi openstack-service-secret.yaml
+echo -n' noir01231' | base64
+oc describe secret osp-secret -n openstack
+vi openstack-service-secret.yaml
+echo -n' noir0123_is_the_password_in_32_bits_as_we_speak' | base64
+vi openstack-service-secret.yaml
+oc create -f openstack-service-secret.yaml
+vi openstack-service-secret.yaml
+oc create -f openstack-service-secret.yaml
+vi openstack-service-secret.yaml
+oc create -f openstack-service-secret.yaml
+oc get pods -n openstack-operators
+ls
+cat openstack-service-secret.yaml 
+vi openstack-service-secret.yaml 
+oc create -f openstack-service-secret.yaml
+oc describe secret osp-secret -n openstack
+oc describe pods -n openstack-operators ovn-operator-controller-manager-6bc9f68579-gdg42
+oc get nodes -l node-role.kubernetes.io/worker -o jsonpath="{.items[*].metadata.name}"
+oc get nns/master3.fab205.local -o yaml
+ls
+oc get proxy -o yaml 
+ls
+cd  test/
+ls
+mkdir temp
+cd temp/
+oc get nodes -l node-role.kubernetes.io/worker -o jsonpath="{.items[*].metadata.name}"
+oc get nns/master1.fab205.local -o yaml
+oc get nns/master1.fab205.local -o yaml >master1.nns
+oc get nns/master2.fab205.local -o yaml >master2.nns
+oc get nns/master3.fab205.local -o yaml >master3.nns
+ls
+vi master1.nns 
+ssh core@10.100.1.13
+cd
+cd operators/openstack/
+vi openstack-nncp.yaml
+:qq
+vi openstack-nncp.yaml
+top
+ls
+vi openstack-nncp.yaml 
+ls
+vi openstack-nad.yaml
+oc get pods -n openstack-operators
+oc logs ovn-operator-controller-manager -n openstack-operators
+oc logs ovn-operator-controller-manager-6bc9f68579-gdg42 -n openstack-operators
+oc logs glance-operator-controller-manager-7cf9f8d957-gz5xw -n openstack-operators
+oc get pods -n openstack-operators
+oc logs glance-operator-controller-manager-7cf9f8d957-gz5xw -n openstack-operators
+oc logs glance-operator-controller-manager-f57cb9b97-j2dxm -n openstack-operators
+oc logs ovn-operator-controller-manager-6887899bc5-x8dmf -n openstack-operators
+cd operators/openstack/
+ls
+grep L2 *
+cd ..
+ls
+cd ..
+grep L2 *
+grep -r L2 *
+grep -r L2A *
+cd -
+cd openstack/
+vi openstack-l2advertisement.yaml
+cd operators/openstack/
+ls
+vi openstack-nad.yaml 
+vi openstack-l2advertisement.yaml
+ls
+vi openstacknetconfig.yaml
+grep subnet *
+vi openstacknetconfig.yaml
+clear
+ls
+cd operators/openstack/
+ls
+ls *pool*
+cd ..
+find .-name '*pool*'
+find . -name '*pool*'
+ls
+pwd
+cd -
+ls
+cd openstack/
+ls
+grep range *
+ls
+vi openstack-ipaddresspools.yaml
+grep autoass *
+grep auto *
+cat openstack-nad.yaml 
+ls
+vi openstack-ipaddresspools.yaml 
+vi openstack-nad.yaml 
+vi openstack-ipaddresspools.yaml 
+ls
+cat openstack_control_plane.yaml 
+ls
+vi openstacknetconfig.yaml 
+ls
+pwd
+cd 
+ls
+du -sh *
+ls -l bin
+du -sh *
+ls Downloads/
+ls
+rm Downloads/
+rmdir Downloads/
+du -sh .
+du -sh *
+du -shc *
+cd bin
+ls
+sudo mv openshift-install /usr/bin/
+openshift-install -h
+cd ..
+du -shc *
+ls
+cd ocpinstall/
+ls
+ls upi/
+cd
+ls
+git
+sudo yum install git
+git clone https://github.com/noironetworks/lab_automation/tree/osp18_setup -b osp18_setup
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ git clone https://github.com/noironetworks/lab_automation/tree/osp18_setup -b osp18_setup
+ls
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ git clone https://github.com/noironetworks/lab_automation -b osp18_setup
+cd lab_automation/
+ls
+cd osp18_setup/
+cd operators/openstack/
+ls
+cat openstack_control_plane.yaml 
+ls
+cp openstack_control_plane.yaml ~/operators/openstack/
+ls
+vi openstack_control_plane.yaml 
+cp openstack_control_plane.yaml ~/operators/openstack/
+git status
+git add openstack_control_plane.yaml 
+git commit
+git push 
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ git push
+ls
+cat /etc/host
+cat /etc/hosts 
+git status
+git pull
+HTTPS_PROXY=http://proxy.esl.cisco.com:80/ git pull
+cp openstacknetconfig.yaml ~/operators/openstack/
+cd
+cd operators/
+ls
+cd openstack/
+ls
+ls
+oc get pods -n openstack-operators
+tmux attach
+oc get pods -n openstack-operators
+tmux attach
+oc edit proxy/cluster
+tmux attach
+oc describe operator openstack-operator
+cd operators/
+ls
+cd openstack/
+ls
+oc delete -f  openstack-operator.yaml 
+oc get pods -n openstack-operators
+oc delete -f  openstack-operator.yaml 
+podman images
+oc get pods -n openstack-operators
+podman push 10.30.120.22:8787/rhoso-podified-beta/openstack-operator-index
+podman push 10.30.120.22:8787/rhoso-podified-beta/openstack-operator-index:1.0.0
+oc describe operator openstack-operator
+ls
+oc get pods -n openstack-operators
+oc get pods -n openstack-operators|wc -l
+oc get operators openstack-operator.openstack-operators
+oc apply -f openstack-operator.yaml
+oc get pods -n openstack-operators
+oc get pods -n openstack-operators|wc -l
+oc get pods -n openstack-operators
+oc get operators openstack-operator.openstack-operators
+oc describe operators openstack-operator.openstack-operators
+oc get pods -n openstack-operators|wc -l
+oc edit csv openstack-operator.v0.1.3
+oc edit csv openstack-operator.v1.0.0
+top
+cd
+ls
+rm -rf must-gather.local.*
+tmux attach
+cd operators/openstack/
+ls
+oc apply -f openstack-nncp-master1.yaml 
+oc apply -f openstack-nncp-master2.yaml 
+oc delete -f openstack-nncp-master2.yaml 
+oc delete -f openstack-nncp-master1.yaml 
+oc delete -f openstack-nncp-master2.yaml 
+vi *nncp*
+oc apply -f openstack-nncp-master1.yaml 
+oc apply -f openstack-nncp-master2.yaml 
+oc apply -f openstack-nncp-master3.yaml 
+oc get nncp -w
+oc get nncp
+ssh core@10.100.1.13
+oc apply -f openstack-nad.yaml
+vi openstack-nad.yaml 
+oc get pods -n openstack-operators
+oc get pods -n openstack-operators|grep mult
+cal
+cat openstack-nad.yaml 
+top
+ssh core@10.100.1.13
+ld
+ls
+podman ps
+podman images
+podman images|grep gather
+sudo podman images|grep gather
+tmux attach
+oc apply -f openstack-nad.yaml
+cd operators/openstack/
+oc apply -f openstack-nad.yaml
+cd
+ls
+mkdir ocpinstall_no_aci
+ls ocpinstall
+vi ocpinstall/install-config.yaml.sample 
+ls
+cd ocpinstall_no_aci/
+ls
+vi install-config.yaml 
+vi ..//ocpinstall/install-config.yaml
+vi install-config.yaml 
+vi ..//ocpinstall/install-config.yaml
+vi install-config.yaml 
+oc get mcp
+ping kkcimc62
+tmux attach
+ls
+history |more
+ls -lt
+ssh admin@10.30.120.90
+exit
+oc get pods
+oc get pods -A
+oc get pods -n openstack-operators
+oc get mcp
+ping upload.cdi.kubevirt.io
+ssh admin@10.30.120.90
+ssh core@10.100.1.13
+tmux attach
+cat ocpinstall/install-config.yaml 
+cat ocpinstall_aci/install-config.yaml
+vi ocpinstall/install-config.yaml 
+tmux attach
+vi ocpinstall/install-config.yaml 
+tmux attach
+vi ocpinstall/install-config.yaml 
+tmux attach
+vi ocpinstall/install-config.yaml 
+ls
+vi install-config.yaml 
+vi ocpinstall/install-config.yaml 
+difff ocpinstall/install-config.yaml install-config.yaml 
+diff ocpinstall/install-config.yaml install-config.yaml 
+vi ocpinstall/install-config.yaml 
+vo ocpinstall_aci/install-config.yaml
+vi ocpinstall_aci/install-config.yaml
+vi ocpinstall/install-config.yaml 
+tmux attach
+vi ocpinstall_aci/install-config.yaml
+vi install-config.yaml 
+vi ocpinstall_aci/install-config.yaml
+vi install-config.yaml 
+vi ocpinstall_aci/install-config.yaml
+vi install-config.yaml 
+vi ocpinstall_aci/install-config.yaml
+vi install-config.yaml 
+cp install-config.yaml ocpinstall/upi/
+tmux attach
+vi install-config.yaml 
+vi ocpinstall_aci/install-config.yaml
+vi install-config.yaml 
+cp install-config.yaml ocpinstall/upi/
+tmux attach
+ls
+mv install-config.yaml install-config_upstream.yaml 
+tmux attach
+cat /usr/local/bin/on_all_power_pxe 
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.28 chassis bootdev pxe
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.28 power on
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.28 power status
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.28 chassis status
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.30 chassis bootdev pxe
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.30 power on
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.30 power status
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.30 chassis status
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.32 chassis bootdev pxe
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.32 power on
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.32 power status
+ipmitool -I lanplus -U admin -P 'sj15labuser!' -H 172.20.71.32 chassis status
+tmux attach
+oc get nodes
+oc get pods
+oc get pods -A
+tmux attach
+ls
+cd ocpinstall_aci/
+ls
+cat 99-master-chrony.
+cat 99-master-chrony.bu 
+ls
+oc apply -f ./99-worker-chrony.yaml
+ls
+oc apply -f ./99-master-chrony.yaml 
+oc get mc
+oc get mcp
+ssh core@10.100.1.13
+vi ~/.ssh/known_hosts
+ssh core@10.100.1.13
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ssh core@10.100.1.15
+ssh core@10.100.1.13
+ssh core@1.100.1.13
+ssh core@1.100.1.12
+oc get nodes
+ssh core@1.100.1.13
+ping 1.100.1.13
+ping 1.100.1.10
+ping 1.100.1.11
+ssh core@10.100.1.10
+ssh core@10.100.1.11
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ssh core@10.100.1.15
+oc get nodes
+oc get nodes -l wide
+oc get nodes -o wide
+ssh core@10.100.1.13
+ping 10.100.1.13
+oc get nodes -o wide
+oc get nodes
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ssh core@10.100.1.12
+ssh core@10.100.1.14
+ssh core@10.100.1.13
+oc get nodes
+ssh core@10.100.1.13 cat /etc/chrony.conf
+ssh core@10.100.1.12 cat /etc/chrony.conf
+ssh core@10.100.1.14 cat /etc/chrony.conf
+ping 10.100.1.14
+oc get nodes
+watch oc get nodes
+ls
+cat 99-master-chrony.bu 
+watch oc get nodes
+ls
+cd 
+cd operators/
+ls
+cd metallb/
+ls
+cd
+oc get clusteroperators.config.openshift.io 
+oc get subscriptions.operators.coreos.com --all-namespaces
+oc get pods -A
+oc get pods
+oc new-project openstack-operators
+oc new-project openstack
+ls
+cd operators/openstack/
+ls
+oc apply -f openstack-operator.yaml
+oc get operators openstack-operator.openstack-operators
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+ls
+oc edit image.config.openshift.io/cluster
+cd
+ls
+ls test
+cd test/
+lw
+ls
+vi image.config
+vi image.config.orig 
+vi image.config
+oc edit image.config.openshift.io/cluster
+oc describe pods -n openstack-operators
+ls
+cd
+cd operators/openstack/
+ls
+oc delete -f  openstack-operator.yaml 
+oc describe pods -n openstack-operators
+oc apply -f openstack-operator.yaml
+oc describe pods -n openstack-operators
+oc get pods -n openstack-operators
+ssh core@10.100.1.12
+oc edit image.config.openshift.io/cluster
+cat ../../test/image.config
+oc edit image.config.openshift.io/cluster
+ls
+pwd
+cd
+vi test/image.config
+oc edit image.config.openshift.io/cluster
+oc describe pods -n openstack-operators
+cd operators/openstack/
+oc describe pods -n openstack-operators
+oc delete -f  openstack-operator.yaml 
+oc describe pods -n openstack-operators
+oc create -f openstack-service-secret.yaml
+oc describe pods -n openstack-operators
+oc apply -f openstack-operator.yaml
+oc get pods -n openstack-operators
+oc describe pods -n openstack-operators
+oc delete -f  openstack-operator.yaml 
+oc apply -f openstack-operator.yaml
+oc describe pods -n openstack-operators
+oc get pods -n openstack-operators
+oc describe secret osp-secret -n openstack
+oc apply -f openstack-nncp-master1.yaml 
+oc get operators openstack-operator.openstack-operators
+oc apply -f openstack-nncp-master1.yaml 
+cd ../nmstate/
+ls
+oc apply namespace.yaml 
+oc apply -f namespace.yaml 
+vi namespace.yaml 
+q
+oc get namespaces
+oc get namespaces|grep nmstate
+oc apply -f og.yaml 
+ls
+oc apply -f operator.yaml 
+oc apply -f instance.yaml 
+cd ../openstack/
+ls
+oc apply -f openstack-nncp-master1.yaml 
+ls
+vi openstack-nncp-master1.yaml 
+pwd
+oc get subscriptions.operators.coreos.com --all-namespaces
+vi openstack-nncp-master1.yaml 
+oc get operators openstack-operator.openstack-operators
+oc get pods -n openstack-operators
+cd ..
+ls
+oc apply -f openstack-nncp-master1.yaml 
+cd openstack/
+oc apply -f openstack-nncp-master1.yaml 
+cd ../nmstate/
+ls
+cd operators/nmstate/
+ls
+oc delete instance.yaml 
+oc delete -f instance.yaml 
+oc delete -f operator.yaml 
+oc delete -f og.yaml 
+oc delete -f namespace.yaml 
+ls
+oc apply -f namespace.yaml 
+oc apply -f og.yaml 
+oc apply -f operator.yaml 
+oc apply -f instance.yaml 
+cd ../openstack/
+oc apply -f openstack-nncp-master1.yaml 
+oc apply -f openstack-nncp-master2.yaml 
+oc apply -f openstack-nncp-master3.yaml 
+oc apply -f openstack-nad.yaml 
+oc delete -f openstack-nad.yaml 
+vi openstack-nad.yaml 
+oc apply -f openstack-nad.yaml 
+oc get network-attachment-definitions -n openstack
+ls
+oc apply -f openstack-ipaddresspools.yaml
+oc describe -n metallb-system IPAddressPool
+oc apply -f openstack-l2advertisement.yaml
+oc describe -n metallb-system L2Advertisement l2advertisement
+ssh core@10.100.1.12
+oc get pods -n openstack-operators
+ls
+cat openstacknetconfig.yaml 
+oc create -f openstacknetconfig.yaml
+oc get netconfig/openstacknetconfig -n openstack
+oc get netconfig/openstacknetconfig
+oc get operators
+oc get operators|grep nmst
+oc get operators|grep cert
+tmux attach
+cd operators/storage/
+oc apply -f machine-config.yaml
+oc apply -f hostpath_provisioner_namespace.yaml
+oc apply -f webhook.yaml -n hostpath-provisioner
+oc apply -f operator.yaml -n hostpath-provisioner
+   oc apply -f hostpathprovisioner.yaml
+ oc apply -f storageclass.yaml
+car cdi_operator.yaml 
+
+ls
+cat cdi_cr.yaml 
+ oc apply -f cdi_operator.yaml 
+ oc apply -f cdi_cr.yaml 
+oc get pods -n hostpath-provisioner
+oc get dv -A
+ls
+oc apply -f demo_dv.yaml 
+oc get dv -A
+oc get dv -A -o wide
+oc get pv -A -o wide
+oc get dv -A -o wide
+oc get pv -A -o wide
+oc get dv -A
+oc get pvc -A -o wide
+oc get dv -A -o wide
+oc get pvc -A -o wide
+oc get pvc -A 
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ls
+oc delete -f demo_dv.yaml 
+vi demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+oc get pvc -A 
+oc get dv -A 
+oc get dv -A  -o long
+oc get dv -A  -o wide
+oc get pvc -A -o wide
+ssh core@10.100.1.14
+ssh core@10.100.1.13
+ssh core@10.100.1.12
+cat demo_dv.yaml 
+cd
+oc edit image.config.openshift.io/cluster
+oc edit proxy/cluster
+ssh core@10.100.1.12
+oc get mco
+oc get mcp
+oc edit proxy/cluster
+ssh core@10.100.1.12
+oc get subscriptions.operators.coreos.com --all-namespaces
+oc get operators
+oc get pods -n openstack-operators
+watch oc get pods -n openstack-operators
+watch oc describe pod 
+neutron-operator-controller-manager-6c54f56476-g4t8 -n openstack-operators
+oc describe pod neutron-operator-controller-manager-6c54f56476-g4t8 -n openstack-operators
+watch oc get pods -n openstack-operators
+oc get pods -n openstack-operators
+oc get pods -n openstack-operators|grep 0/
+oc get pods -n openstack-operators|grep 0
+oc get pods -n openstack-operators
+oc get pods -n hostpath-provisioner
+oc get pvc -n hostpath-provisioner
+oc get pvc -A
+cd operators/storage/
+grep blank *
+cd ../../test/storage/
+ls
+oc get pvc -A
+oc get pv -A
+oc get dv -A
+oc get dv -A -o wide
+oc get pv -A
+oc get pvc -A
+oc get sc -A
+pwd
+exit
+cd operators/storage/
+ls
+oc get pods -n hostpath-provisioner
+oc get pv -A
+oc get pvc -A
+oc get dv -A
+oc edit csv openstack-operator.v0.1.3
+oc edit csv openstack-operator.v1.0.0
+cd ..
+ls
+cd openstack/
+ls
+oc apply -f openstack_control_plane.yaml -n openstack
+vi openstack_control_plane.yaml 
+vi ocp.yaml
+oc apply -f openstack_control_plane.yaml -n openstack
+vi ocp.yaml
+vi openstack_control_plane.yaml 
+oc apply -f openstack_control_plane.yaml -n openstack
+oc get openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc rsh -n openstack openstackclient
+oc get pods -n openstack
+oc describe pods -n openstack
+ls
+cd
+cat acc-files/fab205-in.yaml 
+tmux attach
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+ssh core@10.100.1.12
+ssh core@10.100.1.13
+ssh core@10.100.1.14
+tmux attach
+cd operators/openstack/
+grep 20 *
+oc delete -f openstack-nncp-master3.yaml 
+oc delete -f openstack-nncp-master2.yaml 
+oc delete -f openstack-nncp-master1.yaml 
+vi openstack-nncp-master*
+oc apply -f openstack-nncp-master1.yaml 
+oc apply -f openstack-nncp-master2.yaml 
+oc apply -f openstack-nncp-master3.yaml 
+ssh core@10.100.1.14
+ssh core@10.100.1.12
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+vi openstack_control_plane.yaml 
+oc get services -A
+ping 172.30.181.106
+curl -v 172.30.181.106
+oc get deployments -A
+oc rsh -n openstack openstackclient
+ls
+oc get netconfig/openstacknetconfig
+oc delete -f openstack_control_plane.yaml -n openstack
+oc get netconfig/openstacknetconfig
+oc get openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc apply -f openstack_control_plane.yaml -n openstack
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+oc describe openstackcontrolplane -n openstack
+oc get openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+watch oc get openstackcontrolplane -n openstack
+watch oc get openstackcontrolplane -n openstack -w
+oc get openstackcontrolplane -n openstack -w
+oc delete -f openstack_control_plane.yaml -n openstack
+cd ../storage/
+ls
+vi demo_dv.yaml 
+oc delete -f demo_dv.yaml 
+oc apply -f demo_dv.yaml 
+oc get dv -A
+cd ../openstack/
+oc apply -f openstack_control_plane.yaml -n openstack
+oc delete -f openstack_control_plane.yaml -n openstack
+oc get openstackcontrolplane -n openstack -w
+oc get openstackcontrolplane -n openstack 
+oc apply -f openstack_control_plane.yaml -n openstack
+oc get openstackcontrolplane -n openstack -w
+oc get openstackcontrolplane -n openstack 
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack -w
+oc get openstackcontrolplane -n openstack -o wide
+oc get openstackcontrolplane -n openstack -w
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack -w
+oc get pods -n openstack
+oc describe openstackcontrolplane -n openstack
+oc describe openstackcontrolplane -n openstack >tt
+vi tt
+oc get openstackcontrolplane -n openstack -w
+oc get pods -n openstack
+oc describe openstackcontrolplane -n openstack
+oc get pods -n openstack
+oc describe openstackcontrolplane -n openstack|grep -i error
+oc get openstackcontrolplane -n openstack -w
+cd operators/openstack/
+ls|wc -l
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack
+oc describe openstackcontrolplane -n openstack >tt
+mv tt describe_openstackcontrolplane.txt
+mv describe_openstackcontrolplane.txt ~/
+cd
+vi describe_openstackcontrolplane.txt 
+oc get pods -n openstack
+oc get openstackcontrolplane -n openstack -w
+oc describe openstackcontrolplane -n openstack|grep -i error
+oc describe openstackcontrolplane -n openstack
