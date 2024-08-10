@@ -41,29 +41,28 @@ vault operator init -key-shares=5 -key-threshold=3
 #
 #It is possible to generate new unseal keys, provided you have a quorum of
 #existing unseal keys shares. See "vault operator rekey" for more information.
-#Unseal Key 1: clmhZrOexb1HYCpfW3z3YwmC8cuCbJkM2qz7F/BpXKyP                                                                                                                                                             
-#Unseal Key 2: xLWXR0XW014N8ApaDMLHcvYIJQ2gDtJLYcbraTAivdeU                                                                                                                                                             
-#Unseal Key 3: G9lIWZ+dalLFisSNfrueANQa3UapZUcHish6xjnCDt+e                                                                                                                                                             
-#Unseal Key 4: dH8vHHEq8N5LSiZh8V2OqFRajFfY5aTqpbCH8K583d2f                                                                                                                                                             
-#Unseal Key 5: iYR+HGUlr97DHK+ZYcXBWwpASo0ZnJ9PfjxivK3/H265                                                                                                                                                             
+#Unseal Key 1: 
+#Unseal Key 2: 
+#Unseal Key 3: 
+#Unseal Key 4: 
+#Unseal Key 5: 
                                                                                                                                                                                                                        
-#Initial Root Token: s.qQBRBEa6n9Nw8wVcEie29rst            
+#Initial Root Token: 
 # run vault operator unseal <Key>
 # with first three keys
 
-# vault operator unseal IX2+CpRNylgIfQSzy9NnvbnqBk/Fz0ApxWa6y3UecXTa
-# vault operator unseal QpCrgmmiHahLlcY1q69Dfnnx76nUoaaEhCdeUXWWnvH0
-# vault operator unseal AJzjioqMMI0jGoQ8s5U3WRcjA/GOBVPNW1ioczXtjC0N
+# vault operator unseal 
+# vault operator unseal 
+# vault operator unseal 
 
 # export VAULT_TOKEN=<Created token>
-# export VAULT_TOKEN=s.O4wEW7u5Y8e89ytKOecRMmpM
 # Create token
 # vault token create -ttl=60m
 #
 #Key                  Value
 #---                  -----
-#token                s.ujniT3nf9N14d5rQQG1A6Q6J
-#token_accessor       fVDwgIRBh2GpGukbXT1G4KC6
+#token                
+#token_accessor       
 #token_duration       1h
 #token_renewable      true
 #token_policies       ["root"]
@@ -72,7 +71,6 @@ vault operator init -key-shares=5 -key-threshold=3
 
 # Now authorize charms
 # juju run vault/leader authorize-charm token=<token created above>
-# juju run vault/leader authorize-charm token=s.0fhwR28RGJKJhNWRmEqgZAih
 # juju run vault/leader generate-root-ca
 
 juju deploy --channel 8.0/stable mysql-router vault-mysql-router
