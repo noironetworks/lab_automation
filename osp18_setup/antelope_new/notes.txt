@@ -84,7 +84,7 @@ policies             ["root"]
 
 
 MAAS_DBUSER=admin
-MAAS_DBPASS=noir0123
+MAAS_DBPASS=
 MAAS_DBNAME=maas
 HOSTNAME=localhost
 
@@ -97,9 +97,8 @@ IP xls
 
 https://wiki.cisco.com/display/NOIRO/Row+DD+upgrade+to+ACI?src=contextnavpagetreemode
 UCS-X
-ASHOK (and new guy Kamavaram)
 
-No more Samsung?
+
 opflex on 204 all good
 
 extnet creation order
@@ -140,10 +139,6 @@ OpenStackDataPlaneNodeSet (CBO) You can use pre-provisioned nodes
 RH subscription renewal
 new tests.
 
-DMZ password
-Below are your Noiro DMZ lab access details:
-username: irathore
-password: 1gZ!I3Ds#emQ,5j8
 
 openvswitch agent container build (delorean)
 
