@@ -1,0 +1,203 @@
+
+Interfaces
+
+eno1           (mgmt)
+ens9f0          fabric 1
+ens9f1          fabric 2
+
+ens9f1
+ens9f0
+
+
+Create Infra on APIC
+Run acc-provision
+
+Verify policies
+
+DHCP relay
+
+Get pul secrets and install command from console.redhat.com
+
+Create openshift manifest for install.
+
+Create ignition config
+
+Stage ignition config
+
+domain openstack.lab
+
+
+(cli, existing cobbler, why not DNS)
+
+
+SRV record (are they needed)?
+
+SJC-07, room 110, row K, racks 1 2 and 3
+
+
+13/14 to 3k port 10
+kvm3 to 9k
+
+
+Eid
+One other guy from containers team for infra.
+
+prod labapp
+
+
+
+
+enp1s0
+
+
+
+ip link add link ens9f0 name ens9f0.4001 type vlan id 4001
+
+openshift-install create manifests --dir /home/stack/ocpinstall/upi
+tar xvf ../acc-files/fab205_deployment.tar.gz -C upi/manifests/
+openshift-install create ignition-configs --dir /home/stack/ocpinstall/upi/
+
+sudo rm -rf /var/www/html/ignition/fab205/*
+sudo cp upi/*.ign /var/www/html/ignition/fab205/
+sudo chmod -R +rw /var/www/html/ignition/*
+
+pool sjc05-73a-dci06n-ntp1.cisco.com iburst
+
+
+  node_subnet: 192.168.1.1/24
+  pod_subnet:
+  - 10.2.0.1/16
+  extern_dynamic: 10.3.0.1/24
+  extern_static: 10.4.0.1/24
+  node_svc_subnet: 10.5.0.1/24
+  kubeapi_vlan: 3001
+  service_vlan: 3031
+  infra_vlan: 3967
+  kubeapi_vlan_mode: "regular"
+
+
+cisco@jumphost-1 ~/LTRDCN-2079 $ ip ro
+default via 172.18.0.1 dev ens192 proto static metric 100
+10.2.0.0/16 via 192.168.255.254 dev ens224 proto static metric 101
+10.3.0.0/24 via 192.168.255.254 dev ens224 proto static metric 101
+10.6.0.0/24 via 192.168.255.254 dev ens224
+10.7.0.0/24 via 192.168.255.254 dev ens224
+172.18.0.0/24 dev ens192 proto kernel scope link src 172.18.0.31 metric 100
+192.168.1.0/24 via 192.168.255.254 dev ens224 proto static metric 101
+192.168.122.0/24 dev virbr0 proto kernel scope link src 192.168.122.1 linkdown
+192.168.255.0/24 dev ens224 proto kernel scope link src 192.168.255.1 metric 101
+
+
+
+
+192.168.122.241
+
+
+
+
+OSP18.
+Control plane network config
+Using cells?
+
+When can we enable horizon
+NodeNetworkConfigurationPolicy (how to create for all nodes)
+How to deploy without ironic (self provisioned RHEL9)  
+metallb vs ACI
+with or without ironic
+
+registry to push operators 10.30.120.22:8787
+
+CRI-O Hack for local registry
+
+[Service]
+Environment=HTTP\_PROXY=http://proxy.esl.cisco.com:80/
+Environment=HTTPS\_PROXY=http://proxy.esl.cisco.com:80/
+Environment=NO\_PROXY=.cluster.local,.svc,10.30.120.20,10.30.120.22,noiro-quay.cisco.com,10.30.120.20,127.0.0.1,15.11.0.0/27,15.11.0.10,15.11.0.11,15.11.0.12,15.11.0.13,15.11.0.14,15.11.0.15,15.11.0.16,15.11.0.17,15.11.0.18,15.11.0.19,15.11.0.20,15.11.0.21,15.11.0.22,15.11.0.23,15.11.0.24,15.11.0.25,15.11.0.26,15.11.0.27,15.11.0.28,15.11.0.29,15.11.0.30,15.11.0.31,15.11.0.32,15.11.0.33,15.11.0.34,15.11.0.4,15.11.0.5,15.11.0.6,15.11.0.7,15.11.0.8,15.11.0.9,15.128.0.0/14,169.254.169.254,172.28.184.40,172.28.184.48,172.30.0.0/16,172.30.0.1,172.30.0.10,alertmanager-main-openshift-monitoring.apps.openupi.noiro.local,api-int.openupi.noiro.local,console-openshift-console.apps.openupi.noiro.local,downloads-openshift-console.apps.openupi.noiro.local,etcd-0.openupi.noiro.local,etcd-1.openupi.noiro.local,localhost,oauth-openshift.apps.openupi.noiro.local
+
+sudo vi /etc/systemd/system/crio.service.d/10-default-env.conf
+
+sudo systemctl daemon-reload
+sudo systemctl restart crio.service
+
+
+
+
+MariaDB [labapp]> select * from fabrics where id=205\G
+*************************** 1. row ***************************
+                     id: 205
+                   name: fab205
+                   apic: fab205-apic1
+                osdvlan: 205
+        osd_labnet_cidr: 10.30.120.0/24
+          osd_labnet_gw: 10.30.120.1
+    osd_labnet_pool_end: 10.30.120.158
+  osd_labnet_pool_start: 10.30.120.152
+           parentfabric: NULL
+              subfabric: 0
+       active_switch_id: NULL
+            fabric_type: legacy
+            bd_api_vlan: 101
+             bd_nw_vlan: 102
+         bd_mng_nw_vlan: 103
+      bd_tenant_nw_vlan: 104
+  canonical_subnet_cidr: NULL
+ opflex_vlan_range_list: 701:750
+neutron_vlan_range_list: 1701:1750
+
+
+ InternalApiAllocationPools: [{'start': '1.121.101.10', 'end': '1.121.101.200'}]
+ StorageAllocationPools: [{'start': '1.121.102.10', 'end': '1.121.102.200'}]
+ StorageMgmtAllocationPools: [{'start': '1.121.103.10', 'end': '1.121.103.200'}]
+ TenantAllocationPools: [{'start': '1.121.104.10', 'end': '1.121.104.200'}]
+ ExternalAllocationPools: [{'start': '10.30.120.54', 'end': '10.30.120.58'}]
+ ExternalNetworkVlanID: 1
+ InternalApiNetworkVlanID: 101
+ StorageNetworkVlanID: 102
+ StorageMgmtNetworkVlanID: 103
+ TenantNetworkVlanID: 104
+ ControlPlaneSubnetCidr: "24"
+
+
+
+No storagemgmt
+
+internalapi:
+
+        "range": "1.121.101.0/24",
+        "range_start": "1.121.101.10",
+        "range_end": "1.121.101.200"
+
+
+ctrlplane:
+        (no vlan)
+        "range": "1.100.1.0/24",
+        "range_start": "1.100.1.10",
+        "range_end": "1.100.1.200"
+
+
+storage:
+
+        "range": "1.121.102.0/24",
+        "range_start": "1.121.102.10",
+        "range_end": "1.121.102.200"
+
+tenant:
+        "range": "1.121.104.0/24"
+        "range_start": "1.121.104.10",
+        "range_end": "1.121.104.200"
+
+
+pools (fix LB IPs)
+
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.100.1.1      0.0.0.0         UG    400    0        0 ens9f0.4001
+1.100.1.0       0.0.0.0         255.255.255.0   U     102    0        0 eno1
+10.0.0.0        0.0.0.0         255.255.0.0     U     401    0        0 ens9f0.4093
+10.100.1.0      0.0.0.0         255.255.255.0   U     400    0        0 ens9f0.4001
+224.0.0.0       0.0.0.0         240.0.0.0       U     401    0        0 ens9f0.4093
+
+
+10.100.1.50
+
+smartbuy
+
