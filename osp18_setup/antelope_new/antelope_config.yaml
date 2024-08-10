@@ -1,0 +1,28 @@
+nova-compute:
+  config-flags: default_ephemeral_format=ext4
+  enable-live-migration: true
+  enable-resize: true
+  migration-auth-type: ssh
+  virt-type: kvm
+
+ovn-chassis:
+  bridge-interface-mappings: br-ex:bond0
+  ovn-bridge-mappings: physnet1:br-ex
+
+neutron-api:
+  neutron-security-groups: true
+  flat-network-providers: physnet1
+
+nova-cloud-controller:
+  network-manager: Neutron
+
+cinder:
+  block-device: None
+  glance-api-version: 2
+
+nova-cloud-controller:
+  network-manager: Neutron
+
+cinder:
+  block-device: None
+  glance-api-version: 2

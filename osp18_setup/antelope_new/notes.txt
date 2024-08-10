@@ -1,0 +1,158 @@
+
+sudo snap install maas
+sudo apt install postgresql
+export MAAS_DBUSER=admin
+export MAAS_DBPASS=noir0123
+export MAAS_DBNAME=maas
+export HOSTNAME=localhost
+sudo -i -u postgres psql -c "CREATE USER \"$MAAS_DBUSER\" WITH ENCRYPTED PASSWORD '$MAAS_DBPASS'"
+sudo -i -u postgres createdb -O "$MAAS_DBUSER" "$MAAS_DBNAME"
+echo host    $MAAS_DBNAME    $MAAS_DBUSER    0/0     md5
+sudo vi /etc/postgresql/14/pg_hba.confg
+ls /etc/postgresql
+sudo vi /etc/postgresql/14/pg_hba.conf
+sudo -ki
+sudo maas init region+rack --database-uri "postgres://$MAAS_DBUSER:$MAAS_DBPASS@$HOSTNAME/$MAAS_DBNAME"
+sudo maas createadmin
+ssh-keygen
+cat .ssh/id_rsa.pub
+
+juju add-cloud
+
+juju add-credential maas
+tmux attach
+
+
+m5-server-2 MLOM port 2 <> 1/6 fab11-leaf-1
+
+
+MAAS URL [default=http://172.28.10.155:5240/MAAS]: 
+MAAS has been set up.             
+
+If you want to configure external authentication or use
+MAAS with Canonical RBAC, please run
+
+  sudo maas configauth
+
+To create admins when not using external authentication, run
+
+  sudo maas createadmin
+
+To enable TLS for secured communication, please run
+
+  sudo maas config-tls enable
+
+
+qemu+ssh://root@192.168.122.1/system
+
+
+
+0 = juju + controller, 1 = network, 2 = compute1, 3 = compute2
+
+
+
+eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.28.9.35  netmask 255.255.255.0  broadcast 172.28.9.255
+        inet6 fe80::a688:73ff:fe5b:c3a  prefixlen 64  scopeid 0x20<link>
+        ether a4:88:73:5b:0c:3a  txqueuelen 1000  (Ethernet)
+        RX packets 3830290  bytes 2140916530 (2.1 GB)
+        RX errors 0  dropped 24169  overruns 0  frame 0
+        TX packets 580446  bytes 92159945 (92.1 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+
+Unseal Key 1: Y+2Darg7sUMc8M4h9no1KeEJ/2AfuOAuAzColQRCkq4O
+Unseal Key 2: KwZ7+pHjj8gZFFmnojNV0E3ozSbcMMASeoPN0Q5l/T0o
+Unseal Key 3: UwwCG/tfl7jmD0OLCUQygGyx65CB493YPJI+c31C0KrH
+Unseal Key 4: WnrmuInsDMvC8CRJZhcDzaeS9dy46RP6ZT6KwRRv68NY
+Unseal Key 5: 2txNgZof4dkhfgMcun6Nwy2ebCaApOBdTjcx5v4b+xRQ
+
+Initial Root Token: s.SuIrUN82R0wPUpaR0fDnNofX
+
+
+Key                  Value
+---                  -----
+token                s.EgHfcoWgh63eXoOXPntHZMyu
+token_accessor       vRDcjy5OSmytf04W2nMkE1l6
+token_duration       1h
+token_renewable      true
+token_policies       ["root"]
+identity_policies    []
+policies             ["root"]
+
+
+
+MAAS_DBUSER=admin
+MAAS_DBPASS=noir0123
+MAAS_DBNAME=maas
+HOSTNAME=localhost
+
+juju exec --unit keystone/leader leader-get admin_passwd
+
+
+
+host for DNS
+IP xls
+
+https://wiki.cisco.com/display/NOIRO/Row+DD+upgrade+to+ACI?src=contextnavpagetreemode
+UCS-X
+ASHOK (and new guy Kamavaram)
+
+No more Samsung?
+opflex on 204 all good
+
+extnet creation order
+
+ssh -o StrictHostKeyChecking=no
+route logic can be persistent, no change
+tempest and rally are playbooks and need extnet
+why do tests have to manage creation of extnet?
+should not use podman (use systemctl instead)
+vm move
+
+wrong MTU, wrong flavor (esp 2041)
+docker is default 
+Need to test 2021 and done
+MQ issues, neutron placement errors
+route logic (maybe all tests should manage their own)
+
+
+Final testing extrtr done
+Mainly on OSP18 and Satellite
+ovs-agent
+outage
+
+
+lab_automation osp18_setup need cobbler/dnsmasq config
+registry to push operators 10.30.120.22:8787
+pod issues created bug
+proxy no_proxy settings for crio
+OSP18 external pool
+EPGs created 
+l3 or l2 BD?
+extnet + crtlplane
+compute 2 RHEL9 10.100.1.50
+metallb vs ACI
+with or without ironic
+OpenStackDataPlaneNodeSet (CBO) You can use pre-provisioned nodes
+
+RH subscription renewal
+new tests.
+
+DMZ password
+Below are your Noiro DMZ lab access details:
+username: irathore
+password: 1gZ!I3Ds#emQ,5j8
+
+openvswitch agent container build (delorean)
+
+cleanup
+vpn issues
+ucs-X
+
+
+
+Command '['podman', 'run', '--net=host', '--name', 'neutron-opflex-agent-temp', 'localhost/podified-master-centos9/openstack-neutron-openvswitch-agent:current-podified', 'whoami']' returned non-zero exit status 125.
+
+registry.redhat.io/rhosp-rhel9/openstack-neutron-openvswitch-agent:17.1
