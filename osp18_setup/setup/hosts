@@ -1,0 +1,25 @@
+127.0.0.1 localhost localhost.localdomain
+::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
+10.30.120.151 fab205-provision fab205-provision.fab205.local
+#10.100.1.12 master1 master1.fab205.local
+#10.100.1.13 master2 master2.fab205.local
+#10.100.1.14 master3 master3.fab205.local
+#10.100.1.17 bootstrap bootstrap.fab205.local
+10.100.1.12 master1.fab205.local
+10.100.1.13 master2.fab205.local
+10.100.1.14 master3.fab205.local
+10.100.1.17 bootstrap.fab205.local
+10.100.1.10 api-int.fab205.fab205.local
+10.100.1.10 api.fab205.fab205.local
+10.100.1.10 oauth-openshift.apps.fab205.fab205.local
+
+
+10.100.1.10  api.fab205.fab205.local
+10.100.1.10  oauth-openshift.apps.fab205.fab205.local
+10.100.1.10  console-openshift-console.apps.fab205.fab205.local
+10.100.1.10  downloads-openshift-console.apps.fab205.fab205.local
+10.100.1.10  canary-openshift-ingress-canary.apps.fab205.fab205.local
+10.100.1.10  alertmanager-main-openshift-monitoring.apps.fab205.fab205.local
+10.100.1.10  prometheus-k8s-openshift-monitoring.apps.fab205.fab205.local
+10.100.1.10  prometheus-k8s-federate-openshift-monitoring.apps.fab205.fab205.local
+10.100.1.10  thanos-querier-openshift-monitoring.apps.fab205.fab205.local
