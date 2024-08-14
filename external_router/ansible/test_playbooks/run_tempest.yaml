@@ -16,7 +16,7 @@
        executable: /bin/bash
 
    - name: Run tempest
-     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tests -d -n tempest "cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout;bash"
+     ansible.builtin.shell: source ~/.venv/bin/activate && source ~/overcloudrc && tmux new-session -s tempest -d -n tests "cd ~/tempest_run && tempest run 2>&1|tee tempest.stdout;bash"
      args:
        executable: /bin/bash
 
