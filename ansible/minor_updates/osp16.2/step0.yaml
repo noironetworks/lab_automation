@@ -9,7 +9,7 @@
     command: subscription-manager register --username mcohen2@cisco.com --password Ins3965!
     ignore_errors: true
   - name: Step3. Set up pool
-    command: subscription-manager attach --pool=2c94bfa289fe79160189feb5ec44095d
+    command: subscription-manager attach --pool=2c945b6191471af901915c535f2b206b
   - name: Step4. Disable all repos
     command: subscription-manager repos --disable=*
   - name: Step5. Set RHEL release to 8.4
