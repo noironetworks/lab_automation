@@ -19,7 +19,7 @@ spec:
       type: vlan
       vlan:
         base-iface: ens9f1
-        id: 20
+        id: 101
     - description: storage vlan interface
       ipv4:
         address:
@@ -34,7 +34,7 @@ spec:
       type: vlan
       vlan:
         base-iface: ens9f1
-        id: 21
+        id: 102
     - description: tenant vlan interface
       ipv4:
         address:
@@ -49,7 +49,7 @@ spec:
       type: vlan
       vlan:
         base-iface: ens9f1
-        id: 22
+        id: 104
     - description: Configuring ens9f1
       ipv4:
         address:

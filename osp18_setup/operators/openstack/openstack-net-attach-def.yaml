@@ -76,7 +76,7 @@ spec:
       "master": "ens9f1.104",
       "ipam": {
         "type": "whereabouts",
-        "range": "1.121.104.0/24"
+        "range": "1.121.104.0/24",
         "range_start": "1.121.104.25",
         "range_end": "1.121.104.70"
       }

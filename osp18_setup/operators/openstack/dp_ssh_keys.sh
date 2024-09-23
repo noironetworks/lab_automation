@@ -1,0 +1,1 @@
+oc create secret generic dataplane-ansible-ssh-private-key-secret --save-config --dry-run=client --from-file=ssh-privatekey=rhoso --from-file=ssh-publickey=rhoso.pub -n openstack -o yaml | oc apply -f -
