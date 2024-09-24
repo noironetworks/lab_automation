@@ -32,7 +32,7 @@ spec:
         volumes:
         - name: ansible-logs
           persistentVolumeClaim:
-            claimName: <pvc_name>
+            claimName: "compute-storage"
         mounts:
         - name: ansible-logs
           mountPath: "/runner/artifacts"
@@ -57,7 +57,7 @@ spec:
         edpm_bootstrap_release_version_package: []
         edpm_network_config_os_net_config_mappings:
           edpm-compute-1:
-            nic1: 52:54:04:60:55:22 
+            nic1: b4:96:91:d8:b0:5d
         neutron_physical_bridge_name: br-ex
         neutron_public_interface_name: eth0
         edpm_network_config_template: |
