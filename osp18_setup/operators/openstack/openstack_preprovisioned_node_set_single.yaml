@@ -38,7 +38,7 @@ spec:
           mountPath: "/runner/artifacts"
     managementNetwork: ctlplane
     ansible:
-      ansibleUser: cloud-admin 
+      ansibleUser: noiro
       ansiblePort: 22
       ansibleVarsFrom:
         - prefix: subscription_manager_
@@ -59,7 +59,7 @@ spec:
           edpm-compute-1:
             nic1: b4:96:91:d8:b0:5d
         neutron_physical_bridge_name: br-ex
-        neutron_public_interface_name: eth0
+        neutron_public_interface_name: eno2
         edpm_network_config_template: |
           ---
           {% set mtu_list = [ctlplane_mtu] %}
@@ -72,11 +72,6 @@ spec:
             name: {{ neutron_physical_bridge_name }}
             mtu: {{ min_viable_mtu }}
             use_dhcp: false
-            dns_servers: {{ ctlplane_dns_nameservers }}
-            domain: {{ dns_search_domains }}
-            addresses:
-            - ip_netmask: {{ ctlplane_ip }}/{{ ctlplane_cidr }}
-            routes: {{ ctlplane_host_routes }}
             members:
             - type: interface
               name: nic1
@@ -97,7 +92,7 @@ spec:
       hostName: edpm-compute-1
       ansible:
         ansibleHost: 1.100.1.101
-        ansibleUser: cloud-admin
+        ansibleUser: noiro
         ansibleVars:
           fqdn_internal_api: compute-1.fab205.fab205.local
       networks:
