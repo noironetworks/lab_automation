@@ -1,0 +1,19 @@
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: bshephar-edpm-compute-01
+  namespace: openshift-machine-api
+  annotations:
+    inspect.metal3.io: disabled
+  labels:
+    app: openstack
+spec:
+  automatedCleaningMode: disabled
+  bmc:
+    address: redfish+http://192.168.111.1:8000/redfish/v1/Systems/29d4cf07-c28d-4733-931b-290a37fa7401
+    credentialsName: node-bmc-secret
+  bootMACAddress: 52:54:00:6e:80:2e
+  bootMode: UEFI
+  online: false
+  rootDeviceHints:
+    deviceName: /dev/vda

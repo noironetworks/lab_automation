@@ -2,10 +2,10 @@ apiVersion: core.openstack.org/v1beta1
 kind: OpenStackControlPlane
 metadata:
   name: openstack-control-plane
-  namespace: openstack
 spec:
   secret: osp-secret
   storageClass: hostpath-provisioner
+
   cinder: 
     apiOverride:
       route: {}
@@ -13,7 +13,6 @@ spec:
       databaseInstance: openstack
       secret: osp-secret
       cinderAPI:
-        replicas: 3
         override:
           service:
             internal:
@@ -29,14 +28,14 @@ spec:
       cinderBackup: 
         networkAttachments:
         - storage
-        replicas: 0 # backend needs to be configured to activate the service
+        replicas: 0 # backend needs to be configured
       cinderVolumes: 
         volume1:
           networkAttachments: 
           - storage
-          replicas: 0 # backend needs to be configured to activate the service
-  nova: 
-    apiOverride: 
+          replicas: 0 # backend needs to be configured
+  nova:
+    apiOverride:
       route: {}
     template:
       apiServiceTemplate:
@@ -46,9 +45,9 @@ spec:
             internal:
               metadata:
                 annotations:
-                  metallb.universe.tf/address-pool: internalapi 
+                  metallb.universe.tf/address-pool: internalapi
                   metallb.universe.tf/allow-shared-ip: internalapi
-                  metallb.universe.tf/loadBalancerIPs: 1.121.101.80 
+                  metallb.universe.tf/loadBalancerIPs: 1.121.101.80
               spec:
                 type: LoadBalancer
       metadataServiceTemplate:
@@ -95,14 +94,14 @@ spec:
       options:
       - key: server
         values:
-        - 10.100.1.10
+        - 1.100.1.1
       override:
         service:
           metadata:
             annotations:
               metallb.universe.tf/address-pool: internalapi
               metallb.universe.tf/allow-shared-ip: internalapi
-              metallb.universe.tf/loadBalancerIPs: 1.121.101.87
+              metallb.universe.tf/loadBalancerIPs: 1.121.101.80
           spec:
             type: LoadBalancer
       replicas: 2
@@ -132,7 +131,6 @@ spec:
               type: LoadBalancer
       databaseInstance: openstack
       secret: osp-secret
-      replicas: 3
   glance:
     apiOverrides:
       default:
@@ -166,7 +164,7 @@ spec:
       databaseInstance: openstack
       secret: osp-secret
       barbicanAPI:
-        replicas: 3
+        replicas: 1
         override:
           service:
             internal:
@@ -178,7 +176,7 @@ spec:
               spec:
                 type: LoadBalancer
       barbicanWorker:
-        replicas: 3
+        replicas: 1
       barbicanKeystoneListener:
         replicas: 1
   memcached:
@@ -187,7 +185,7 @@ spec:
          replicas: 3
   neutron:
     apiOverride:
-      route: {}
+      route: {} 
     template:
       replicas: 3
       override:
@@ -222,13 +220,14 @@ spec:
                   metallb.universe.tf/loadBalancerIPs: 1.121.101.80
               spec:
                 type: LoadBalancer
-        replicas: 1
+        replicas: 2
       swiftRing:
-        ringReplicas: 1
+        ringReplicas: 3
       swiftStorage:
         networkAttachments:
         - storage
-        replicas: 1
+        replicas: 3
+        storageClass: hostpath-provisioner
         storageRequest: 10Gi
   ovn:
     template:
@@ -259,7 +258,6 @@ spec:
             spec:
               type: LoadBalancer
       databaseInstance: openstack
-      replicas: 3
       secret: osp-secret
   rabbitmq: 
     templates:
@@ -270,7 +268,7 @@ spec:
             metadata:
               annotations:
                 metallb.universe.tf/address-pool: internalapi
-                metallb.universe.tf/loadBalancerIPs: 1.121.101.85 
+                metallb.universe.tf/loadBalancerIPs: 1.121.101.85
             spec:
               type: LoadBalancer
       rabbitmq-cell1:
@@ -280,7 +278,7 @@ spec:
             metadata:
               annotations:
                 metallb.universe.tf/address-pool: internalapi
-                metallb.universe.tf/loadBalancerIPs: 1.121.101.86 
+                metallb.universe.tf/loadBalancerIPs: 1.121.101.86
             spec:
               type: LoadBalancer
   telemetry:
@@ -288,7 +286,6 @@ spec:
     template:
       metricStorage:
         enabled: true
-        dashboardsEnabled: true
         monitoringStack:
           alertingEnabled: true
           scrapeInterval: 30s
@@ -300,12 +297,10 @@ spec:
       autoscaling:
         enabled: false
         aodh:
-          databaseAccount: aodh
+          passwordSelectors:
+          databaseUser: aodh
           databaseInstance: openstack
-          passwordSelector:
-            aodhService: AodhPassword
-          rabbitMqClusterName: rabbitmq
-          serviceUser: aodh
+          memcachedInstance: memcached
           secret: osp-secret
         heatInstance: heat
       ceilometer:
@@ -313,4 +308,5 @@ spec:
         secret: osp-secret
       logging:
         enabled: false
-        ipaddr: 1.121.101.80
+        network: internalapi
+        ipaddr: 1.121.101.87

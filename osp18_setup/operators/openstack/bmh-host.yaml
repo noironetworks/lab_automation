@@ -1,0 +1,19 @@
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: edpm-compute-02
+  namespace: openshift-machine-api
+  annotations:
+    inspect.metal3.io: disabled
+  labels:
+    app: openstack
+spec:
+  automatedCleaningMode: disabled
+  bmc:
+    address: ipmi://172.20.71.34
+    credentialsName: node-bmc-secret
+  bootMACAddress: ec:f4:0c:43:e1:52
+  bootMode: UEFI
+  online: false
+  rootDeviceHints:
+    deviceName: /dev/sda

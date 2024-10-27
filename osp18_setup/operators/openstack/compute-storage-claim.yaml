@@ -4,8 +4,9 @@ metadata:
   name: compute-storage
 spec:
   accessModes:
-    - ReadWriteOnce 
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 8Gi 
+      storage: 8Gi
   storageClassName: hostpath-provisioner
+

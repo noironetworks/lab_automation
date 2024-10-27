@@ -50,7 +50,6 @@ spec:
       ansibleVars: 
         edpm_bootstrap_command: |
           subscription-manager register --username {{ subscription_manager_username }} --password {{ subscription_manager_password }}
-          subscription-manager attach --pool=2c945b6191471af901915c535f2b206b
           subscription-manager release --set=9.4
           subscription-manager repos --disable=*
           subscription-manager repos --enable=rhel-9-for-x86_64-baseos-eus-rpms --enable=rhel-9-for-x86_64-appstream-eus-rpms --enable=rhel-9-for-x86_64-highavailability-eus-rpms --enable=fast-datapath-for-rhel-9-x86_64-rpms --enable=rhoso-18.0-for-rhel-9-x86_64-rpms --enable=rhceph-7-tools-for-rhel-9-x86_64-rpms
@@ -60,9 +59,6 @@ spec:
           edpm-compute-1:
             nic1: b4:96:91:d8:af:25
             nic2: ec:f4:0c:43:e1:8e
-          edpm-compute-0:
-            nic1: b4:96:91:d8:b0:5d
-            nic2: ec:f4:0c:43:e1:52
         neutron_physical_bridge_name: br-ex
         neutron_public_interface_name: eno2
         edpm_network_config_update: True
@@ -74,12 +70,18 @@ spec:
           {%- endfor %}
           {% set min_viable_mtu = mtu_list | max %}
           network_config:
+          - type: interface
+            name: nic2
+            use_dhcp: false
+            dns_servers: {{ ctlplane_dns_nameservers }}
+            domain: {{ dns_search_domains }}
+            addresses:
+            - ip_netmask: 1.100.1.101/{{ ctlplane_cidr }}
+            routes: {{ ctlplane_host_routes }}
           - type: ovs_bridge
             name: {{ neutron_physical_bridge_name }}
             mtu: {{ min_viable_mtu }}
             use_dhcp: false
-            dns_servers: {{ ctlplane_dns_nameservers }}
-            domain: {{ dns_search_domains }}
             members:
             - type: interface
               name: nic1
@@ -117,25 +119,3 @@ spec:
       - name: tenant
         subnetName: subnet1
         fixedIP: 1.121.104.101
-    edpm-compute-1:
-      hostName: edpm-compute-0
-      ansible:
-        ansibleHost: 1.100.1.100
-        ansibleUser: noiro
-        ansibleVars:
-          fqdn_internal_api: compute-0.fab205.fab205.local
-      networks:
-      - name: ctlplane
-        subnetName: subnet1
-        defaultRoute: true
-        fixedIP: 1.100.1.100
-      - name: internalapi
-        subnetName: subnet1
-        fixedIP: 1.121.101.100
-      - name: storage
-        subnetName: subnet1
-        fixedIP: 1.121.102.100
-      - name: tenant
-        subnetName: subnet1
-        fixedIP: 1.121.104.100
-

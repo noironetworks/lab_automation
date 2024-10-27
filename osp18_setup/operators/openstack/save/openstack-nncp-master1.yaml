@@ -1,14 +1,14 @@
 apiVersion: nmstate.io/v1
 kind: NodeNetworkConfigurationPolicy
 metadata:
-  name: osp-ens9f1-master-3
+  name: osp-ens9f1-master-1
 spec:
   desiredState:
     interfaces:
     - description: internalapi vlan interface
       ipv4:
         address:
-        - ip: 1.121.101.12
+        - ip: 1.121.101.10
           prefix-length: 24
         enabled: true
         dhcp: false
@@ -23,7 +23,7 @@ spec:
     - description: storage vlan interface
       ipv4:
         address:
-        - ip: 1.121.102.12
+        - ip: 1.121.102.10
           prefix-length: 24
         enabled: true
         dhcp: false
@@ -38,7 +38,7 @@ spec:
     - description: tenant vlan interface
       ipv4:
         address:
-        - ip: 1.121.104.12
+        - ip: 1.121.104.10
           prefix-length: 24
         enabled: true
         dhcp: false
@@ -50,6 +50,19 @@ spec:
       vlan:
         base-iface: ens9f1
         id: 104
+    - description: Configuring ens9f1
+      ipv4:
+        address:
+        - ip: 1.100.1.12
+          prefix-length: 24
+        enabled: true
+        dhcp: false
+      ipv6:
+        enabled: false
+      mtu: 1500
+      name: eno1
+      state: up
+      type: ethernet
   nodeSelector:
-    kubernetes.io/hostname: master3.fab205.local
+    kubernetes.io/hostname: master1.fab205.local
     node-role.kubernetes.io/worker: ""
