@@ -8,7 +8,7 @@
         name: cirros.new
         disk_format: qcow2
         container_format: bare
-        filename: "{{ cirros_img }}"
+        filename: /home/noiro/images/{{ cirros_img }}
         is_public: true
 
     - name: Gather previously created image named cirros_new
@@ -29,7 +29,7 @@
         name: cirros.alt
         disk_format: qcow2
         container_format: bare
-        filename: "{{ cirros_img }}"
+        filename: /home/noiro/images/{{ cirros_img }}
         is_public: true
 
     - name: Gather previously created image named cirros_alt
@@ -50,7 +50,7 @@
         name: ubuntu_multi_nics
         disk_format: qcow2
         container_format: bare
-        filename: "{{ ubuntu_img }}"
+        filename: /home/noiro/images/{{ noiro_img }}
         is_public: true
 
     - name: Gather previously created image named cirros_alt

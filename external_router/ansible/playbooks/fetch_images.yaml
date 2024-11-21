@@ -12,15 +12,15 @@
 
    - name: Download ubuntu
      ansible.builtin.get_url:
-        url: http://172.28.184.8/images/ubuntu_multi_nics.qcow2 
-        dest: /home/noiro/images/ubuntu_multi_nics.qcow2
+        url: http://172.28.184.8/images/{{noiro_img}}
+        dest: /home/noiro/images/{{noiro_img}}
         mode: '0440' 
         use_proxy: no
 
    - name: Download cirros
      ansible.builtin.get_url:
-        url: http://172.28.184.8/images/cirros-0.3.5-x86_64-disk.img
-        dest: /home/noiro/images/cirros-0.3.5-x86_64-disk.img
+        url: http://172.28.184.8/images/{{cirros_img}}
+        dest: /home/noiro/images/{{cirros_img}}
         mode: '0440' 
         use_proxy: no
 
