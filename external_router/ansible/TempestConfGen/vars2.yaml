@@ -1,0 +1,36 @@
+---
+- name: Configure Tempest Parameters
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tempest_params:
+      cwd: "{{ ansible_env.PWD }}/{{ tempest_dir }}"
+      image_uuid: "{{ new_image_uuid }}"
+      flavor_uuid: "{{ tiny_flavor_uuid }}"
+      alt_image_uuid: "{{ alt_image_uuid }}"
+      alt_flavor_uuid: "{{ alt_tiny_flavor_uuid }}"
+      controller_ip: "{{ controller_ip }}"
+      controller_password: "noir0123"
+      admin_project_id: ""
+      external_network: "{{ external_network_uuid }}"
+      admin_domain_name: "{{ admin_domain_name }}"
+      admin_role: "{{ admin_role }}"
+
+  tasks:
+    - name: Get Admin Project ID
+      openstack.cloud.project_info:
+        name: admin
+      register: admin_project_check
+
+    - name: Extract Admin Project ID
+      set_fact:
+        project_uuid: "{{ admin_project_check.projects[0].id }}"
+
+    - name: Print admin project id
+      debug:
+        var: project_uuid
+
+    - name: Update Tempest Parameters with Admin Project ID
+      set_fact:
+        tempest_params: "{{ tempest_params | combine({'admin_project_id': project_uuid | trim}) }}"
+

@@ -1,0 +1,15 @@
+---
+- name: setting up variables
+  import_playbook: vars.yaml
+- name: Create Image for tempest
+  import_playbook: image.yaml
+- name: Create Flavor for tempest
+  import_playbook: flavor.yaml
+- name: Create External Network for tempest
+  import_playbook: extnet.yaml
+- name: Initialize Tempest workspace
+  import_playbook: tempestinit.yaml
+- name: Config Modification variables
+  import_playbook: vars2.yaml
+- name: Edit Configs of tempest
+  import_playbook: editconf.yaml

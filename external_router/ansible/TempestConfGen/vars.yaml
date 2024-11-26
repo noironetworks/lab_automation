@@ -1,0 +1,51 @@
+--- 
+- name: variables related to tempest configuration
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: tempest directory name
+      set_fact:
+        tempest_dir: "tempest010"
+
+    - name: Get Controller IP
+      command: >
+        bash -c "source ~/overcloudrc && echo $OS_AUTH_URL | awk -F'/' '{print $3}' | awk -F':' '{print $1}'"
+      register: controller_ip_output
+
+    - name: Set Controller IP variable
+      set_fact:
+        controller_ip: "{{ controller_ip_output.stdout_lines | map('trim') | select | first }}"
+
+    - name: Set admin_domain_name and admin_role
+      set_fact:
+        admin_domain_name: "Default"
+        admin_role: "admin"
+
+    - name: finding out openstack version
+      shell: |
+        cd ~/python-openstackclient/ && git status | grep 'branch stable\|eol' | awk 'NF>1{print $NF}' && cd ..
+      register: version_output
+      changed_when: false
+      failed_when: false
+
+    - name: Extract version
+      set_fact:
+        version_string: "{{ version_output.stdout }}"
+      when: version_output.rc == 0
+
+    - name: Process version string
+      set_fact:
+        version_list: "{{ version_string.split('\n') | select('string') | list }}"
+      delegate_to: localhost
+
+    - name: Get final version
+      set_fact:
+        version: "{{ version_list[0] }}"
+
+    - name: Determine branch name
+      set_fact:
+        branch: "{{ 'stable/' + version.split('-eol')[0] if '-eol' in version else version }}"
+
+    - name: Print OpenStack branch
+      debug:
+        var: branch

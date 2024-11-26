@@ -1,0 +1,179 @@
+- name: Modify tempest configuration
+  hosts: localhost
+  tasks:
+    - name: Read input Python file
+      slurp:
+        src: /home/noiro/tempest_conf.py
+      register: input_python
+
+    - name: Convert Python file content to string
+      set_fact:
+        python_content: "{{ input_python.content | b64decode }}"
+
+    - name: print
+      debug:
+        var: python_content
+
+    - name: Extract variable name
+      set_fact:
+        variable_name: "{{ python_content | regex_findall('^(\\w+)\\s*=\\s*\"\"\"\\n([\\s\\S]*?)\"\"\"$', multiline=True, ignorecase=True) }}"
+
+    - name: Extract first values
+      set_fact:
+        first_values: "{{ variable_name | map(attribute=0) | list }}"
+        second_values: "{{ variable_name | map(attribute=1) | list }}"
+
+    - name: Write list of strings to tempest.conf
+      copy:
+        content: "{{ second_values | join('\n') }}"
+        dest: ~/{{ tempest_dir }}/etc/tempest.conf
+
+    - name: Remove consecutive empty lines from tempest.conf
+      replace:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '\n\s*\n'
+        replace: '\n'
+
+    - name: Read tempest.conf file
+      slurp:
+        src: ~/{{ tempest_dir }}/etc/tempest.conf
+      register: tempest_conf_contents
+
+    - name: Format tempest.conf contents
+      set_fact:
+        formatted_contents: "{{ tempest_conf_contents.content | b64decode | regex_replace('(?<=\\s)\\[', '\\n[') }}"
+
+    - name: Write formatted contents back to tempest.conf
+      copy:
+        content: "{{ formatted_contents }}"
+        dest: ~/{{ tempest_dir }}/etc/tempest.conf
+
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^tempest_roles = member$'
+
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^use_dynamic_credentials = true$'
+
+    - name: Display Tempest Parameters
+      debug:
+        var: tempest_params
+
+    - name: Update cwd in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^log_file = .*'
+        line: "log_file = {{ tempest_params.cwd }}/tempest.log"
+
+    - name: Update cwd in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^log_dir = .*'
+        line: "log_dir = {{ tempest_params.cwd }}/logs"
+
+    - name: Update cwd in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^lock_path = .*'
+        line: "lock_path = {{ tempest_params.cwd }}/tempest_lock"
+
+    - name: Update image uuid in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^image_ref = .*'
+        line: "image_ref = {{ tempest_params.image_uuid }}"
+
+    - name: Update flavor uuid in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^flavor_ref = .*'
+        line: "flavor_ref = {{ tempest_params.flavor_uuid }}"
+
+    - name: Update alt image uuid in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^image_ref_alt = .*'
+        line: "image_ref_alt = {{ tempest_params.alt_image_uuid }}"
+
+    - name: Update alt flavor uuid in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^flavor_ref_alt = .*'
+        line: "flavor_ref_alt = {{ tempest_params.alt_flavor_uuid }}"
+
+    - name: Update dashboard url in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^dashboard_url = .*'
+        line: "dashboard_url = http://{{ tempest_params.controller_ip }}"
+
+    - name: Update login url in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^login_url = .*'
+        line: "login_url = http://{{ tempest_params.controller_ip }}/auth/login"
+
+    - name: Update uri in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^uri = .*'
+        line: "uri = http://{{ tempest_params.controller_ip }}:5000/v2.0"
+
+    - name: Update uri v3 in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^uri_v3 = .*'
+        line: "uri_v3 = http://{{ tempest_params.controller_ip }}:5000/v3"
+
+    - name: Update password in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^password = .*'
+        line: "password = {{ tempest_params.controller_password }}"
+
+    - name: Update alt password in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^alt_password = .*'
+        line: "alt_password = {{ tempest_params.controller_password }}"
+
+    - name: Update admin_role in tempest.conf
+      ansible.builtin.replace:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^admin_password.*'
+        replace: "admin_password = {{ tempest_params.controller_password }}"
+
+    - name: Remove lines from tempest.conf
+      lineinfile:
+        path: "~/{{ tempest_dir }}/etc/tempest.conf"
+        state: absent
+        regexp: '^admin_domain_name.*'
+
+    - name: Add line after pattern
+      ansible.builtin.lineinfile:
+        path:  ~/{{ tempest_dir }}/etc/tempest.conf
+        insertafter: 'admin_password = noir0123'
+        line: "admin_domain_name = {{ tempest_params.admin_domain_name }}"
+
+    - name: Update admin_project_id in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^admin_project_id = .*'
+        line: "admin_project_id = {{ tempest_params.admin_project_id }}"
+
+    - name: Update external_network in tempest.conf
+      lineinfile:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^public_network_id = .*'
+        line: "public_network_id = {{ tempest_params.external_network }}"
+
+    - name: Update admin_role in tempest.conf
+      ansible.builtin.replace:
+        path: ~/{{ tempest_dir }}/etc/tempest.conf
+        regexp: '^admin_role.*'
+        replace: "admin_role = {{ tempest_params.admin_role }}"
