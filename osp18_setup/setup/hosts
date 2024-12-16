@@ -23,3 +23,16 @@
 10.100.1.10  prometheus-k8s-openshift-monitoring.apps.fab205.fab205.local
 10.100.1.10  prometheus-k8s-federate-openshift-monitoring.apps.fab205.fab205.local
 10.100.1.10  thanos-querier-openshift-monitoring.apps.fab205.fab205.local
+# 10.2.4.95  keystone-public-openstack.apps.fab205.fab205.local
+1.100.1.101  compute01.fab205.local
+1.100.1.101  edpm-compute-1.ctlplane.fab205.fab205.local
+1.100.1.101  compute-1.fab205.fab205.local
+#1.121.101.86 rabbitmq-cell1.openstack.svc
+1.100.1.100  compute00.fab205.local
+1.100.1.100  edpm-compute-0.ctlplane.fab205.fab205.local
+1.100.1.100  compute-0.fab205.fab205.local
+#1.121.101.80 keystone-internal.openstack.svc
+#1.121.101.80 placement-internal.openstack.svc
+#1.121.101.80 glance-default-internal.openstack.svc
+#1.121.101.80 neutron-internal.openstack.svc
+#10.2.2.103 ovsdbserver-sb.openstack.svc

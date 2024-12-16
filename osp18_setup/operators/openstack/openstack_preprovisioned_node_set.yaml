@@ -117,7 +117,7 @@ spec:
       - name: tenant
         subnetName: subnet1
         fixedIP: 1.121.104.101
-    edpm-compute-1:
+    edpm-compute-0:
       hostName: edpm-compute-0
       ansible:
         ansibleHost: 1.100.1.100

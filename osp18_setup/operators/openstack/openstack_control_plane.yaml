@@ -283,6 +283,63 @@ spec:
                 metallb.universe.tf/loadBalancerIPs: 1.121.101.86 
             spec:
               type: LoadBalancer
+  horizon:
+    apiOverride: {}
+    enabled: true
+    template:
+      customServiceConfig: ""
+      memcachedInstance: memcached
+      override: {}
+      preserveJobs: false
+      replicas: 2
+      resources: {}
+      secret: osp-secret
+      tls: {}
+  heat:
+    apiOverride:
+      route: {}
+    cnfAPIOverride:
+      route: {}
+    enabled: true
+    template:
+      databaseAccount: heat
+      databaseInstance: openstack
+      heatAPI:
+        override:
+          service:
+            internal:
+              metadata:
+                annotations:
+                  metallb.universe.tf/address-pool: internalapi
+                  metallb.universe.tf/allow-shared-ip: internalapi
+                  metallb.universe.tf/loadBalancerIPs: 1.121.101.80
+              spec:
+                type: LoadBalancer
+        replicas: 1
+        resources: {}
+        tls:
+          api:
+            internal: {}
+            public: {}
+      heatCfnAPI:
+        override: {}
+        replicas: 1
+        resources: {}
+        tls:
+          api:
+            internal: {}
+            public: {}
+      heatEngine:
+        replicas: 1
+        resources: {}
+      memcachedInstance: memcached
+      passwordSelectors:
+        authEncryptionKey: HeatAuthEncryptionKey
+        service: HeatPassword
+      preserveJobs: false
+      rabbitMqClusterName: rabbitmq
+      secret: osp-secret
+      serviceUser: heat
   telemetry:
     enabled: true
     template:
