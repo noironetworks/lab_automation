@@ -648,3 +648,280 @@ sudo yum install sosreport
 sudo yum install sos
 sos
 sos report
+cd /etc/
+ls
+cd cobbler
+ls
+ls settings.d/
+history 
+cd
+cp .bash_history /home/stack/setup/bash_hist_root
+ls
+cd /iso/
+ls
+mkdir ocp416
+mv ~stack/rhcos-4.16.3-x86_64-live-* .
+ls -l
+mv rhcos-4.16.3-x86_64-live-* ocp416/
+cd ocp41
+cd ocp416/
+ls
+mv rhcos-4.16.3-x86_64-live-kernel-x86_64 vmlinuz
+ls -l
+mv rhcos-4.16.3-x86_64-live-initramfs.x86_64.img initrd.img
+ls
+;cobbler distro add --name rhcos-x86_64-4.12.2-distro  --kernel=/iso/ocp412/vmlinuz --initrd=/iso/
+ls /iso/
+ls /iso/ocp416/
+cobbler distro add --name rhcos-x86_64-4.12.2-distro  --kernel=/iso/ocp416/vmlinuz --initrd=/iso/ocp416/initrd.img
+cobbler distro delete --name rhcos-x86_64-4.12.2-distro  --kernel=/iso/ocp416/vmlinuz --initrd=/iso/ocp416/initrd.img
+cobbler distro remove --name rhcos-x86_64-4.12.2-distro  --kernel=/iso/ocp416/vmlinuz --initrd=/iso/ocp416/initrd.img
+cobbler distro remove --name rhcos-x86_64-4.12.2-distro 
+ls /iso/ocp416/
+cobbler distro add --name rhcos-x86_64-4.16.3-distro  --kernel=/iso/ocp416/vmlinuz --initrd=/iso/ocp416/initrd.img
+cobbler profile add --name rhcos-x86_64-4.16.3-profile --distro=rhcos-x86_64-4.16.3-distro
+cd /var/www/
+ls
+cd cobbler/
+ls
+ls images/
+ls images/rhcos-x86_64-4.16.3-distro/
+sudo cobbler sync
+ls
+cd /var/www/
+ls
+cd html/
+ls
+cd rootfs/
+ls
+mkdir rhcos-x86_64-4.16.3
+ls
+ls rhcos-x86_64-4.14.0/
+cp /iso/ocp416/rhcos-4.16.3-x86_64-live-rootfs.x86_64.img rhcos-x86_64-4.16.3/rhcos-live-rootfs.x86_64.img
+vi /etc/resolv.conf 
+vi /etc/cobbler/dnsmasq.template
+cat /etc/hosts 
+vi /etc/cobbler/dnsmasq.template
+sudo cobbler sync
+ls
+vi /etc/hosts 
+systemctl restart httpd
+vi /etc/hosts 
+systemctl restart httpd
+journalctl --no-pager 
+reset
+journalctl rotate
+journalctl --rotate
+journalctl --vacuum-time=2d
+journalctl --no-pager 
+systemctl restart dnsmasq
+journalctl --no-pager 
+vi /etc/dnsmasq.conf
+cat /etc/resolv.conf 
+cd /etc/NetworkManager/
+ls
+cd system-connections/
+ls
+vi *
+grep name *
+ls
+vi /etc/resolv.conf 
+vi /etc/dnsmasq.conf
+cat /etc/hosts 
+ls
+vi /etc/cobbler/dnsmasq.template
+sudo cobbler sync
+ls
+cd /etc/NetworkManager/system-connections/
+ls
+cd
+sysctl -a|grep forwa
+vi /etc/sysctl.conf 
+sysctl net.ipv4.ip_forward=1
+ls
+cd /var/www/
+ls
+cd html/
+ls
+mv ~stack/cirros-0.6.1-x86_64-disk.img .
+ls -l
+cd /var/www/cobbler/distro_mirror/rhel9_4-x86_64
+ls
+find . -name 'kickstart'
+find . -name 'kickstart*'
+cd /etc/cobbler/
+ls
+find . -name '*start*'
+journalctl --no-pager|grep kickstart 
+cd /etc/
+find . -name '*icksta*'
+yum list \*cobbler\*
+yum list \*kiskstart\*
+cd /var/lib/cobbler
+ls
+cd templates/
+ls
+cp ~stack/anaconda-ks.cfg .
+mv anaconda-ks.cfg compute-ks.cfg
+ls -l
+cat default.ks 
+cat sample.ks 
+ls
+vi default.ks 
+vi esxi4-ks.cfg 
+ls
+la
+s
+ls 
+cat anaconda-ks.cfg 
+ls
+cd /etc/
+find . -name '*,ks'
+find . -name '*.ks'
+find . -name '*.cfg'
+cd /var/lib/cobbler/templates/
+ls
+vi sample.ks 
+cd /var/lib/tftpboot/
+ls
+cd pxelinux.cfg/
+ls
+vi *
+cd ../grub/x86_64-efi/
+ls
+las
+ls
+cd /var/lib/cobbler/templates/
+ls
+vi compute-ks.cfg 
+sudo cobbler sync
+cd /var/lib/cobbler/templates/
+ls
+cp compute-ks.cfg compute-ks.cfg.bk 
+vi compute-ks.cfg
+sudo cobbler sync
+cd /var/lib/cobbler/templates/
+cat compute-ks.cfg
+cd /var/www/html/
+ls
+mkdir rhel9-4
+cd /mnt/
+ls
+find . -xdev|cpio -pvd /var/www/html/rhel9-4/
+ls -l
+df -h
+ls
+d /var/
+ls
+cd /var/lib/
+ls
+cd /var/www/html
+ls
+ls -l
+ls ignition/
+ls -l ignition/
+ls -l ignition/fab205/
+cd /var/lib/cobbler/templates/
+ls
+vi compute-ks.cfg
+vi compute-ks.cfg.bk 
+vi compute-ks.cfg
+vi compute-ks.cfg.bk 
+vi compute-ks.cfg
+vi compute-ks.cfg.bk 
+vi compute-ks.cfg
+sudo cobbler sync
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+sudo cobbler sync
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+sudo cobbler sync
+vi /usr/local/bin/compute_on
+chmod +x /usr/local/bin/compute_on
+/usr/local/bin/compute_on
+ls
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+ssh noiro@1.100.1.100
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+sudo cobbler sync
+/usr/local/bin/compute_on
+vi compute-ks.cfg
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+/usr/local/bin/compute_on
+ssh noiro@1.100.1.100
+vi ~/.ssh/known_hosts
+ssh noiro@1.100.1.100
+cd /var/lib/cobbler/templates/
+vi ~/.ssh/known_hosts
+vi compute-ks.cfg
+sudo cobbler sync
+/usr/local/bin/compute_on
+ssh noiro@1.100.1.101
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+sudo cobbler sync
+/usr/local/bin/compute_on
+cd /var/lib/cobbler/templates/
+vi compute-ks.cfg
+sudo cobbler sync
+/usr/local/bin/compute_on
+ssh noiro@1.100.1.100
+vi ~/.ssh/known_hosts
+ssh noiro@1.100.1.100
+cd /var/lib/cobbler/templates/
+ls
+cp compute-ks.cfg ~stack/operators/openstack/save/
+subscription-manager --help
+subscription-manager clean --help
+cp .bash_history /home/stack/archive/
+cp .bash_history /home/stack/archive/root_bash_history
+chown stack:stack /home/stack/archive/root_bash_history
+ssh core@1.100.1.13
+exit
+sudo cobbler sync
+cd /usr/local/bin/
+ls
+cp on_all_power_pxe on_compute.sh
+vi on_compute.sh 
+ls
+cp off_all_power off_compute 
+vi off_compute 
+cd /usr/local/bin/
+lss
+ls
+vi on_all_power_pxe 
+vi on_compute.sh 
+ ssh -i~/rhoso noiro@1.100.1.101
+cat install-config
+cat install-config.yaml 
+ls
+cd operators/
+ls
+grep -r compute *
+ ssh -i~/rhoso noiro@1.100.1.100
+vi /root/.ssh/known_hosts
+ ssh -i~/rhoso noiro@1.100.1.100
+ ssh -i~/rhoso noiro@1.100.1.101
+grep -r  "1.100" *
+vi openstack/openstack_preprovisioned_node_set.yam
+vi openstack/openstack_preprovisioned_node_set.yaml 
+ ssh -i~/rhoso noiro@1.100.1.101
+ssh noiro@1.100.1.101
+ls
+cd /
+find . -name '*.iso'
+find . -name 'rhcos*'
+cd /usr/src/Downloads/
+ls
+pwd
+cd /
+cd iso/
+ls
+ls ocp416/
+scp -r ocp416 noiro@172.20.71.224:
+yum list \*cobbler\*
+cat /etc/haproxy/haproxy.cfg 
