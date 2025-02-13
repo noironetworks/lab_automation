@@ -1,0 +1,52 @@
+---
+- name: Configure subscription manager and enable repos
+  hosts: all
+  become: true
+  tasks:
+    - name: Set up proxy
+      ansible.builtin.command:
+        cmd: >
+          subscription-manager config
+          --server.proxy_hostname=proxy.esl.cisco.com
+          --server.proxy_port=80
+      changed_when: false
+
+    - name: Register with Red Hat and attach specific subscription pool
+      community.general.redhat_subscription:
+        state: present
+        username: 'mcohen2@cisco.com'
+        password: 'Ins3965!'
+        pool_ids: '2c94bfa289fe79160189feb5ec44095d'
+      changed_when: true
+
+    - name: Disable all repositories
+      ansible.builtin.command:
+        cmd: subscription-manager repos --disable=*
+      changed_when: false
+
+    - name: Set RHEL release to 8.4
+      ansible.builtin.command:
+        cmd: subscription-manager release --set=8.4
+      changed_when: false
+
+    - name: Enable required Red Hat Enterprise Linux repositories
+      ansible.builtin.command:
+        argv:
+          - subscription-manager
+          - repos
+          - --enable=rhel-8-for-x86_64-baseos-tus-rpms
+          - --enable=rhel-8-for-x86_64-appstream-tus-rpms
+          - --enable=rhel-8-for-x86_64-highavailability-tus-rpms
+          - --enable=openstack-17.1-for-rhel-8-x86_64-rpms
+          - --enable=fast-datapath-for-rhel-8-x86_64-rpms
+      changed_when: false
+
+    - name: Switch to container-tools module
+      ansible.builtin.command:
+        cmd: dnf -y module switch-to container-tools:rhel8
+      changed_when: true
+
+    - name: Install python3-tripleoclient
+      ansible.builtin.package:
+        name: python3-tripleoclient
+        state: present

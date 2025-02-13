@@ -1,0 +1,90 @@
+---
+- name: Undercloud configuration
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Backup containers-prepare-parameter.yaml
+      ansible.builtin.copy:
+        src: /home/stack/containers-prepare-parameter.yaml
+        dest: /home/stack/containers-prepare-parameter.yaml.orig
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Prepare container images
+      ansible.builtin.command:
+        cmd: >
+          openstack tripleo container image prepare default
+          --local-push-destination
+          --output-env-file /home/stack/containers-prepare-parameter.yaml
+      changed_when: true
+
+    - name: Ensure generated file has correct permissions and ownership
+      ansible.builtin.file:
+        path: /home/stack/containers-prepare-parameter.yaml
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Ensure ContainerImageRegistryCredentials header is present
+      ansible.builtin.lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        line: '  ContainerImageRegistryCredentials:'
+        insertafter: '^parameter_defaults:\s*$'
+        state: present
+
+    - name: Ensure registry.redhat.io line is present
+      ansible.builtin.lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        line: '    registry.redhat.io:'
+        insertafter: '^  ContainerImageRegistryCredentials:\s*$'
+        state: present
+
+    - name: Ensure email and password line is present
+      ansible.builtin.lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        line: "      mcohen2@cisco.com: 'Ins3965!'"
+        insertafter: '^    registry.redhat.io:\s*$'
+        state: present
+
+    - name: Create skip_rhel_release.yaml
+      ansible.builtin.copy:
+        dest: /home/stack/skip_rhel_release.yaml
+        content: |
+          parameter_defaults:
+            SkipRhelEnforcement: true
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Remove existing custom_env_files entries in undercloud.conf
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        regexp: '^custom_env_files\s*='
+        state: absent
+
+    - name: Remove existing container_images_file entries in undercloud.conf
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        regexp: '^container_images_file\s*='
+        state: absent
+
+    - name: Ensure custom_env_files entry in undercloud.conf
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        line: 'custom_env_files = /home/stack/skip_rhel_release.yaml'
+        insertafter: '^# configurations. \(string value\)$'
+        state: present
+
+    - name: Ensure container_images_file entry in undercloud.conf
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        line: >
+          container_images_file = /home/stack/containers-prepare-parameter.yaml
+        insertafter: '^# configurations. \(string value\)$'
+        state: present
+
+    - name: Ensure tripleo_mysql.service is running
+      ansible.builtin.systemd:
+        name: tripleo_mysql
+        state: started
