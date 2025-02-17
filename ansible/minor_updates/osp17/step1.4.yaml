@@ -1,0 +1,19 @@
+---
+- name: Updating Red Hat Openstack Platform repositories 
+  hosts: undercloud
+  tasks:
+  - name: Ensure that the old OSP17 repo is absent
+    replace:
+      path: /home/stack/templates/rhsm.yaml
+      regexp: "        - openstack-17-for-rhel-9-x86_64-rpms"
+      replace: "        - openstack-17.1-for-rhel-9-x86_64-rpms"
+  - name: Step4. Check the rhsm_repos parameter in your subscription management configuration
+    lineinfile:
+      dest: /home/stack/templates/rhsm.yaml
+      state: present
+      line: "{{ item }}"
+    with_items:
+    - '        - rhel-9-for-x86_64-baseos-eus-rpms'
+    - '        - rhel-9-for-x86_64-appstream-eus-rpms'
+    - '        - rhel-9-for-x86_64-highavailability-eus-rpms'
+    - '        - fast-datapath-for-rhel-9-x86_64-rpms'

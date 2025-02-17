@@ -1,0 +1,6 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: set release to 9.2
+      command: subscription-manager release --set=9.2
+      become: true

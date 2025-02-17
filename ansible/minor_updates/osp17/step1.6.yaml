@@ -1,0 +1,7 @@
+---
+- name: Disabling fencing in the overcloud
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Step3. For each Controller node log in to the Controller node and run the Pacemaker command to disable fencing
+      shell: for ip in $(metalsmith -c Hostname -f value -c "IP Addresses" -f value list | grep 'controller' | awk -F"=" '{print $2}'); do ssh heat-admin@$ip "sudo pcs property set stonith-enabled=false"; done

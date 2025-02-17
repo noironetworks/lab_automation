@@ -1,0 +1,6 @@
+---
+- name: Re-enabling fencing in the overcloud
+  hosts: undercloud
+  tasks:
+    - name: Step3. Log in to a Controller node and run the Pacemaker command to re-enable fencing
+      shell:  ssh tripleo-admin@$(metalsmith -c Hostname -f value -c "IP Addresses" -f value list | grep 'controller-0' | awk -F"=" '{print $2}') "sudo pcs property set stonith-enabled=true"

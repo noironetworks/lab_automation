@@ -1,0 +1,6 @@
+---
+- name: Running the container image preparation
+  hosts: undercloud
+  tasks:
+  - name: Step3. Run the openstack overcloud external-update run command against tasks that have the container_image_prepare tag
+    command: openstack overcloud external-update run -y --stack overcloud --tags container_image_prepare

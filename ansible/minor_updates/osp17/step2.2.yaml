@@ -1,0 +1,6 @@
+---
+- name: Validating your SSH key size
+  hosts: undercloud
+  tasks:
+  - name: Step1. Validate your SSH key size
+    command: ssh-keygen -l -f ~/.ssh/id_rsa.pub | awk '{print $1}'
