@@ -1,0 +1,7 @@
+---
+- name: Upgrading RHOSP on all nodes in each stack 
+  hosts: undercloud
+  tasks:
+    - name: Step3. Upgrade RHOSP on all nodes in your main stack
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --stack overcloud --debug --limit allovercloud,undercloud --playbook all

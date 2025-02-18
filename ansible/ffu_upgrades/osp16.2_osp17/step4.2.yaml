@@ -1,0 +1,6 @@
+---
+- name: Disabling fencing in the overcloud
+  hosts: undercloud
+  tasks:
+    - name: For each Controller node log in to the Controller node and run the Pacemaker command to disable fencing
+      shell: for ip in $(openstack server list  -c Name -f value -c Networks -f value |grep controller | awk -F"=" '{print $2}'); do ssh heat-admin@$ip "sudo pcs property set stonith-enabled=false"; done

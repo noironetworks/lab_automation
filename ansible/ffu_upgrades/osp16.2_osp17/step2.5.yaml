@@ -1,0 +1,13 @@
+---
+- name: Obtaining container images from private registries
+  hosts: undercloud
+  tasks:
+    - name: Ensure ContainerImageRegistryCredentials header is present
+      lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        state: present
+        line: "{{ item }}"
+      with_items:
+      - "  ContainerImageRegistryCredentials:"
+      - "     registry.redhat.io:"
+      - "       mcohen2@cisco.com: Ins3965!"

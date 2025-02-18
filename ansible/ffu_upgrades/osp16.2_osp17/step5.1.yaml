@@ -1,0 +1,184 @@
+---
+- name: Performing the overcloud adoption and preparation
+  hosts: undercloud
+  tasks:
+    - name: Step0.1 Save off the old tripleo-heat-templates directory under home
+      shell: mv /home/stack/tripleo-heat-templates /home/stack/tripleo-heat-templates.orig
+    - name: Step0.2 Copy the tripleo-heat-templates
+      shell: cp -nr /usr/share/openstack-tripleo-heat-templates  /home/stack/tripleo-heat-templates
+    - name: Step0.3 Make sure overcloud_adopt directory is absent
+      ansible.builtin.file:
+        path: /home/stack/overcloud_adopt
+        state: absent
+    - name: Step4. On the main stack copy the passwords.yaml file to the /home/stack/overcloud-deploy/overcloud directory
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/tripleo-overcloud-passwords.yaml
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud-passwords.yaml
+    - name: Step5.1. On the main stack copy the network-data.yaml file to the stack user’s home directory and deploy the networks I
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/tripleo-overcloud-network-data.yaml
+        dest: /home/stack/tripleo-overcloud-network-data.yaml
+    - name: Step5.2 On the main stack copy the network-data.yaml file to the stack user’s home directory and deploy the networks II
+      ansible.builtin.file:
+        path: /home/stack/overcloud_adopt
+        state: directory
+        mode: '0777'
+    - name: Step5.3. On the main stack copy the network-data.yaml file to the stack user’s home directory and deploy the networks III
+      ansible.builtin.command:
+        cmd: openstack overcloud network provision --templates /home/stack/tripleo-heat-templates --debug --output /home/stack/overcloud_adopt/generated-networks-deployed.yaml /home/stack/tripleo-overcloud-network-data.yaml
+    - name: Step6.1 On the main stack copy the virtual-ips.yaml file to the stack user’s home directory and provision the network VIPs I
+      ansible.builtin.copy:
+        src: /home/stack/overcloud-deploy/overcloud/tripleo-overcloud-virtual-ips.yaml
+        dest: /home/stack/tripleo-overcloud-virtual-ips.yaml
+    - name: Step6.2 On the main stack copy the virtual-ips.yaml file to the stack user’s home directory and provision the network VIPs II
+      ansible.builtin.command:
+        cmd: openstack overcloud network vip provision --templates /home/stack/tripleo-heat-templates --debug --stack overcloud --output /home/stack/overcloud_adopt/generated-vip-deployed.yaml /home/stack/tripleo-overcloud-virtual-ips.yaml
+    - name: Step7. On the main stack, copy the network-environment.yaml file to the stack user’s home directory
+      ansible.builtin.copy:
+        src: /home/stack/overcloud-deploy/overcloud/overcloud-network-environment.yaml
+        dest: /home/stack/overcloud_adopt/overcloud-network-environment.yaml
+    - name: Ensure that you delete the resource_registry mappings in the overcloud-network-environment.yaml
+      lineinfile:
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud-network-environment.yaml
+        state: absent
+        line: "{{ item }}"
+      with_items:
+      - "resource_registry:"
+      - "  OS::TripleO::BlockStorage::Net::SoftwareConfig: OS::Heat::None"
+      - "  OS::TripleO::CephStorage::Net::SoftwareConfig: OS::Heat::None"
+      - "  OS::TripleO::Compute::Net::SoftwareConfig: OS::Heat::None"
+      - "  OS::TripleO::Controller::Net::SoftwareConfig: OS::Heat::None"
+      - "  OS::TripleO::ObjectStorage::Net::SoftwareConfig: OS::Heat::None"
+    - name: Step8.1 On the main stack, copy the baremetal-deployment.yaml file to the stack user’s home directory and provision the overcloud nodes I
+      ansible.builtin.copy:
+        src: /home/stack/overcloud-deploy/overcloud/tripleo-overcloud-baremetal-deployment.yaml
+        dest: /home/stack/tripleo-overcloud-baremetal-deployment.yaml
+    - name: Step8.2 On the main stack, copy the baremetal-deployment.yaml file to the stack user’s home directory and provision the overcloud nodes II
+      ansible.builtin.command:
+        cmd: openstack overcloud node provision --templates /home/stack/tripleo-heat-templates --debug --stack overcloud --output /home/stack/overcloud_adopt/baremetal-deployment.yaml /home/stack/tripleo-overcloud-baremetal-deployment.yaml
+    - name: Step9.0 Check to see if the containers-prepare.yaml.orig file already exists
+      ansible.builtin.stat:
+        path: /home/stack/containers-prepare-parameter.yaml.orig
+      register: saved_prepare
+    - name: Step9.1 Complete the following steps to prepare the containers
+      ansible.builtin.copy:
+        src: /home/stack/containers-prepare-parameter.yaml
+        dest: /home/stack/containers-prepare-parameter.yaml.orig
+      when: not saved_prepare.stat.exists
+    - name: Step9.2 Run the following script to to update the containers-prepare-parameter.yaml file
+      ansible.builtin.command:
+        cmd: >
+          python3 /usr/share/openstack-tripleo-heat-templates/tools/multi-rhel-container-image-prepare.py
+          --role Compute
+          --role Controller
+          --role-file /home/stack/templates/custom_roles_data.yaml
+          --local-push-destination
+          --enable-multi-rhel
+          --excludes collectd
+          --excludes nova-libvirt
+          --excludes horizon
+          --excludes heat-engine
+          --excludes neutron-server
+          --minor-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel8","neutron_driver":"openvswitch","no_tag":"not_used"}
+          --major-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel9","neutron_driver":"openvswitch","no_tag":"not_used"}
+          --output-env-file /home/stack/containers-prepare-parameter.yaml
+    - name: Step9.3 Add in the registry credentials
+      lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        insertafter: "parameter_defaults:"
+        line:        "{{ item }}"
+      with_items:
+      - "      mcohen2@cisco.com: 'Ins3965!'"
+      - "    registry.redhat.io:"
+      - "  ContainerImageRegistryCredentials:"
+    - name: Step9.4 Use openvswitch instead of ovn
+      replace:
+        path: /home/stack/templates/custom_roles_data.yaml
+        regexp: "      neutron_driver: ovn"
+        replace: "      neutron_driver: openvswitch"
+    - name: Step11.1 Create an environment file called upgrades-environment.yaml in your templates directory and include the following content I
+      shell: egrep DockerInsecureRegistryAddress /home/stack/templates/ciscoaci-config.yaml
+      register: registry
+    - name: Step11.2 Create an environment file called upgrades-environment.yaml in your templates directory and include the following content II
+      copy:
+        dest: "/home/stack/templates/upgrades-environment.yaml"
+        content: |
+           parameter_defaults:
+             ExtraConfig:
+               nova::workarounds::disable_compute_service_check_for_ffu: true
+             DnsServers: ["172.28.184.18"]
+           {{ registry.stdout_lines[0] }}
+             UpgradeInitCommand: |
+               sudo subscription-manager repos --disable=*
+                 if $( grep -q  9.2  /etc/os-release )
+                 then
+                   sudo subscription-manager repos \
+                       --enable=rhel-9-for-x86_64-baseos-eus-rpms \
+                       --enable=rhel-9-for-x86_64-appstream-eus-rpms \
+                       --enable=rhel-9-for-x86_64-highavailability-eus-rpms \
+                       --enable=openstack-17.1-for-rhel-9-x86_64-rpms \
+                       --enable=fast-datapath-for-rhel-9-x86_64-rpms
+                   sudo podman ps | grep -q ceph && subscription-manager repos --enable=rhceph-5-tools-for-rhel-9-x86_64-rpms
+                   sudo subscription-manager release --set=9.2
+                 else
+                   sudo subscription-manager repos \
+                       --enable=rhel-8-for-x86_64-baseos-tus-rpms \
+                       --enable=rhel-8-for-x86_64-appstream-tus-rpms \
+                       --enable=rhel-8-for-x86_64-highavailability-tus-rpms \
+                       --enable=openstack-17.1-for-rhel-8-x86_64-rpms \
+                       --enable=fast-datapath-for-rhel-8-x86_64-rpms
+                   sudo podman ps | grep -q ceph && subscription-manager repos --enable=rhceph-5-tools-for-rhel-8-x86_64-rpms
+                   sudo subscription-manager release --set=8.4
+                 fi
+           
+                 if $(sudo podman ps | grep -q ceph )
+                 then
+                   sudo dnf -y install cephadm
+                 fi
+    - name: Step12.1 On the undercloud create a file called overcloud_upgrade_prepare.sh in your templates directory
+      copy:
+        dest: "/home/stack/overcloud_upgrade_prepare.sh"
+        content: |
+           #!/bin/bash
+           openstack overcloud upgrade prepare --yes \
+             --timeout 460 \
+             --templates /home/stack/tripleo-heat-templates \
+             --ntp-server 172.28.184.8 \
+             --stack overcloud \
+             -r /home/stack/templates/custom_roles_data.yaml \
+             -e /home/stack/templates/network-environment.yaml \
+             -e /home/stack/templates/upgrades-environment.yaml \
+             -e /home/stack/templates/ciscoaci_containers.yaml \
+             -e /home/stack/templates/ciscoaci-config.yaml \
+             -e /home/stack/overcloud-deploy/overcloud/overcloud-network-environment.yaml \
+             -e /home/stack/templates/octavia-environment.yaml \
+             -e /home/stack/tripleo-heat-templates/environments/services/octavia.yaml\
+             -e /home/stack/overcloud_adopt/overcloud-network-environment.yaml \
+             -e /home/stack/tripleo-heat-templates/environments/nova-hw-machine-type-upgrade.yaml \
+             -e /home/stack/skip_rhel_release.yaml \
+             -e /home/stack/containers-prepare-parameter.yaml \
+             -e /home/stack/overcloud_adopt/baremetal-deployment.yaml \
+             -e /home/stack/overcloud_adopt/generated-networks-deployed.yaml \
+             -e /home/stack/overcloud_adopt/generated-vip-deployed.yaml
+    - name: Step12.2 In the original network-environment.yaml file remove all the resource_registry resources that point to SoftwareConfig
+      lineinfile:
+        dest: /home/stack/templates/network-environment.yaml
+        state: absent
+        line: "{{ item }}"
+      with_items:
+      - "resource_registry:"
+      - "  OS::TripleO::Controller::Net::SoftwareConfig:"
+      - "      /home/stack/templates/nic-configs/controller.yaml"
+      - "  OS::TripleO::Compute::Net::SoftwareConfig:"
+      - "      /home/stack/templates/nic-configs/compute.yaml"
+    - name: Step12.3 Fix the containers-prepare-upgrade.yaml file
+      shell: python3 $(pwd)/fix_parameters.py
+    - name: Step13.1 Run the upgrade preparation script for each stack in your environment I
+      ansible.builtin.file:
+        path: /home/stack/overcloud_upgrade_prepare.sh
+        mode: '755'
+    - name: Step13.2 Run the upgrade preparation script for each stack in your environment II
+      ansible.builtin.shell: sh /home/stack/overcloud_upgrade_prepare.sh
+    - name: Step15. Download the container images
+      ansible.builtin.command:
+        cmd:  openstack overcloud external-upgrade run -y --stack overcloud --tags container_image_prepare

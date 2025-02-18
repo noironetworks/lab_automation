@@ -1,0 +1,41 @@
+---
+- name: Preparing container images
+  hosts: undercloud
+  tasks:
+    - name: Step2. Create a file called skip_rhel_release.yaml and set the SkipRhelEnforcement parameter to true
+      ansible.builtin.copy:
+        dest: /home/stack/skip_rhel_release.yaml
+        content: |
+          parameter_defaults:
+            SkipRhelEnforcement: true
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Step3.1 Open the undercloud.conf file, and add the container_images_file parameter to the DEFAULT section in the file I
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        regexp: '^container_images_file\s*='
+        state: absent
+
+    - name: Step3.2. Open the undercloud.conf file, and add the container_images_file parameter to the DEFAULT section in the file II
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        line: >
+          container_images_file = /home/stack/containers-prepare-parameter.yaml
+        insertafter: '^# configurations. \(string value\)$'
+        state: present
+
+    - name: Step4.1 Add the custom_env_files parameter to the DEFAULT section in the undercloud.conf file I
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        regexp: '^custom_env_files\s*='
+        state: absent
+
+    - name: Step4.2 Add the custom_env_files parameter to the DEFAULT section in the undercloud.conf file II
+      ansible.builtin.lineinfile:
+        path: /home/stack/undercloud.conf
+        line: 'custom_env_files = /home/stack/skip_rhel_release.yaml'
+        insertafter: '^# configurations. \(string value\)$'
+        state: present
+
