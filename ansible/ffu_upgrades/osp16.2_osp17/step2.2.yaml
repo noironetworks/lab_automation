@@ -1,0 +1,35 @@
+---
+- name: Validating RHOSP before the upgrade
+  hosts: all
+  become: true
+  tasks:
+    - name: Adjust the permissions of the mistral ssh directory
+      ansible.builtin.file:
+        path: /var/lib/mistral/.ssh/
+        mode: +x
+        state: file
+
+    - name: Install the packages for validation
+      ansible.builtin.command:
+        cmd: dnf -y update openstack-tripleo-validations python3-validations-libs validations-common
+      changed_when: true
+
+    - name: Copy the inventory from mistral part I
+      ansible.builtin.file:
+        path: /var/lib/mistral/.ssh/tripleo-admin-rsa
+        state: file
+        owner: stack
+        group: stack
+
+    - name: Copy the inventory from mistral part II
+      ansible.builtin.copy:
+        src: /var/lib/mistral/overcloud/tripleo-ansible-inventory.yaml
+        dest: /home/stack/inventory.yaml
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Run the validation
+      ansible.builtin.command:
+        cmd: alidation run -i inventory.yaml --group pre-upgrade
+      changed_when: false
