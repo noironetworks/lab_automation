@@ -1,0 +1,59 @@
+---
+- name: Upgrading the control plane nodes
+  hosts: undercloud
+  tasks:
+    - name: Step3.1 Run the following script without the CONTROL_PLANE_ROLES parameter I
+      ansible.builtin.command:
+        cmd: >
+         python3 /usr/share/openstack-tripleo-heat-templates/tools/multi-rhel-container-image-prepare.py
+         --role Compute
+         --local-push-destination
+         --enable-multi-rhel
+         --excludes collectd
+         --excludes nova-libvirt
+         --excludes horizon
+         --excludes heat-engine
+         --excludes neutron-server
+         --minor-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel8","neutron_driver":"openvswitch","no_tag":"not_used"}
+         --major-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel9","neutron_driver":"openvswitch","no_tag":"not_used"}
+         --output-env-file /home/stack/containers-prepare-parameter.yaml
+    - name: Step3.2 Run the following script without the CONTROL_PLANE_ROLES parameter II
+      lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        insertafter: "parameter_defaults:"
+        line:        "{{ item }}"
+      with_items:
+      - "      mcohen2@cisco.com: 'Ins3965!'"
+      - "    registry.redhat.io:"
+      - "  ContainerImageRegistryCredentials:"
+    - name: Step3.3 Run the following script without the CONTROL_PLANE_ROLES parameter III
+      replace:
+        path: /home/stack/containers-prepare-parameter.yaml
+        regexp: "{{ item.regexp }}"
+        replace: "{{ item.replacement }}"
+      with_items:
+      - {regexp: "neutron_driver: ovn", replacement: "neutron_driver: openvswitch"}
+    - name: Step4. In the skip_rhel_release.yaml file, set the SkipRhelEnforcement parameter to false
+      replace:
+        path: /home/stack/skip_rhel_release.yaml
+        regexp: "  SkipRhelEnforcement: true"
+        replace: "  SkipRhelEnforcement: false"
+    - name: Step5. Update the overcloud_upgrade_prepare.sh file
+      lineinfile:
+        path: /home/stack/overcloud_upgrade_prepare.sh
+        insertafter: '  -e /home/stack/skip_rhel_release.yaml'
+        line:        '  -e /home/stack/templates/system_upgrade.yaml \'
+    - name: Step6. Run the overcloud_upgrade_prepare.sh scriptRun the overcloud_upgrade_prepare.sh script
+      ansible.builtin.shell: sh /home/stack/overcloud_upgrade_prepare.sh
+    - name: Step7. Fetch any new or modified containers that you require for the system upgrade
+      ansible.builtin.command:
+        cmd: openstack overcloud external-upgrade run -y --stack overcloud --tags container_image_prepare
+    - name: Step8. Upgrade the first one-third of the control plane nodes
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --stack overcloud --tags system_upgrade --limit overcloud-controller-0
+    - name: Step10. Upgrade the second one-third of the control plane nodes
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --stack overcloud --tags system_upgrade --limit overcloud-controller-1
+    - name: Step11. Upgrade the last one-third of the control plane nodes
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --stack overcloud --tags system_upgrade --limit overcloud-controller-2

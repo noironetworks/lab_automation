@@ -1,0 +1,40 @@
+---
+- name: Updating composable services in custom roles_data files
+  hosts: undercloud
+  tasks:
+    - name: Save a copy of the custom_roles_data.yaml file
+      ansible.builtin.copy:
+        src: /home/stack/templates/custom_roles_data.yaml
+        dest: /home/stack/templates/custom_roles_data.yaml.orig
+    - name: Updating composable services in custom roles_data files
+      replace:
+        path: /home/stack/templates/custom_roles_data.yaml
+        regexp: "    - OS::TripleO::Services::NovaLibvirt$"
+        replace: "    - OS::TripleO::Services::NovaLibvirtLegacy"
+    - name: Remove any deprecated packages
+      lineinfile:
+        dest: /home/stack/templates/custom_roles_data.yaml
+        state: absent
+        line: "{{ item }}"
+      with_items:
+      - "    - OS::TripleO::Services::CinderBackendDellEMCXTREMIOISCSI"
+      - "    - OS::TripleO::Services::CinderBackendDellPs"
+      - "    - OS::TripleO::Services::CinderBackendVRTSHyperScale"
+      - "    - OS::TripleO::Services::Ec2Api"
+      - "    - OS::TripleO::Services::Keepalived"
+      - "    - OS::TripleO::Services::MistralApi"
+      - "    - OS::TripleO::Services::MistralEngine"
+      - "    - OS::TripleO::Services::MistralExecutor"
+      - "    - OS::TripleO::Services::MistralEventEngine"
+      - "    - OS::TripleO::Services::NeutronML2FujitsuCfab"
+      - "    - OS::TripleO::Services::NeutronML2FujitsuFossw"
+      - "    - OS::TripleO::Services::PankoApi"
+      - "    - OS::TripleO::Services::Rear"
+      - "    - OS::TripleO::Services::SaharaApi"
+      - "    - OS::TripleO::Services::SaharaEngine"
+      - "    - OS::TripleO::Services::Zaqar"
+    - name: The following services are new for Controller nodes. Add them to your Controller role
+      lineinfile:
+        path: /home/stack/templates/custom_roles_data.yaml
+        insertafter: "    - OS::TripleO::Services::GlanceApi"
+        line:        "    - OS::TripleO::Services::GlanceApiInternal"

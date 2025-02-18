@@ -1,0 +1,13 @@
+---
+- name: Clean up subscription manager for the nodes
+  hosts: all
+  become: yes
+  tasks:
+  - name: Step1. Remove all subscriptions
+    command: subscription-manager remove --all
+  - name: Step2. Unregister
+    command: subscription-manager unregister
+    ignore_errors: yes
+  - name: Step3. Clean
+    command: subscription-manager clean
+    ignore_errors: yes

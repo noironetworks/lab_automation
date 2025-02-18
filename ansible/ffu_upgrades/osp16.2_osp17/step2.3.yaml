@@ -1,0 +1,35 @@
+---
+- name: Preparing container images
+  hosts: undercloud
+  tasks:
+    - name: Step2. Optional Back up the 16.2 containers-prepare-parameter.yaml file
+      ansible.builtin.copy:
+        src: /home/stack/containers-prepare-parameter.yaml
+        dest: /home/stack/containers-prepare-parameter.yaml.orig
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Step3.1. Generate the default container image preparation file I
+      ansible.builtin.command:
+        cmd: >
+          openstack tripleo container image prepare default
+          --local-push-destination
+          --output-env-file /home/stack/containers-prepare-parameter.yaml
+
+    - name: Step3.2. Generate the default container image preparation file II
+      ansible.builtin.file:
+        path: /home/stack/containers-prepare-parameter.yaml
+        mode: '0644'
+        owner: stack
+        group: stack
+
+    - name: Step4. Modify the containers-prepare-parameter.yaml to suit your requirements
+      replace:
+        path: /home/stack/containers-prepare-parameter.yaml
+        regexp: "{{ item.regexp }}"
+        replace: "{{ item.replacement }}"
+      with_items:
+      - {regexp: "tag: '16.2'", replacement: "tag: '17.1'"}
+      - {regexp: "neutron_driver: ovn", replacement: "neutron_driver: openvswitch"}
+      - {regexp: "namespace: registry.redhat.io/rhosp-rhel8", replacement: "namespace: registry.redhat.io/rhosp-rhel9"}

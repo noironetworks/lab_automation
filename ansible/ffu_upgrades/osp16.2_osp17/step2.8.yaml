@@ -1,0 +1,27 @@
+---
+- name: Running the director upgrade 
+  hosts: undercloud
+  tasks:
+    - name: Step0.1 Ensure install-undercloud.log exists with correct permissions
+      ansible.builtin.file:
+        path: /home/stack/install-undercloud.log
+        state: touch
+        mode: '0664'
+        owner: stack
+        group: stack
+
+    - name: Step0.2 Ensure that the libzstd-devel package is removed
+      become: true
+      ansible.builtin.package:
+        name: libzstd-devel
+        state: absent
+
+    - name: Step1. Confirm that the tripleo_mysql.service is running
+      become: true
+      ansible.builtin.systemd:
+        name: tripleo_mysql
+        state: started
+
+    - name: Step2. Launch the director configuration script to upgrade director
+      ansible.builtin.command:
+        cmd: openstack undercloud upgrade -y
