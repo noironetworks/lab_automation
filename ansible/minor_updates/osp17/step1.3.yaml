@@ -1,0 +1,13 @@
+---
+- name: Locking the environment to a Red Hat Enterprise Linux release
+  hosts: undercloud
+  tasks:
+  - name: Make backup of rhsm file
+    copy:
+      src: "/home/stack/templates/rhsm.yaml"
+      dest: "/home/stack/templates/rhsm-orig.yaml"
+  - name: Step4. If the rhsm_release parameter is not present, add it and set it to 9.2
+    replace:
+      path: /home/stack/templates/rhsm.yaml
+      regexp: "    rhsm_release: 9.0"
+      replace: "    rhsm_release: 9.2"

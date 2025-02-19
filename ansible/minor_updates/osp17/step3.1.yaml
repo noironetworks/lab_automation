@@ -1,0 +1,27 @@
+---
+- name: Running the overcloud update preparation
+  hosts: undercloud
+  tasks:
+  - name: Step1.5 Create the update prepare command
+    copy:
+      dest: "/home/stack/update_prepare.sh"
+      content: |
+        openstack overcloud update prepare -y \
+            --templates \
+            -n /home/stack/templates/network-environment.yaml \
+            -r /home/stack/templates/custom_roles_data.yaml \
+            -e /home/stack/templates/overcloud-baremetal-deployed.yaml \
+            -e /home/stack/templates/overcloud-networks-deployed.yaml \
+            -e /home/stack/templates/overcloud-vip-deployed.yaml \
+            -e /home/stack/containers-prepare-parameter.yaml \
+            -e /home/stack/templates/octavia-environment.yaml \
+            -e /home/stack/overcloud-deploy/overcloud/tripleo-heat-templates/environments/services/octavia.yaml \
+            -e /home/stack/templates/ciscoaci-config.yaml \
+            -e /home/stack/templates/ciscoaci_containers.yaml
+  - name: Step1.6 Make the prepare script executable
+    file:
+      path: /home/stack/update_prepare.sh
+      state: touch
+      mode: u+x,g+x,o+x
+  - name: Step2. Run the update preparation command
+    shell: /home/stack/update_prepare.sh

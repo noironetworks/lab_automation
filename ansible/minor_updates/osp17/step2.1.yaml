@@ -1,0 +1,9 @@
+---
+- name: Validating RHOSP before the undercloud update
+  hosts: undercloud
+  tasks:
+  - name: Step3. Install the packages for validation
+    become: yes
+    command: dnf -y update openstack-tripleo-validations python3-validations-libs validations-common
+  - name: Step4. Run the validation
+    command: validation run -i ~/overcloud-deploy/overcloud/config-download/overcloud/tripleo-ansible-inventory.yaml --group pre-update

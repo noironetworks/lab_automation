@@ -1,0 +1,9 @@
+---
+- name: Updating the container image preparation file
+  hosts: undercloud
+  tasks:
+  - name: Step2. Check the tag parameter is set to 16.2 for each rule set.
+    lineinfile:
+      path: /home/stack/templates/enable-tls.yaml
+      state: absent
+      line: "  *OS::TripleO::NodeTLSData: /usr/share/openstack-tripleo-heat-templates/puppet/extraconfig/tls/tls-cert-inject.yaml*"

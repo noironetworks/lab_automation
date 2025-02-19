@@ -1,0 +1,6 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: change osp repos
+      command: subscription-manager repos --enable=openstack-17.1-for-rhel-9-x86_64-rpms
+      become: true

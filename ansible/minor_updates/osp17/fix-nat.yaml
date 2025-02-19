@@ -1,0 +1,11 @@
+---
+- name: Set up NAT forwarding
+  hosts: undercloud
+  become: yes
+  tasks:
+  - name: Step0.1. create NAT table in nft
+    shell: nft add table nat
+  - name: Step0.2. add NAT table to postrouting chain
+    shell: nft 'add chain nat postrouting { type nat hook postrouting priority 100 ; }'
+  - name: Step0.3. add NAT rule to source NAT to undercloud IP from overcloud nodes
+    shell: nft add rule nat postrouting ip saddr 1.100.1.0/24 oif eth0 snat to $(ip -f inet addr show eth0  | grep inet | awk '{print $2}' | awk -F"/" '{print $1}')

@@ -1,0 +1,6 @@
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: change ceph repos
+      command: subscription-manager repos --enable=openstack-17.1-deployment-tools-for-rhel-9-x86_64-rpms
+      become: true

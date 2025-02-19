@@ -1,0 +1,6 @@
+---
+- name:  Updating all Compute nodes
+  hosts: undercloud
+  tasks:
+  - name: Step3. Run the update command
+    command: openstack overcloud update run -y --stack overcloud --limit Compute

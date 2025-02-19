@@ -1,0 +1,17 @@
+---
+- name:  Updating all Controller nodes
+  hosts: undercloud
+  tasks:
+  - name: Step0.1. Make sure MySQL is updated
+    command: openstack overcloud upgrade run -y --limit mysql --playbook /home/stack/overcloud-deploy/overcloud/config-download/overcloud/upgrade_steps_playbook.yaml --stack overcloud
+  - name: Step0.2. Remove package
+    become: true
+    command: yum remove libzstd-devel
+  - name: Step0.3. Allow port 8787 on the undercloud
+    become: true
+    shell: firewall-cmd --zone=public --add-port=8787/tcp --permanent
+  - name: Step0.4. Reload firewalld so that new port can be used
+    become: true
+    shell: firewall-cmd --reload
+  - name: Step2. Run the update command
+    command: openstack overcloud update run -y --stack overcloud --limit Controller 
