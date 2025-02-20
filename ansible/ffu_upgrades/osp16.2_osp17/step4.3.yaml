@@ -1,0 +1,8 @@
+---
+- name: Undercloud node database backup
+  hosts: all
+  tasks:
+    - name: Undercloud node database backup
+      ansible.builtin.command:
+        cmd: openstack undercloud backup --db-only
+      changed_when: true

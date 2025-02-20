@@ -1,0 +1,49 @@
+---
+- name: Enabling repositories for the undercloud
+  hosts: all
+  become: true
+  tasks:
+    - name: Step0.1. Set up proxy
+      ansible.builtin.command:
+        cmd: >
+          subscription-manager config
+          --server.proxy_hostname=proxy.esl.cisco.com
+          --server.proxy_port=80
+
+    - name: Step0.2. Register with Red Hat
+      ansible.builtin.command:
+        cmd: subscription-manager register --username mcohen2@cisco.com --password Ins3965!
+      ignore_errors: true
+
+    - name: Step0.3. Attach specific subscription pool
+      ansible.builtin.command:
+        cmd: subscription-manager attach --pool=2c945b6191471af901915c535f2b206b
+
+    - name: Step2.1. Disable all default repositories
+      ansible.builtin.command:
+        cmd: subscription-manager repos --disable=*
+
+    - name: Step2.2. Set RHEL release to 8.4
+      ansible.builtin.command:
+        cmd: subscription-manager release --set=8.4
+
+    - name: Step2.3. Enable required Red Hat Enterprise Linux repositories
+      ansible.builtin.command:
+        argv:
+          - subscription-manager
+          - repos
+          - --enable=rhel-8-for-x86_64-baseos-tus-rpms
+          - --enable=rhel-8-for-x86_64-appstream-tus-rpms
+          - --enable=rhel-8-for-x86_64-highavailability-tus-rpms
+          - --enable=openstack-17.1-for-rhel-8-x86_64-rpms
+          - --enable=fast-datapath-for-rhel-8-x86_64-rpms
+      ignore_errors: yes
+
+    - name: Step3. Switch the container-tools module version to RHEL 8 on all nodes
+      ansible.builtin.command:
+        cmd: dnf -y module switch-to container-tools:rhel8
+
+    - name: Step4. Install the command line tools for director installation and configuration
+      ansible.builtin.package:
+        name: python3-tripleoclient
+        state: present
