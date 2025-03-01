@@ -1,0 +1,49 @@
+---
+- name: Installing cisco tripleo RPM and build containers
+  hosts: undercloud
+  tasks:
+  - name: Step0. Fix Docker service reference
+    replace:
+      path: /home/stack/templates/ciscoaci-config.yaml
+      regexp: "  OS::TripleO::Docker::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron/neutron-ml2-ciscoaci.yaml"
+      replace: "  OS::TripleO::Services::NeutronMl2PluginBase: /opt/ciscoaci-tripleo-heat-templates/deployment/neutron/neutron-ml2-ciscoaci.yaml"
+  - name: Step1. Remove old tripleo RPM for OSP16
+    become: true
+    yum:
+      name: tripleo-ciscoaci
+      state: absent
+  - name: Step2 Get name of tripleo
+    shell: ls /home/stack/tripleo-ciscoaci-17* | sort -r | awk 'NR==1{print $1}'
+    register: tripleo_package
+  - name: Step3. Install tripleo RPM for OSP17
+    become: true
+    shell: yum install -y "{{ tripleo_package.stdout_lines[0] }}"
+  - name: Step4.1. Log in to the upstream registry
+    become: true
+    shell: podman login -u mcohen2@cisco.com -p Ins3965! registry.redhat.io
+  - name: Step4.2. Log in to the upstream registry
+    become: true
+    shell: podman login -u mcohen2@cisco.com -p Ins3965! registry.connect.redhat.com
+  - name: Step5. Get name of openstack-ciscorpms tarball
+    shell: ls /home/stack/openstack-ciscorpms-repo-17* | sort -r | awk 'NR==1{print $1}'
+    register: ciscorpms_tarball
+  - name: Step6. Build the OSP17 cisco containers
+    become: true
+    shell: /opt/ciscoaci-tripleo-heat-templates/tools/build_openstack_aci_containers.py -i 17.1 -z "{{ ciscorpms_tarball.stdout_lines[0] }}"
+  - name: Step7. Make sure that the ACI yum repo directory has the right permissions
+    become: true
+    ansible.builtin.file:
+      path: /var/lib/image-serve/v2/__acirepo/
+      mode: '0775'
+      owner: stack
+      group: stack
+  - name: Step8 Get name of ciscoaci-puppet RPM
+    shell: ls /var/lib/image-serve/v2/__acirepo/ciscoaci-puppet-17* | sort -r | awk 'NR==1{print $1}'
+    register: ciscoaci_package
+  - name: Step8. Make sure that the ACI yum repo files have the right permissions
+    become: true
+    ansible.builtin.file:
+      path: "{{ ciscoaci_package.stdout_lines[0] }}"
+      mode: '0664'
+      owner: stack
+      group: stack

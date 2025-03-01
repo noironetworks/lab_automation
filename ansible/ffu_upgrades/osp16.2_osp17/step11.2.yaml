@@ -1,0 +1,47 @@
+---
+- name: Upgrading all Compute nodes to RHEL 9.2
+  hosts: undercloud
+  tasks:
+    - name: Step3.1 In the container-image-prepare.yaml file, ensure that only the tags specified in the ContainerImagePrepare parameter are included, and the MultiRhelRoleContainerImagePrepare parameter is removed
+      ansible.builtin.command:
+        cmd: >
+         python3 /usr/share/openstack-tripleo-heat-templates/tools/multi-rhel-container-image-prepare.py
+         --role Compute
+         --excludes collectd
+         --excludes nova-libvirt
+         --excludes horizon
+         --excludes heat-engine
+         --excludes neutron-server
+         --local-push-destination
+         --minor-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel8","neutron_driver":"openvswitch","no_tag":"not_used"}
+         --major-override {"tag":"17.1","namespace":"registry.redhat.io/rhosp-rhel9","neutron_driver":"openvswitch","no_tag":"not_used"}
+         --output-env-file /home/stack/containers-prepare-parameter.yaml
+    - name: Step3.2 Run the following script without the CONTROL_PLANE_ROLES parameter II
+      lineinfile:
+        path: /home/stack/containers-prepare-parameter.yaml
+        insertafter: "parameter_defaults:"
+        line:        "{{ item }}"
+      with_items:
+      - "      mcohen2@cisco.com: 'Ins3965!'"
+      - "    registry.redhat.io:"
+      - "  ContainerImageRegistryCredentials:"
+    - name: Step3.3 Run the following script without the CONTROL_PLANE_ROLES parameter III
+      replace:
+        path: /home/stack/containers-prepare-parameter.yaml
+        regexp: "{{ item.regexp }}"
+        replace: "{{ item.replacement }}"
+      with_items:
+      - {regexp: "neutron_driver: ovn", replacement: "neutron_driver: openvswitch"}
+    - name: Step4. In the roles_data.yaml file, replace the NovaLibvirtLegacy service with the NovaLibvirt service that is required for RHEL 9.2
+      replace:
+        path: /home/stack/templates/custom_roles_data.yaml
+        regexp:  "    - OS::TripleO::Services::NovaLibvirtLegacy"
+        replace: "    - OS::TripleO::Services::NovaLibvirt"
+    - name: Step6. Run the overcloud_upgrade_prepare.sh scriptRun the overcloud_upgrade_prepare.sh script
+      ansible.builtin.shell: sh /home/stack/overcloud_upgrade_prepare.sh
+    - name: Step7. Upgrade the operating system on the Compute nodes to RHEL 9.2
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --tags system_upgrade --stack overcloud --limit overcloud-novacompute-0,overcloud-novacompute-1,overcloud-novacompute-2
+    - name: Step8. Upgrade the containers on the Compute nodes to RHEL 9.2
+      ansible.builtin.command:
+        cmd: openstack overcloud upgrade run --yes --stack overcloud  --limit overcloud-novacompute-0,overcloud-novacompute-1,overcloud-novacompute-2
