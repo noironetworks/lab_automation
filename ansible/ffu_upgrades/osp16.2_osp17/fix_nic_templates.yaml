@@ -1,0 +1,38 @@
+---
+- name: Updating composable services in custom roles_data files
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Updating composable services in custom roles_data files
+      replace:
+        path: /home/stack/templates/custom_roles_data.yaml
+        regexp: "{{ item }}"
+        replace: "{{ replacment }}"
+      with_items:
+      - {"item": "BondInterfaceOvsOptions", "replacement":  "{ bond_interface_ovs_options }}"}
+      - {"item": "ControlPlaneIp", "replacement": "{{ ctlplane_ip }}"}
+      - {"item": "ControlPlaneDefaultRoute", "replacement": "{{ ctlplane_gateway_ip }}"}
+      - {"item": "ControlPlaneMtu", "replacement": "{{ ctlplane_mtu }}"}
+      - {"item": "ControlPlaneStaticRoutes", "replacement": "{{ ctlplane_host_routes }}"}
+      - {"item": "ControlPlaneSubnetCidr", "replacement": "{{ ctlplane_subnet_cidr }}"}
+      - {"item": "DnsSearchDomains", "replacement": "{{ dns_search_domains }}"}
+      - {"item": "DnsServers", "replacement": "{{ ctlplane_dns_nameservers }}"}
+
+      - {"item": "ExternalIpSubnet", "replacement": "{{ ???? }}"}
+      - {"item": "ExternalNetworkVlanID", "replacement": "{{ ???? }}"}
+      - {"item": "ExternalInterfaceDefaultRoute", "replacement": "{{ ???? }}"}
+      - {"item": "InternalApiMtu", "replacement": "{{ ???? }}"}
+      - {"item": "InternalApiIpSubnet", "replacement": "{{ ???? }}"}
+      - {"item": "InternalApiNetworkVlanID", "replacement": "{{ ???? }}"}
+      - {"item": "StorageMtu", "replacement": "{{ ???? }}"}
+      - {"item": "StorageIpSubnet", "replacement": "{{ ???? }}"}
+      - {"item": "StorageNetworkVlanID", "replacement": "{{ ???? }}"}
+      - {"item": "StorageMgmtMtu", "replacement": "{{ ???? }}"}
+      - {"item": "StorageMgmtIpSubnet", "replacement": "{{ ???? }}"}
+      - {"item": "StorageMgmtNetworkVlanID", "replacement": "{{ ???? }}"}
+      - {"item": "TenantMtu", "replacement": "{{ ???? }}"}
+      - {"item": "TenantIpSubnet", "replacement": "{{ ???? }}"}
+      - {"item": "TenantNetworkVlanID", "replacement": "{{ ???? }}"}
+      - {"item": "OsNetConfigImpl", "replacement": "{{ ???? }}"}
+
+            get_file: /usr/share/openstack-tripleo-heat-templates/network/scripts/run-os-net-config.sh
