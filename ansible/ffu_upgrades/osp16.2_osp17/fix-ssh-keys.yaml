@@ -1,0 +1,43 @@
+---
+- name: Save all the ssh keys for posterity, and ensure there is a working set of keys
+  hosts: undercloud
+  tasks:
+    - name: Step1. Create a directory to save SSH keys, with correct permissions
+      ansible.builtin.file:
+        path: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup
+        state: directory
+        mode: '0700'
+    - name: Step2. Copy over the working private key
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/ssh_private_key
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/
+    - name: Step3. Set the permissions on the working private key, so we can use it for SSH if needed
+      ansible.builtin.file:
+        path: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/ssh_private_key
+        state: file
+        mode: '0600'
+    - name: Step4. Copy over the working public key
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/ssh_private_key.pub
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/
+    - name: Step5. Set the permissions on the working public key, so we can use it for SSH if needed
+      ansible.builtin.file:
+        path: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/ssh_private_key.pub
+        state: file
+        mode: '0600'
+    - name: Step6. Save the non-working private key
+      ansible.builtin.copy:
+        src:  /home/stack/.ssh/id_rsa
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/
+    - name: Step7. Save the non-working public key
+      ansible.builtin.copy:
+        src:  /home/stack/.ssh/id_rsa.pub
+        dest: /home/stack/overcloud-deploy/overcloud/overcloud_ssh_keys_backup/
+    - name: Step8. Copy the working private key to .ssh
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/ssh_private_key
+        dest: /home/stack/.ssh/id_rsa
+    - name: Step9. Copy the working public key to .ssh
+      ansible.builtin.copy:
+        src:  /home/stack/overcloud-deploy/overcloud/ssh_private_key.pub
+        dest: /home/stack/.ssh/id_rsa.pub

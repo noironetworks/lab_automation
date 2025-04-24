@@ -1,0 +1,30 @@
+---
+- name: Performing post-upgrade tasks on the operating system
+  hosts: all
+  tasks:
+    - name: Step1. Remove any remaining Leapp packages from the exclude list in the dnf.conf configuration file, including the snactor package, which is a tool for upgrade extension development.
+      become: true
+      ansible.builtin.command:
+        cmd: dnf config-manager --save --setopt exclude=''
+    - name: Step2.1 Remove remaining RHEL 8 packages, including remaining Leapp packages II
+      become: true
+      shell: dnf -y remove $(rpm -qa | grep \.el[78] | grep -vE 'gpg-pubkey|libmodulemd|katello-ca-consumer|paunch')
+    - name: Step2.2 Remove remaining RHEL 8 packages, including remaining Leapp packages III
+      become: true
+      shell: dnf -y remove leapp-deps-el9 leapp-repository-deps-el9
+    - name: Step3. Optional Remove all remaining upgrade-related data from the system
+      become: true
+      ansible.builtin.command:
+        cmd: rm -rf /var/log/leapp /root/tmp_leapp_py3 /var/lib/leapp
+    - name: Step5.1 Replace the old rescue kernel and initial RAM disk with the current kernel and disk I
+      become: true
+      ansible.builtin.command:
+        cmd: rm -rf /var/log/leapp /root/tmp_leapp_py3 /var/lib/leapp
+    - name: Step5.2 Replace the old rescue kernel and initial RAM disk with the current kernel and disk II
+      become: true
+      shell: rm /boot/vmlinuz-*rescue* /boot/initramfs-*rescue*
+      ignore_errors: yes
+    - name: Step5.3 Replace the old rescue kernel and initial RAM disk with the current kernel and disk III
+      become: true
+      shell: /usr/lib/kernel/install.d/51-dracut-rescue.install add "$(uname -r)" /boot "/boot/vmlinuz-$(uname -r)"
+      ignore_errors: yes

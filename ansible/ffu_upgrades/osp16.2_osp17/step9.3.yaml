@@ -1,0 +1,29 @@
+---
+- name: Performing the undercloud system upgrade
+  hosts: undercloud
+  tasks:
+    - name: Step2. Create a file named system_upgrade.yaml in your templates directory and include the following content
+      copy:
+        dest: "/home/stack/templates/system_upgrade.yaml"
+        content: |
+           parameter_defaults:
+             UpgradeLeappDevelSkip: "LEAPP_UNSUPPORTED=1 LEAPP_DEVEL_SKIP_CHECK_OS_RELEASE=1 LEAPP_NO_NETWORK_RENAMING=1 LEAPP_DEVEL_TARGET_RELEASE=9.2"
+             UpgradeLeappDebug: false
+             UpgradeLeappEnabled: true
+             LeappActorsToRemove: ['checkifcfg','persistentnetnamesdisable','checkinstalledkernels','biosdevname', 'checkvdo']
+             LeappRepoInitCommand: |
+                subscription-manager repos --disable=*
+                subscription-manager repos --enable rhel-8-for-x86_64-baseos-tus-rpms --enable rhel-8-for-x86_64-appstream-tus-rpms --enable openstack-17.1-for-rhel-8-x86_64-rpms
+                subscription-manager release --set=8.4
+             UpgradeLeappCommandOptions: "--enablerepo=rhel-9-for-x86_64-baseos-eus-rpms --enablerepo=rhel-9-for-x86_64-appstream-eus-rpms --enablerepo=rhel-9-for-x86_64-highavailability-eus-rpms --enablerepo=openstack-17.1-for-rhel-9-x86_64-rpms --enablerepo=fast-datapath-for-rhel-9-x86_64-rpms"
+             LeappInitCommand: |
+                dnf -y remove irb
+    - name: Step5. Run the Leapp upgrade
+      ansible.builtin.command:
+        cmd:  openstack undercloud upgrade --yes --system-upgrade /home/stack/templates/system_upgrade.yaml
+    - name: Reboot the undercloud
+      become: true
+      shell: reboot
+
+
+

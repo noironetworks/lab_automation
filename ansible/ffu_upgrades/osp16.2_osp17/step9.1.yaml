@@ -1,0 +1,10 @@
+---
+- name: Setting the SSH root permission parameter on the undercloud
+  hosts: undercloud
+  become: true
+  tasks:
+    - name: Step3. If the parameter is not in the sshd_config file edit the file and set the PermitRootLogin parameter
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: present
+        line: "PermitRootLogin no"
