@@ -1,0 +1,17 @@
+# Dockerfile for dnsmasq using Ubuntu
+FROM ubuntu:latest
+
+# Install dnsmasq
+RUN apt-get update && apt-get install -y dnsmasq dnsutils
+
+# Copy dnsmasq configuration file
+COPY dnsmasq.conf /etc/dnsmasq.conf
+
+# Copy the script to the container
+COPY add_hosts_entries.sh /usr/local/bin/add_hosts_entries.sh
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/add_hosts_entries.sh
+
+# Expose DNS port
+EXPOSE 53/udp
