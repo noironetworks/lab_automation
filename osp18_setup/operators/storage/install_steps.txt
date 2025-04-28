@@ -1,0 +1,10 @@
+sudo mkdir -p /var/hpvolumes
+oc apply -f machine-config.yaml
+oc apply -f hostpath_provisioner_namespace.yaml
+oc apply -f webhook.yaml -n hostpath-provisioner
+oc apply -f operator.yaml -n hostpath-provisioner
+oc apply -f hostpathprovisioner.yaml
+oc apply -f storageclass.yaml
+oc apply -f cdi_operator.yaml 
+oc apply -f cdi_cr.yaml
+oc apply -f demo_dv.yaml

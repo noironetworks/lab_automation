@@ -1,0 +1,10 @@
+oc delete dv dv_name -n default
+oc delete -f hostpathprovisioner.yaml
+oc delete -f storageclass.yaml
+oc delete -f cdi_cr.yaml
+oc delete -f cdi_operator.yaml
+oc delete -f operator.yaml
+oc delete -f webhook.yaml
+oc delete -f hostpath_provisioner_namespace.yaml
+oc delete -f machine-config.yaml
+sudo rm -rf /var/hpvolumes
