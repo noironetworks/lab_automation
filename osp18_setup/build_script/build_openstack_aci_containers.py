@@ -141,7 +141,8 @@ ENV no_proxy="${no_proxy}"
     #subprocess.check_call(["podman", "build", build_dir, "-t",
     #                       "%s" % (aci_container)])
 
-    cmd ="podman push %s/%s  %s/osp18/%s" % ("localhost", aci_container, pushurl, aci_container)
+    cmd ="podman push %s/%s:%s  %s/osp18/%s:%s" % ("localhost", aci_container, pushtag, pushurl, aci_container, pushtag)
+    print ("cmd = %s" % cmd)
     subprocess.check_call(shlex.split(cmd))
 
     shutil.rmtree(build_dir)
@@ -163,8 +164,8 @@ def main():
     parser = argparse.ArgumentParser(description='Build containers for ACI Plugin')
 
     parser.add_argument("-o", "--output_file",
-                      help="Environment file to create, default is /home/stack/templates/ciscoaci_containers.yaml",
-                      dest='output_file', default='/home/stack/templates/ciscoaci_containers.yaml')
+                      help="Environment file to create, default is ./ciscoaci_containers.yaml",
+                      dest='output_file', default='./ciscoaci_containers.yaml')
     parser.add_argument("-c", "--container",
                       help="Containers to build, comma separated, default is all", dest='containers_tb', default='all')
     parser.add_argument("-s", "--upstream",
