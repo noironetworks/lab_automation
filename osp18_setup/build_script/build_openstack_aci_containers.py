@@ -116,7 +116,7 @@ description="%s"
 USER root
 ENV no_proxy="${no_proxy}"
        """ % (rhel_container, aci_container, release_tag, summary, description)
-    blob = blob + "RUN dnf --releasever=%s config-manager --enable openstack-17.1-for-rhel-9-x86_64-rpms %s\n" % (rhel_version,  additional_repos)
+    blob = blob + "RUN dnf --releasever=%s config-manager --enable rhoso-18.0-for-rhel-9-x86_64-rpms %s\n" % (rhel_version,  additional_repos)
     if source_path:
         blob = blob + "ADD %s %s \n" % (source_path, source_path)
     blob = blob + "Copy aci.repo /etc/yum.repos.d \n"
@@ -303,6 +303,7 @@ gpgcheck=0
             "rhel_container": "openstack-heat-engine-rhel9",
             "packages": [],
             "run_cmds": ["yum --releasever={} -y install python3-openstack-heat-gbp python3-gbpclient".format(rhel_version),
+                         "yum --releasever={} -y install openstack-heat-api".format(rhel_version),
                          "mkdir -p /usr/lib/heat",
                          "cp -r /usr/lib/python3.9/site-packages/gbpautomation /usr/lib/heat"],
             "osd_param_name": ["ContainerHeatEngineImage"],
