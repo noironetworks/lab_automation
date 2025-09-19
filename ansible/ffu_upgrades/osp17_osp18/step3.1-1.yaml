@@ -1,0 +1,27 @@
+---
+- name: Retrieving topology-specific service configuration, part I
+  become: true
+  hosts: overcloud-controller-0
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1. Get the list of cells from nova
+      become: true
+      shell: podman exec -u root nova_api nova-manage cell_v2 list_cells | grep sql | awk '{print $2}'
+      register: cells
+
+    - name: Step0.2. Get the overcloud SQL IP address
+      become: true
+      shell: grep -rI 'listen mysql' -A10 /var/lib/config-data/puppet-generated/ | grep -m 1 bind | awk '{print $(NF-1)}' | awk -F":" '{print $1}'
+      register: overcloud_sql_ip
+
+    - name: Step0.3. Define the following shell variables
+      ansible.builtin.template:
+        src: env1.template.j2
+        dest: "{{ remote_env_vars_1_file }}"
+
+    - name: Step0.4 Fetch file from remote to local
+      ansible.builtin.fetch:
+        src: "{{ remote_env_vars_1_file }}"
+        dest: "{{ local_env_vars_1_file }}"
+        flat: yes

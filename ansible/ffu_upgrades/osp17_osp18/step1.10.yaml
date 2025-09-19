@@ -1,0 +1,100 @@
+---
+- name: Comparing configuration files between deployments
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+  - name: Step0.0 Check if os-diff is installed
+    ansible.builtin.stat:
+      path: "{{ os_diff_file }}"
+    register: os_diff_check
+
+  - name: Step0.1 Golang and git are installed and configured on your environment
+    become: true
+    ansible.builtin.package:
+      name:
+        - golang
+        - git
+      state: present
+    when: not os_diff_check.stat.exists
+
+  - name: Step0.2. clone golang-github-openstack-k8s-operators-os-diff
+    environment:
+      https_proxy: "http://{{ sm_proxy_name }}:{{ sm_proxy_port }}/"
+      http_proxy: "http://{{ sm_proxy_name }}:{{ sm_proxy_port }}/"
+    ansible.builtin.git:
+      repo: https://github.com/openstack-k8s-operators/os-diff.git
+      dest: "{{ os_diff_clone_dir }}"
+    when: not os_diff_check.stat.exists
+
+  - name: Step0.3. build golang-github-openstack-k8s-operators-os-diff
+    shell: cd "{{ os_diff_clone_dir }}" && make build
+    when: not os_diff_check.stat.exists
+
+  - name: Step0.4. Install golang-github-openstack-k8s-operators-os-diff
+    become: true
+    shell: mv "{{ os_diff_clone_dir }}"/os-diff "{{ os_diff_file }}"
+    when: not os_diff_check.stat.exists
+
+  - name: Step0.5. Copy ansible inventory file to the host
+    copy:
+      owner: noiro
+      group: noiro
+      src: "{{ local_inventory_file }}"
+      dest: "{{ remote_inventory_file }}"
+
+  - name: Step0.6. Create the os-diff configuration directory
+    become: true
+    ansible.builtin.file:
+      path: "{{ os_diff_etc_dir }}"
+      state: directory
+      owner: noiro
+      group: noiro
+      mode: '0755'
+
+  - name: Step0.7. Add the undercloud to /etc/hosts
+    become: true
+    ansible.builtin.lineinfile:
+      path: /etc/hosts
+      state: present
+      line: "{{ undercloud_ip }} undercloud"
+
+  - name: Step1. Configure the /etc/os-diff/os-diff.cfg file
+    copy:
+      owner: noiro
+      group: noiro
+      dest: "{{ os_diff_config_1_file }}"
+      content: |
+         [Default]
+
+         local_config_dir=/tmp/
+         service_config_file=config.yaml
+
+         [Tripleo]
+
+         ssh_cmd=ssh -F ssh.config
+         director_host=undercloud
+         container_engine=podman
+         connection=ssh
+         remote_config_path=/tmp/tripleo
+         local_config_path=/tmp/
+
+         [Openshift]
+
+         ocp_local_config_path=/tmp/ocp
+         connection=local
+         ssh_cmd=""
+
+  - name: Step2. If you use a host file to connect to your cloud, configure the ssh.config file to allow os-diff to access your RHOSP environment
+    copy:
+      owner: noiro
+      group: noiro
+      dest: "{{ ssh_config_file }}"
+      content: |
+        Host undercloud
+        IdentityFile ~/.ssh/id_rsa
+        HostName undercloud
+        User stack
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+

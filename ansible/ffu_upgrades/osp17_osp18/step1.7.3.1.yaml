@@ -1,0 +1,26 @@
+---
+- name: Configuring isolated networks on RHOCP worker nodes
+  hosts: undercloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1 Read in the yaml file with the existing state
+      ansible.builtin.set_fact:
+        all_networks_data: "{{ lookup('file', network_state_file) | from_yaml }}"
+
+    - name: Step0.2 Remove the control plane network (not needed on OCP nodes)
+      ansible.builtin.set_fact:
+        merged_networks_data: "{{ all_networks_data | rejectattr('name_lower', 'equalto', 'ctlplane') | list }}"
+
+    - name: Step0.3. Read in the OCP hosts inventory
+      ansible.builtin.set_fact:
+        ocp_hosts: "{{ lookup('file', ocp_hosts_file) | from_yaml }}"
+
+    - name: Step1. For each RHOCP worker node, define a NodeNetworkConfigurationPolicy CR that describes the desired network configuration
+      ansible.builtin.template:
+        src: nncp_template.j2
+        dest: "{{ output_dir }}/{{ nncp_node_selector_hostname }}-nncp.yaml"
+      loop: "{{ ocp_hosts.hosts }}"
+      loop_control:
+        loop_var: nncp_node_selector_hostname
+        index_var: nncp_node_index

@@ -1,0 +1,50 @@
+---
+- name: Convert AIM Configuration to Kubernetes CR
+  hosts: localhost
+  gather_facts: no
+  vars:
+    aim_conf_path: "aim.conf"
+    aimctl_conf_path: "aimctl.conf"
+    output_cr_path: "ciscoaci-aim-cr.yaml"
+    container_image: "10.30.9.74:8787/osp18/openstack-ciscoaci-aim:18.0.9"
+    replicas: 2
+    log_persistence_size: "1Gi"
+    namespace: "openstack"
+
+  tasks:
+    - name: Parse configuration files
+      set_fact:
+        # From aim.conf
+        aim_debug: "{{ lookup('ini', 'debug section=DEFAULT file=' + aim_conf_path) | default('False') }}"
+        aim_system_id: "{{ lookup('ini', 'aim_system_id section=aim file=' + aim_conf_path) }}"
+        support_gen1_hw: "{{ lookup('ini', 'support_gen1_hw_gratarps section=aim file=' + aim_conf_path) | default('False') }}"
+        enable_faults: "{{ lookup('ini', 'enable_faults_subscriptions section=aim file=' + aim_conf_path) | default('False') }}"
+        apic_hosts: "{{ lookup('ini', 'apic_hosts section=apic file=' + aim_conf_path) }}"
+        apic_username: "{{ lookup('ini', 'apic_username section=apic file=' + aim_conf_path) }}"
+        apic_password: "{{ lookup('ini', 'apic_password section=apic file=' + aim_conf_path) }}"
+        scope_names: "{{ lookup('ini', 'scope_names section=apic file=' + aim_conf_path) | default('False') }}"
+        # From aimctl.conf
+        apic_system_id: "{{ lookup('ini', 'apic_system_id section=DEFAULT file=' + aimctl_conf_path) }}"
+        apic_system_id_length: "{{ lookup('ini', 'apic_system_id_length section=DEFAULT file=' + aimctl_conf_path) }}"
+        apic_entity_profile: "{{ lookup('ini', 'apic_entity_profile section=apic file=' + aimctl_conf_path) }}"
+        scope_infra: "{{ lookup('ini', 'scope_infra section=apic file=' + aimctl_conf_path) | default('False') }}"
+        apic_vpc_pairs_raw: "{{ lookup('ini', 'apic_vpc_pairs section=apic file=' + aimctl_conf_path) }}"
+
+    - name: Get VMM domain settings dynamically
+      set_fact:
+        encap_mode: "{{ lookup('ini', 'encap_mode section=apic_vmdom:' + aim_system_id + ' file=' + aimctl_conf_path, errors='ignore') | default('vxlan') }}"
+        mcast_ranges: "{{ lookup('ini', 'mcast_ranges section=apic_vmdom:' + aim_system_id + ' file=' + aimctl_conf_path, errors='ignore') | default('') }}"
+        multicast_address: "{{ lookup('ini', 'multicast_address section=apic_vmdom:' + aim_system_id + ' file=' + aimctl_conf_path, errors='ignore') | default('') }}"
+
+    - name: Convert VPC pairs to list
+      set_fact:
+        vpc_pairs_list: "{{ apic_vpc_pairs_raw.split(',') | map('trim') | list }}"
+
+    - name: Generate CR from template
+      template:
+        src: ciscoaci-aim-cr.yaml.j2
+        dest: "{{ output_cr_path }}"
+
+    - name: Display success message
+      debug:
+        msg: "CR file successfully generated at {{ output_cr_path }}"

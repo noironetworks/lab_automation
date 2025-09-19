@@ -1,0 +1,12 @@
+# env-vars.j2
+PASSWORD_FILE: {{ overcloud_passwords_file }}
+MARIADB_IMAGE: {{ mariadb_image }}
+{% for cell in cells %}
+TRIPLEO_PASSWORDS_{{ cell }}: {{ overcloud_passwords_file }}
+SOURCE_DB_ROOT_PASSWORD_{{ cell }}: {{ overcloud_sql_password }}
+SOURCE_MARIADB_IP_{{ cell }}: *<galera cluster VIP>*
+{% endfor %}
+
+MARIADB_CLIENT_ANNOTATIONS: '--annotations=k8s.v1.cni.cncf.io/networks=internalapi'
+MARIADB_RUN_OVERRIDES: "$MARIADB_CLIENT_ANNOTATIONS"
+CONTROLLER1_SSH: "ssh -i /home/stack/id_rsa.pub root@*<node IP>*"

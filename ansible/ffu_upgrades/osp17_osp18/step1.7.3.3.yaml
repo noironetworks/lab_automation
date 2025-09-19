@@ -1,0 +1,14 @@
+---
+- name: Configuring isolated networks on data plane nodes 
+  hosts: undercloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0. Read in the yaml file with the existing state
+      ansible.builtin.set_fact:
+        merged_networks_data: "{{ lookup('file', network_state_file) | from_yaml }}"
+
+    - name: Step.1. Configure a NetConfig CR with your desired VLAN tags and IPAM configuration
+      ansible.builtin.template:
+        src: netconfig_template.j2
+        dest: "{{ output_dir }}/{{ netconfig_output_filename }}"

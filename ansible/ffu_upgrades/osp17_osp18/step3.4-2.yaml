@@ -1,0 +1,21 @@
+---
+- name: Stopping Red Hat OpenStack Platform services
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1. Copy controller environment variables file
+      copy:
+        owner: noiro
+        group: noiro
+        src: "{{ local_controllers_env_file }}"
+        dest: "{{ remote_controllers_env_file }}"
+
+    - name: Step0.2. Load the tripleo services
+      ansible.builtin.set_fact:
+        tripleo_services: "{{ lookup('file', active_services_file) | from_yaml }}"
+
+    - name: Step2. Disable RHOSP control plane services
+      ansible.builtin.template:
+        src: services.template.j2
+        dest: "{{ disable_services_file }}"

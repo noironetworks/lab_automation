@@ -1,0 +1,9 @@
+---
+- name: Installing the systemd-container package on Compute hosts
+  hosts: Compute
+  become: yes
+  tasks:
+  - name: Step2. Install the systemd-container on the host
+    ansible.builtin.yum:
+      name: systemd-container
+      state: present

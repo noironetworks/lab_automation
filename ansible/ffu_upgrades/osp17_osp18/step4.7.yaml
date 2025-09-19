@@ -1,0 +1,41 @@
+---
+- name: Adopting the Placement service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Placement service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_placement_file }}"
+        content: |
+          oc patch openstackcontrolplane openstack --type=merge --patch '
+          spec:
+            placement:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                databaseInstance: openstack
+                databaseAccount: placement
+                secret: osp-secret
+                override:
+                  service:
+                    internal:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/allow-shared-ip: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                      spec:
+                        type: LoadBalancer
+          '
+
+    - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Placement service, part II
+      shell: "{{ patch_placement_file }}"
+
+    - name: Step2. Check that the Placement service endpoints are defined and pointing to the control plane FQDNs, and that the Placement API responds
+      shell: oc exec -t openstackclient -- openstack endpoint list | grep placement

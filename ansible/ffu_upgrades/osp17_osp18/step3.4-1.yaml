@@ -1,0 +1,21 @@
+---
+- name: Stopping Red Hat OpenStack Platform services
+  hosts: undercloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Set the controllers env vars
+      copy:
+        dest: "{{ local_controllers_env_file }}"
+        content: |
+          CONTROLLER1_SSH="ssh -i {{ provisioning_private_key_file }} tripleo-admin@{{ hostvars['overcloud-controller-0'].external_ip }}"
+          CONTROLLER2_SSH="ssh -i {{ provisioning_private_key_file }} tripleo-admin@{{ hostvars['overcloud-controller-1'].external_ip }}"
+          CONTROLLER3_SSH="ssh -i {{ provisioning_private_key_file }} tripleo-admin@{{ hostvars['overcloud-controller-2'].external_ip }}"
+    - name: Step2. Get the list of running tripleo services
+      shell: ssh tripleo-admin@"{{ hostvars['overcloud-controller-0'].ansible_host }}" "sudo systemctl list-units" | grep tripleo_ | awk '{print $1}'
+      register: tripleo_services
+    - name: Step2. Save the services to a file
+      copy:
+        dest: "{{ active_services_file }}"
+        content: |
+          "{{ tripleo_services.stdout_lines }}"

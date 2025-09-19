@@ -1,0 +1,191 @@
+---
+- name: Retrieving topology-specific service configuration, part II
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1 Copy the env vars file to the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        src:  "{{ local_env_vars_1_file }}"
+        dest: "{{ provisioning_env_vars_1_file }}"
+
+    - name: Step0.2 Copy the overcloud passwords file to the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        src:  "{{ src_overcloud_passwords_file }}"
+        dest: "{{ dst_overcloud_passwords_file }}"
+
+    - name: Step0.3 Create the first shell script on the provisioning host
+      ansible.builtin.copy:
+        dest: "{{ remote_shell_1_file }}"
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          unset PULL_OPENSTACK_CONFIGURATION_DATABASES
+          declare -xA PULL_OPENSTACK_CONFIGURATION_DATABASES
+          for CELL in $(echo $CELLS); do
+              PULL_OPENSTACK_CONFIGURATION_DATABASES[$CELL]=$(oc run mariadb-client-1-$CELL ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+                  mysql -rsh "${SOURCE_MARIADB_IP[$CELL]}" -uroot -p"${SOURCE_DB_ROOT_PASSWORD[$CELL]}" -e 'SHOW databases;')
+              echo "${PULL_OPENSTACK_CONFIGURATION_DATABASES[$CELL]}"
+          done
+
+    - name: Step0.4 Create the second shell script on the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remote_shell_2_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          unset PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK
+          declare -xA PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK
+          run_mysqlcheck() {
+              PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK=$(oc run mariadb-client-2-$1 ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+                  mysqlcheck --all-databases -h "${SOURCE_MARIADB_IP[$1]}" -uroot -p"${SOURCE_DB_ROOT_PASSWORD[$1]}" | grep -v OK)
+              echo "${PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK}"
+          }
+          for CELL in $(echo $CELLS); do
+              run_mysqlcheck $CELL
+          done
+          if [ "$PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK" != "" ]; then
+              for CELL in $(echo $CELLS); do
+                  MYSQL_UPGRADE=$(oc run mariadb-client-3 ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+                      mysql_upgrade -v -h ${SOURCE_MARIADB_IP[$CELL]} -u root -p"${SOURCE_DB_ROOT_PASSWORD[$CELL]}")
+                  echo "${MYSQL_UPGRADE}"
+                  # rerun mysqlcheck to check if problem is resolved
+                  run_mysqlcheck
+              done
+          fi
+
+    - name: Step0.5 Create the third shell script on the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remote_shell_3_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          export PULL_OPENSTACK_CONFIGURATION_NOVADB_MAPPED_CELLS=$(oc run mariadb-client-1 ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+            mysql -rsh "${SOURCE_MARIADB_IP['default']}" -uroot -p"${SOURCE_DB_ROOT_PASSWORD['default']}" nova_api -e \
+            'select uuid,name,transport_url,database_connection,disabled from cell_mappings;')
+          # echo "PULL_OPENSTACK_CONFIGURATION_NOVADB_MAPPED_CELLS=${PULL_OPENSTACK_CONFIGURATION_NOVADB_MAPPED_CELLS}" >> {{ provisioning_env_vars_1_file }}
+
+    - name: Step0.6 Create the fourth shell script on the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remote_shell_4_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          unset PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES
+          declare -xA PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES
+          for CELL in $(echo $CELLS); do
+              PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES[$CELL]=$(oc run mariadb-client-4-$CELL ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+                  mysql -rsh "${SOURCE_MARIADB_IP[$CELL]}" -uroot -p"${SOURCE_DB_ROOT_PASSWORD[$CELL]}" -e \
+                      "select host from nova.services where services.binary='nova-compute' and deleted=0;")
+              echo "${PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES[$CELL]}"
+          done
+
+    - name: Step0.7 Create the fifth shell script on the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remote_shell_5_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          export PULL_OPENSTACK_CONFIGURATION_NOVAMANAGE_CELL_MAPPINGS=$($CONTROLLER1_SSH sudo podman exec -it nova_conductor nova-manage cell_v2 list_cells)
+          echo "${PULL_OPENSTACK_CONFIGURATION_NOVAMANAGE_CELL_MAPPINGS}"
+
+    - name: Step0.8 Create the sixth shell script on the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remote_shell_6_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          unset SRIOV_AGENTS
+          declare -xA SRIOV_AGENTS
+          for CELL in $(echo $CELLS); do
+              RCELL=$CELL
+              [ "$CELL" = "$DEFAULT_CELL_NAME" ] && RCELL=default
+              cat > ~/.source_cloud_exported_variables_$CELL << EOF
+          unset PULL_OPENSTACK_CONFIGURATION_DATABASES
+          unset PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK
+          unset PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES
+          declare -xA PULL_OPENSTACK_CONFIGURATION_DATABASES
+          declare -xA PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK
+          declare -xA PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES
+          PULL_OPENSTACK_CONFIGURATION_DATABASES[$CELL]="$(oc run mariadb-client-5-$CELL ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+              mysql -rsh ${SOURCE_MARIADB_IP[$RCELL]} -uroot -p${SOURCE_DB_ROOT_PASSWORD[$RCELL]} -e 'SHOW databases;')"
+          PULL_OPENSTACK_CONFIGURATION_MYSQLCHECK_NOK[$CELL]="$(oc run mariadb-client-6-$CELL ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+              mysqlcheck --all-databases -h ${SOURCE_MARIADB_IP[$RCELL]} -u root -p${SOURCE_DB_ROOT_PASSWORD[$RCELL]} | grep -v OK)"
+          PULL_OPENSTACK_CONFIGURATION_NOVA_COMPUTE_HOSTNAMES[$CELL]="$(oc run mariadb-client-7-$CELL ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+              mysql -rsh ${SOURCE_MARIADB_IP[$RCELL]} -uroot -p${SOURCE_DB_ROOT_PASSWORD[$RCELL]} -e \
+              "select host from nova.services where services.binary='nova-compute' and deleted=0;")"
+          if [ "$RCELL" = "default" ]; then
+              PULL_OPENSTACK_CONFIGURATION_NOVADB_MAPPED_CELLS="$(oc run mariadb-client-2 ${MARIADB_RUN_OVERRIDES} -q --image ${MARIADB_IMAGE} -i --rm --restart=Never -- \
+                  mysql -rsh ${SOURCE_MARIADB_IP[$RCELL]} -uroot -p${SOURCE_DB_ROOT_PASSWORD[$RCELL]} nova_api -e \
+                      'select uuid,name,transport_url,database_connection,disabled from cell_mappings;')"
+              PULL_OPENSTACK_CONFIGURATION_NOVAMANAGE_CELL_MAPPINGS="$($CONTROLLER1_SSH sudo podman exec -it nova_conductor nova-manage cell_v2 list_cells)"
+          fi
+          EOF
+          done
+          chmod 0600 ~/.source_cloud_exported_variables*
+
+    - name: Step1.1. Export the shell variables for the following outputs and test the connection to the RHOSP database, part I
+      shell: "{{ remote_shell_1_file }}"
+      register: shell1_results
+
+    - name: Step1.2. Export the shell variables for the following outputs and test the connection to the RHOSP database, part II
+      debug:
+        msg: "{{ shell1_results.stdout_lines }}"
+
+    - name: Step2.1. Run mysqlcheck on the RHOSP database to check for inaccuracies, part I
+      shell: "{{ remote_shell_2_file }}"
+      register: shell2_results
+
+    - name: Step2.2. Run mysqlcheck on the RHOSP database to check for inaccuracies, part II
+      debug:
+        msg: "{{ shell2_results.stdout_lines }}"
+
+    - name: Step3.1. Get the Compute service (nova) cell mappings, part I
+      shell: "{{ remote_shell_3_file }}"
+      register: shell3_results
+
+    - name: Step3.2. Get the Compute service (nova) cell mappings, part II
+      debug:
+        msg: "{{ shell3_results.stdout_lines }}"
+
+    - name: Step4.1. Get the hostnames of the registered Compute services, part I
+      shell: "{{ remote_shell_4_file }}"
+      register: shell4_results
+
+    - name: Step4.2. Get the hostnames of the registered Compute services, part II
+      debug:
+        msg: "{{ shell4_results.stdout_lines }}"
+
+    - name: Step5.1. Get the list of the mapped Compute service cells, part I
+      shell: "{{ remote_shell_5_file }}"
+      register: shell5_results
+
+    - name: Step5.2. Get the list of the mapped Compute service cells, part II
+      debug:
+        msg: "{{ shell5_results.stdout_lines }}"
+
+    - name: Step6.1. Store the exported variables for future use, part I
+      shell: "{{ remote_shell_6_file }}"
+      register: shell6_results
+
+    - name: Step6.2. Store the exported variables for future use, part II
+      debug:
+        msg: "{{ shell6_results.stdout_lines }}"

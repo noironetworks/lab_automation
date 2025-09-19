@@ -1,0 +1,124 @@
+---
+- name: Adopting the Networking service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1-1. Patch the OpenStackVersion for neutron and heat, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ new_containers_file }}"
+        content: |
+          oc patch openstackversion openstack --type=merge --patch '
+          spec:
+            customContainerImages:
+              heatAPIImage: 10.30.9.74:8787/osp18/openstack-heat-engine-rhel9-ciscoaci:18.0.8
+              neutronAPIImage: 10.30.9.74:8787/osp18/openstack-neutron-server-rhel9-ciscoaci:18.0.8
+                #horizonImage: 10.30.9.74:8787/osp18/openstack-horizon-rhel9-ciscoaci:18.0.8
+          '
+
+    - name: Step0.1-2. Patch the OpenStackVersion for neutron and heat, part II
+      shell: "{{ new_containers_file }}"
+
+    - name: Step0.2-1. Create the ACI secret for neutron, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ aci_secrets_file }}"
+        content: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: neutron-server-aci-config
+          type: Opaque
+          stringData:
+            ml2_conf_cisco_apic.ini: |
+                    [ml2]
+                    type_drivers=opflex,local,flat,vlan,gre,vxlan
+                    tenant_network_types=opflex
+                    mechanism_drivers=apic_aim
+                    extension_drivers=apic_aim,port_security,dns,qos
+                    [group_policy]
+                    policy_drivers=aim_mapping
+                    extension_drivers=aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
+
+    - name: Step0.2-2. Create the ACI secret for neutron, part II
+      shell: oc apply -f "{{ aci_secrets_file }}"
+
+    - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Networking service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_neutron_file }}"
+        content: |
+          spec:
+            neutron:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                corePlugin: ml2plus
+                customServiceConfig: |
+                  [DEFAULT]
+                  dhcp_agent_notification = True
+                  service_plugins=group_policy,apic_aim_l3,trunk,qos
+                  apic_system_id=ostack-bm-3
+
+                  [ml2]
+                  type_drivers=opflex,local,flat,vlan,gre,vxlan
+                  tenant_network_types=opflex
+                  mechanism_drivers=apic_aim
+                  extension_drivers=apic_aim,port_security,dns,qos
+
+                  [ml2_apic_aim]
+                  enable_optimized_dhcp=True
+                  enable_optimized_metadata=True
+                  enable_keystone_notification_purge=True
+                  keystone_notification_exchange=keystone
+                  keystone_notification_topic=notifications
+
+                  [group_policy]
+                  policy_drivers=aim_mapping
+                  extension_drivers=aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
+
+                ml2MechanismDrivers:
+                - apic-aim
+                extraMounts:
+                - extraVol:
+                  - mounts:
+                    - mountPath: /etc/neutron/plugins/ml2/ml2_conf_cisco_apic.ini
+                      name: partner-config
+                      readOnly: true
+                      subPath: ml2_conf_cisco_apic.ini
+                    volumes:
+                    - name: partner-config
+                      secret:
+                        secretName: neutron-server-aci-config
+                override:
+                  service:
+                    internal:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/allow-shared-ip: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                      spec:
+                        type: LoadBalancer
+                databaseInstance: openstack
+                databaseAccount: neutron
+                secret: osp-secret
+                networkAttachments:
+                - internalapi
+
+    - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Networking service, part II
+      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ patch_neutron_file }}"
+
+    - name: Step3. Inspect the resulting Networking service pods
+      shell: oc get pods -l service=neutron
+
+    - name: Step4. Ensure that the Neutron API service is registered in the Identity service
+      shell: oc exec -t openstackclient -- openstack service list | grep network

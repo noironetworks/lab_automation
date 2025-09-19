@@ -1,0 +1,55 @@
+---
+- name: Convert AIM Configuration to Kubernetes CR
+  hosts: overcloud-controller-0
+  vars:
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Fetch aim.conf file from remote to local
+      ansible.builtin.fetch:
+        src: "{{ aim_conf_file }}"
+        dest: "{{ local_aim_conf_file }}"
+        flat: yes
+
+    - name: Step1. Fetch aimctl.conf file from remote to local
+      ansible.builtin.fetch:
+        src: "{{ aim_conf_file }}"
+        dest: "{{ local_aim_conf_file }}"
+        flat: yes
+
+    - name: Step3. Parse configuration files
+      set_fact:
+        # From aim.conf
+        aim_debug: "{{ lookup('ini', 'debug section=DEFAULT file=' + local_aim_conf_file) | default('False') }}"
+        aim_system_id: "{{ lookup('ini', 'aim_system_id section=aim file=' + local_aim_conf_file) }}"
+        support_gen1_hw: "{{ lookup('ini', 'support_gen1_hw_gratarps section=aim file=' + local_aim_conf_file) | default('False') }}"
+        enable_faults: "{{ lookup('ini', 'enable_faults_subscriptions section=aim file=' + local_aim_conf_file) | default('False') }}"
+        apic_hosts: "{{ lookup('ini', 'apic_hosts section=apic file=' + local_aim_conf_file) }}"
+        apic_username: "{{ lookup('ini', 'apic_username section=apic file=' + local_aim_conf_file) }}"
+        apic_password: "{{ lookup('ini', 'apic_password section=apic file=' + local_aim_conf_file) }}"
+        scope_names: "{{ lookup('ini', 'scope_names section=apic file=' + local_aim_conf_file) | default('False') }}"
+        # From aimctl.conf
+        apic_system_id: "{{ lookup('ini', 'apic_system_id section=DEFAULT file=' + local_aimctl_conf_file) }}"
+        apic_system_id_length: "{{ lookup('ini', 'apic_system_id_length section=DEFAULT file=' + local_aimctl_conf_file) }}"
+        apic_entity_profile: "{{ lookup('ini', 'apic_entity_profile section=apic file=' + local_aimctl_conf_file) }}"
+        scope_infra: "{{ lookup('ini', 'scope_infra section=apic file=' + local_aimctl_conf_file) | default('False') }}"
+        apic_vpc_pairs_raw: "{{ lookup('ini', 'apic_vpc_pairs section=apic file=' + local_aimctl_conf_file) }}"
+      delegate_to: localhost # Execute this task on the undercloud
+
+    - name: Get VMM domain settings dynamically
+      set_fact:
+        encap_mode: "{{ lookup('ini', 'encap_mode section=apic_vmdom:' + aim_system_id + ' file=' + local_aimctl_conf_file, errors='ignore') | default('vxlan') }}"
+        mcast_ranges: "{{ lookup('ini', 'mcast_ranges section=apic_vmdom:' + aim_system_id + ' file=' + local_aimctl_conf_file, errors='ignore') | default('') }}"
+        multicast_address: "{{ lookup('ini', 'multicast_address section=apic_vmdom:' + aim_system_id + ' file=' + local_aimctl_conf_file, errors='ignore') | default('') }}"
+      delegate_to: localhost # Execute this task on the undercloud
+
+    - name: Convert VPC pairs to list
+      set_fact:
+        vpc_pairs_list: "{{ apic_vpc_pairs_raw.split(',') | map('trim') | list }}"
+      delegate_to: localhost # Execute this task on the undercloud
+
+    - name: Generate CR from template
+      template:
+        src: ciscoaci-aim-cr.yaml.j2
+        dest: "{{ local_aim_cr_file }}"
+      delegate_to: localhost # Execute this task on the undercloud

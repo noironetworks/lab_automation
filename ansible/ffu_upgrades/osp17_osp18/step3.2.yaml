@@ -1,0 +1,353 @@
+---
+- name: Retrieving topology-specific service configuration, part II
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1 Create the secrets env vars on the provisioning host
+      ansible.builtin.copy:
+        dest: "{{ secrets_env_vars }}"
+        owner: noiro
+        group: noiro
+        content: |
+          declare -A TRIPLEO_PASSWORDS
+          TRIPLEO_PASSWORDS[default]="{{ dst_overcloud_passwords_file }}"
+          ADMIN_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' AdminPassword:' | awk -F ': ' '{ print $2; }')
+          AODH_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' AodhPassword:' | awk -F ': ' '{ print $2; }')
+          BARBICAN_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' BarbicanPassword:' | awk -F ': ' '{ print $2; }')
+          CEILOMETER_METERING_SECRET=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' CeilometerMeteringSecret:' | awk -F ': ' '{ print $2; }')
+          CEILOMETER_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' CeilometerPassword:' | awk -F ': ' '{ print $2; }')
+          CINDER_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' CinderPassword:' | awk -F ': ' '{ print $2; }')
+          GLANCE_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' GlancePassword:' | awk -F ': ' '{ print $2; }')
+          HEAT_AUTH_ENCRYPTION_KEY=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' HeatAuthEncryptionKey:' | awk -F ': ' '{ print $2; }')
+          HEAT_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' HeatPassword:' | awk -F ': ' '{ print $2; }')
+          HEAT_STACK_DOMAIN_ADMIN_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' HeatStackDomainAdminPassword:' | awk -F ': ' '{ print $2; }')
+          IRONIC_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' IronicPassword:' | awk -F ': ' '{ print $2; }')
+          MANILA_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' ManilaPassword:' | awk -F ': ' '{ print $2; }')
+          NEUTRON_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' NeutronPassword:' | awk -F ': ' '{ print $2; }')
+          NOVA_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' NovaPassword:' | awk -F ': ' '{ print $2; }')
+          OCTAVIA_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' OctaviaPassword:' | awk -F ': ' '{ print $2; }')
+          PLACEMENT_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' PlacementPassword:' | awk -F ': ' '{ print $2; }')
+          SWIFT_PASSWORD=$(cat ${TRIPLEO_PASSWORDS[default]} | grep ' SwiftPassword:' | awk -F ': ' '{ print $2; }')
+
+    - name: Step0.2 Create commands for setting service secrets
+      ansible.builtin.copy:
+        dest: "{{ service_secrets_file }}"
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        content: |
+          source "{{ secrets_env_vars }}"
+          oc set data secret/osp-secret "AodhPassword=$AODH_PASSWORD"
+          oc set data secret/osp-secret "BarbicanPassword=$BARBICAN_PASSWORD"
+          oc set data secret/osp-secret "CeilometerPassword=$CEILOMETER_PASSWORD"
+          oc set data secret/osp-secret "CinderPassword=$CINDER_PASSWORD"
+          oc set data secret/osp-secret "GlancePassword=$GLANCE_PASSWORD"
+          oc set data secret/osp-secret "HeatAuthEncryptionKey=$HEAT_AUTH_ENCRYPTION_KEY"
+          oc set data secret/osp-secret "HeatPassword=$HEAT_PASSWORD"
+          oc set data secret/osp-secret "HeatStackDomainAdminPassword=$HEAT_STACK_DOMAIN_ADMIN_PASSWORD"
+          oc set data secret/osp-secret "IronicPassword=$IRONIC_PASSWORD"
+          oc set data secret/osp-secret "IronicInspectorPassword=$IRONIC_PASSWORD"
+          oc set data secret/osp-secret "ManilaPassword=$MANILA_PASSWORD"
+          oc set data secret/osp-secret "MetadataSecret=$METADATA_SECRET"
+          oc set data secret/osp-secret "NeutronPassword=$NEUTRON_PASSWORD"
+          oc set data secret/osp-secret "NovaPassword=$NOVA_PASSWORD"
+          oc set data secret/osp-secret "OctaviaPassword=$OCTAVIA_PASSWORD"
+          oc set data secret/osp-secret "PlacementPassword=$PLACEMENT_PASSWORD"
+          oc set data secret/osp-secret "SwiftPassword=$SWIFT_PASSWORD"
+
+    - name: Step0.3. Create the OpenStackControlPlane CR
+      copy:
+        dest: "{{ openstack_cp_cr_file }}"
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        content: |
+          apiVersion: core.openstack.org/v1beta1
+          kind: OpenStackControlPlane
+          metadata:
+            name: openstack
+          spec:
+            secret: osp-secret
+            storageClass: "{{ storage_class }}"
+          
+            barbican:
+              enabled: false
+              template:
+                barbicanAPI: {}
+                barbicanWorker: {}
+                barbicanKeystoneListener: {}
+
+            cinder:
+              enabled: false
+              template:
+                cinderAPI: {}
+                cinderScheduler: {}
+                cinderBackup: {}
+                cinderVolumes: {}
+
+            dns:
+              template:
+                override:
+                  service:
+                    metadata:
+                      annotations:
+                        metallb.universe.tf/address-pool: internalapi
+                        metallb.universe.tf/allow-shared-ip: internalapi
+                        metallb.universe.tf/loadBalancerIPs: 1.121.101.203
+
+                    spec:
+                      type: LoadBalancer
+                options:
+                - key: server
+                  values:
+                  - 10.100.1.10
+                replicas: 1
+
+            glance:
+              enabled: false
+              template:
+                glanceAPIs: {}
+
+            heat:
+              enabled: false
+              template: {}
+
+            horizon:
+              enabled: false
+              template: {}
+
+            ironic:
+              enabled: false
+              template:
+                ironicConductors: []
+
+            keystone:
+              enabled: false
+              template: {}
+
+            manila:
+              enabled: false
+              template:
+                manilaAPI: {}
+                manilaScheduler: {}
+                manilaShares: {}
+
+            galera:
+              enabled: true
+              templates:
+                openstack:
+                  secret: osp-secret
+                  replicas: 3
+                  storageRequest: 5G
+                openstack-cell1:
+                  secret: osp-secret
+                  replicas: 3
+                  storageRequest: 5G
+            memcached:
+              enabled: true
+              templates:
+                memcached:
+                  replicas: 3
+
+            neutron:
+              enabled: false
+              template: {}
+
+            nova:
+              enabled: false
+              template: {}
+
+            ovn:
+              enabled: false
+              template:
+                ovnController:
+                  networkAttachment: tenant
+                  nodeSelector:
+                    node: non-existing-node-name
+                ovnNorthd:
+                  replicas: 0
+                ovnDBCluster:
+                  ovndbcluster-nb:
+                    replicas: 3
+                    dbType: NB
+                    networkAttachment: internalapi
+                  ovndbcluster-sb:
+                    replicas: 3
+                    dbType: SB
+                    networkAttachment: internalapi
+
+            placement:
+              enabled: false
+              template: {}
+
+            rabbitmq:
+              templates:
+                rabbitmq:
+                  override:
+                    service:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.201
+                      spec:
+                        type: LoadBalancer
+                rabbitmq-cell1:
+                  persistence:
+                    storage: 1G
+                  override:
+                    service:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.202
+
+                      spec:
+                        type: LoadBalancer
+            telemetry:
+              enabled: false
+            tls:
+              podLevel:
+                enabled: false
+              ingress:
+                enabled: false
+            swift:
+              enabled: false
+              template:
+                swiftRing:
+                  ringReplicas: 1
+                swiftStorage:
+                  replicas: 0
+                swiftProxy:
+                  replicas: 1
+
+    - name: Step0.4 Create commands for verify step 1
+      ansible.builtin.copy:
+        dest: "{{ verify_1_file }}"
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        content: |
+          RENAMED_CELLS="cell1"
+          oc get pod openstack-galera-0 -o jsonpath='{.status.phase}{"\n"}'
+          oc get pod rabbitmq-server-0 -o jsonpath='{.status.phase}{"\n"}'
+          for CELL in $(echo $RENAMED_CELLS); do
+              oc get pod openstack-$CELL-galera-0 -o jsonpath='{.status.phase}{"\n"}'
+              oc get pod rabbitmq-$CELL-server-0 -o jsonpath='{.status.phase}{"\n"}'
+          done
+
+    - name: Step1. Ensure that you are using the Red Hat OpenShift Container Platform (RHOCP) namespace where you want the control plane to be deployed
+      ansible.builtin.command:
+        cmd: oc project openstack
+
+    - name: Step2-1. Create the RHOSP secret, part I
+      ansible.builtin.copy:
+        dest: "{{ initial_secrets_file }}"
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        content: |
+            apiVersion: v1
+            data:
+              AdminPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              AodhPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              AodhDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              BarbicanDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              BarbicanPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              BarbicanSimpleCryptoKEK: $(python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode('UTF-8'))" | base64)
+              CeilometerPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              CinderDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              CinderPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              DatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              DbRootPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              DesignateDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              DesignatePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              GlanceDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              GlancePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              HeatAuthEncryptionKey: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              HeatDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              HeatPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              IronicDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              IronicInspectorDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              IronicInspectorPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              IronicPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              KeystoneDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              ManilaDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              ManilaPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              MetadataSecret: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NeutronDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NeutronPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaAPIDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaAPIMessageBusPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaCell0DatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaCell0MessageBusPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaCell1DatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaCell1MessageBusPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              NovaPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              OctaviaDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              OctaviaPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              PlacementDatabasePassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              PlacementPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+              SwiftPassword: $(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)
+            kind: Secret
+            metadata:
+              name: osp-secret
+              namespace: openstack
+            type: Opaque
+
+
+    - name: Step2-2. Create the RHOSP secret, part II
+      shell: cat "{{ initial_secrets_file }}"
+      register: secret_data
+
+    - name: Step2-3. Create the RHOSP secret, part III
+      shell: rm -f "{{ secrets_yaml_file }}"
+      ignore_errors: true
+
+    - name: Step2-4. Create the RHOSP secret, part IV
+      shell: echo "{{ item }}" >> "{{ secrets_yaml_file }}"
+      with_items: "{{ secret_data.stdout_lines }}"
+
+    - name: Step2-5. Create the RHOSP secret, part V
+      shell: oc create -f "{{ secrets_yaml_file }}" -n openstack
+      ignore_errors: true
+
+    - name: Step3. If the ADMIN_PASSWORD is different than the password you set in osp-secret, amend the AdminPassword key in the osp-secret
+      shell: source "{{ secrets_env_vars }}" && oc set data secret/osp-secret "AdminPassword=$ADMIN_PASSWORD"
+      register: admin_secret_results
+
+    - name: Step4. Set service account passwords in osp-secret to match the service account passwords from the original deployment
+      shell: "{{ service_secrets_file }}"
+      register: service_secrets_results
+
+    - name: Step5. Deploy the OpenStackControlPlane CR
+      shell: oc apply -f "{{ openstack_cp_cr_file }}"
+      register: os_cp_cr_results
+
+    - name: Step5.5. Give time for CR
+      ansible.builtin.pause:
+        seconds: 20
+
+    - name: Step6. Verify that the Galera and RabbitMQ status is Running for all defined cells
+      shell: "{{ verify_1_file }}"
+      register: verify1_results
+
+    - name: Step7. Show verify results
+      debug:
+        msg: "{{ verify1_results.stdout_lines }}"
+
+    - name: Step8. Ensure that the statuses of all the Rabbitmq and Galera CRs are Setup complete
+      shell: oc get Rabbitmqs,Galera
+      register: verify2_results
+
+    - name: Step9. Show verify results
+      debug:
+        msg: "{{ verify2_results.stdout_lines }}"
+
+    - name: Step10. Verify that the OpenStackControlPlane CR is waiting for deployment of the openstackclient pod
+      shell: oc get OpenStackControlPlane openstack
+      register: verify3_results
+
+    - name: Step11. Show verify results
+      debug:
+        msg: "{{ verify3_results.stdout_lines }}"

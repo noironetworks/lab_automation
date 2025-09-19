@@ -1,0 +1,40 @@
+---
+- name: Install the provisioning node public key on the overcloud nodes and prepare overcloud nodes
+  hosts: overcloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+  - name: Step.1. Read in the public key
+    ansible.builtin.set_fact:
+      public_key: "{{ lookup('file', prov_pub_key_uc_file) }}"
+    delegate_to: localhost # Execute this task on the undercloud
+
+  - name: Step2. Append the provisioning node public key to the overcloud-controller-0 node authorized_keys
+    ansible.builtin.lineinfile:
+      path: "{{ authorized_keys_file }}"
+      state: present
+      line: "{{ public_key }}"
+
+  - name: Step3. Append the provisioning node public key to the overcloud-controller-0 node authorized_keys, as root
+    become: yes
+    ansible.builtin.lineinfile:
+      path: "{{ authorized_keys_file }}"
+      state: present
+      line: "{{ public_key }}"
+
+  - name: Step4. Allow ssh from the provisioning node subnet to the overcloud controller host
+    become: yes
+    shell: nft list table inet filter
+    register: nft_output
+    when: inventory_hostname in groups['Controller']
+
+  - name: Step4. Allow ssh from the provisioning node subnet to the overcloud controller host
+    become: yes
+    shell: nft add rule inet filter TRIPLEO_INPUT ip saddr "{{ provisioning_subnet }}" tcp dport 22 ct state new,established accept
+    when: inventory_hostname in groups['Controller'] and not nft_output.stdout | regex_search( "ip saddr {{ provisioning_subnet }} tcp dport 22 ct state established,new accept", multiline=True, ignorecase=True)
+
+  - name: Step5.1. Make sure the computes are set for the correct tuned performance
+    become: true
+    shell: tuned-adm profile throughput-performance
+    when: inventory_hostname in groups['Compute']

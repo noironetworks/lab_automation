@@ -1,0 +1,14 @@
+---
+- name: Add the proxy to the computes
+  hosts: Compute
+  become: true
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Change the proxy configuration
+      copy:
+        dest: "{{ environment_file }}"
+        content: |
+          https_proxy=http://{{ sm_proxy_name }}:{{ sm_proxy_port }}
+          http_proxy=http://{{ sm_proxy_name }}:{{ sm_proxy_port }}
+          no_proxy=localhost,127.0.0.1,1.100.1.1,1.100.1.2,1.100.1.3,1.100.1.0/24,qa-fab-1-ucloud-17.ctlplane.localdomain,172.22.172.0/24,10.30.120.0/24,172.28.184.0/24,engci-jenkins-sjc.cisco.com,192.168.0.0/16,192.168.249.128,192.168.249.129,172.28.184.248,satellite01.localdomain,172.28.184.250,{{ provisioning_ip }},10.30.9.74,{{ extra_no_proxy }}

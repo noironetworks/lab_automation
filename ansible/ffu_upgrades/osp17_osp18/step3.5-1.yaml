@@ -1,0 +1,32 @@
+---
+- name: Migrating databases to MariaDB instances
+  hosts: overcloud-controller-0
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1. To get the values for SOURCE_MARIADB_IP, query the puppet-generated configurations in the Controller and CellController nodes
+      become: true
+      shell: grep -rI 'listen mysql' -A11 /var/lib/config-data/puppet-generated/ | grep server |grep -m 1 overcloud | awk '{print $(NF-9)" " $(NF-8)}' | awk -F":" '{print $1}' | awk '{print $2}'
+      register: mysqlvar1
+    - name: print output
+      debug:
+        msg: "{{ mysqlvar1.stdout_lines }}"
+
+    - name: Step0.2. To get the values for SOURCE_GALERA_MEMBERS_*, query the puppet-generated configurations in the Controller and CellController nodes
+      become: true
+      shell: grep -rI 'listen mysql' -A11 /var/lib/config-data/puppet-generated/ | grep server |grep -m 3 overcloud | awk '{print $(NF-9)" " $(NF-8)}' | awk -F":" '{print $1}' | awk '{print "[\""$1"\"]="$2}'
+      register: mysqlvar2
+    - name: print output
+      debug:
+        msg: "{{ mysqlvar2.stdout_lines }}"
+
+    - name: Step0.3. Store the env vars
+      ansible.builtin.template:
+        src: db_vars.template.j2
+        dest: "{{ oc_db_env_vars_file }}"
+
+    - name: Step0.4 Fetch file from remote to local
+      ansible.builtin.fetch:
+        src: "{{ oc_db_env_vars_file }}"
+        dest: "{{ local_db_env_vars_file }}"
+        flat: yes

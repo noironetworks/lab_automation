@@ -1,0 +1,9 @@
+# env1-template.j2
+declare -A SOURCE_MARIADB_IP
+SOURCE_MARIADB_IP="{{ mysqlvar1.stdout_lines[0] }}"
+declare -A SOURCE_GALERA_MEMBERS_DEFAULT
+SOURCE_GALERA_MEMBERS_DEFAULT=(
+{% for item in mysqlvar2.stdout_lines %}
+    {{ item }}
+{% endfor %}
+)

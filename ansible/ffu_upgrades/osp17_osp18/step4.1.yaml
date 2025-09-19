@@ -1,0 +1,93 @@
+---
+- name: Adopting the Identity service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1-1. Create the keystone secret that includes the Fernet keys that were copied from the RHOSP environment, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ keystone_secrets_file }}"
+        content: |
+         source "{{ provisioning_env_vars_1_file }}" && oc apply -f - <<EOF
+           apiVersion: v1
+           data:
+             CredentialKeys0: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/keystone/etc/keystone/credential-keys/0 | base64 -w 0)
+             CredentialKeys1: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/keystone/etc/keystone/credential-keys/1 | base64 -w 0)
+             FernetKeys0: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/keystone/etc/keystone/fernet-keys/0 | base64 -w 0)
+             FernetKeys1: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/keystone/etc/keystone/fernet-keys/1 | base64 -w 0)
+           kind: Secret
+           metadata:
+             name: keystone
+           type: Opaque
+         EOF
+
+    - name: Step0.1-2. Create the keystone secret that includes the Fernet keys that were copied from the RHOSP environment, part II
+      shell: "{{ keystone_secrets_file  }}"
+
+    - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Identity service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_keystone_file }}"
+        content: |
+          oc patch openstackcontrolplane openstack --type=merge --patch '
+          spec:
+            keystone:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                override:
+                  service:
+                    internal:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/allow-shared-ip: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                      spec:
+                        type: LoadBalancer
+                databaseInstance: openstack
+                secret: osp-secret
+          '
+
+    - name: Step1-2. Check that the source Galera database clusters in each cell have its members online and synced, part II
+      shell: "{{ patch_keystone_file }}"
+
+    - name: Step2. Create an alias to use the openstack command in the Red Hat OpenStack Services on OpenShift (RHOSO) deployment
+      ansible.builtin.lineinfile:
+        path: "{{ bashrc_file }}"
+        state: present
+        line: 'alias openstack="oc exec -t openstackclient -- openstack"'
+
+    - name: Step3-1. Remove services and endpoints that still point to the RHOSP control plane, excluding the Identity service and its endpoints, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remove_services_file }}"
+        content: |
+          openstack endpoint list | grep keystone | awk '/admin/{ print $2; }' | xargs ${BASH_ALIASES[openstack]} endpoint delete || true
+          for service in aodh heat heat-cfn barbican cinderv3 glance gnocchi manila manilav2 neutron nova placement swift ironic-inspector ironic octavia; do
+            openstack service list | awk "/ $service /{ print \$2; }" | xargs -r ${BASH_ALIASES[openstack]} service delete || true
+          done
+
+    - name: Step3-2. Remove services and endpoints that still point to the RHOSP control plane, excluding the Identity service and its endpoints, part II
+      shell: "{{ remove_services_file }}"
+
+    - name: Step3.5. Give time for OpenStack clint pod to come up
+      ansible.builtin.pause:
+        seconds: 90
+
+    - name: Step4. Verify that you can access the OpenStackClient pod
+      shell: oc rsh openstackclient ls
+
+    - name: Step5. Confirm that the Identity service endpoints are defined and are pointing to the control plane FQDNs
+      shell: oc exec -t openstackclient -- openstack endpoint list | grep keystone
+
+    - name: Step6. Wait for the OpenStackControlPlane resource to become Ready
+      shell: oc wait --for=condition=Ready --timeout=1m OpenStackControlPlane openstack

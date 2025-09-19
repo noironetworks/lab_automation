@@ -1,0 +1,48 @@
+STORAGE_CLASS={{ storage_class }}
+MARIADB_IMAGE={{ mariadb_image }}
+CELLS="default"
+DEFAULT_CELL_NAME="cell1"
+RENAMED_CELLS="$DEFAULT_CELL_NAME"
+CHARACTER_SET=utf8
+COLLATION=utf8_general_ci
+declare -A PODIFIED_DB_ROOT_PASSWORD
+for CELL in $(echo "super $RENAMED_CELLS"); do
+  PODIFIED_DB_ROOT_PASSWORD[$CELL]=$(oc get -o json secret/osp-secret | jq -r .data.DbRootPassword | base64 -d)
+done
+declare -A PODIFIED_MARIADB_IP
+for CELL in $(echo "super $RENAMED_CELLS"); do
+  if [ "$CELL" = "super" ]; then
+    PODIFIED_MARIADB_IP[$CELL]=$(oc get svc --selector "mariadb/name=openstack" -ojsonpath='{.items[0].spec.clusterIP}')
+  else
+    PODIFIED_MARIADB_IP[$CELL]=$(oc get svc --selector "mariadb/name=openstack-$CELL" -ojsonpath='{.items[0].spec.clusterIP}')
+  fi
+done
+declare -A TRIPLEO_PASSWORDS
+for CELL in $(echo $CELLS); do
+  if [ "$CELL" = "default" ]; then
+    TRIPLEO_PASSWORDS[default]={{ dst_overcloud_passwords_file }}
+  else
+    # in a split-stack source cloud, it should take a stack-specific passwords file instead
+    TRIPLEO_PASSWORDS[$CELL]={{ dst_overcloud_passwords_file }}
+  fi
+done
+declare -A SOURCE_DB_ROOT_PASSWORD
+for CELL in $(echo $CELLS); do
+  SOURCE_DB_ROOT_PASSWORD[$CELL]=$(cat ${TRIPLEO_PASSWORDS[$CELL]} | grep ' MysqlRootPassword:' | awk -F ': ' '{ print $2; }')
+done
+declare -A SOURCE_MARIADB_IP
+SOURCE_MARIADB_IP[default]={{ mysqlvar1.stdout_lines[0] }}
+SOURCE_MARIADB_IP[cell1]={{ mysqlvar1.stdout_lines[0] }}
+
+declare -A SOURCE_GALERA_MEMBERS_DEFAULT
+SOURCE_GALERA_MEMBERS_DEFAULT=(
+{% for item in mysqlvar2.stdout_lines %}
+    {{ item }}
+{% endfor %}
+)
+declare -A SOURCE_GALERA_MEMBERS_CELL1
+SOURCE_GALERA_MEMBERS_CELL1=(
+{% for item in mysqlvar2.stdout_lines %}
+    {{ item }}
+{% endfor %}
+)

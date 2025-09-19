@@ -1,0 +1,8 @@
+# network-vars.template.j2
+declare -A networkers
+networkers+=(
+{% for host in groups['Controller'] %}
+  ['{{ hostvars[ host ].canonical_hostname }}']='{{ hostvars[ host ].ctlplane_ip }}'
+{% endfor %}
+)
+

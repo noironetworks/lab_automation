@@ -1,0 +1,57 @@
+---
+- name: Retrieving the network configuration from your existing deployment
+  hosts: undercloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0.1. create a directory for yaml files
+      ansible.builtin.file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Step0.2. Initialize merged_networks_data list
+      ansible.builtin.set_fact:
+        merged_networks_data: []
+
+    - name: Step0.3. Set up fact for control plane network
+      ansible.builtin.set_fact:
+        control_plane_network:
+          mtu: 1500
+          name: CtlPlane
+          name_lower: ctlplane
+          subnets:
+            ctlplane_subnet:
+              allocation_pools:
+              - end: 1.100.1.60
+                start: 1.100.1.20
+              ip_subnet: 1.100.1.0/24
+              gateway: 1.100.1.1
+          vip: true
+
+    - name: Step.1. Find the network configuration in the network_data.yaml file
+      ansible.builtin.set_fact:
+        networks_data: "{{ lookup('file', network_env_file) | from_yaml }}"
+
+    - name: Step1.5. Add the control plane network to the networks_data
+      ansible.builtin.set_fact:
+        networks_data: "{{ networks_data + [control_plane_network] }}"
+
+    - name: Step3. Use the tripleo-ansible-inventory.yaml file to determine the list of IP addresses that are already consumed in the adopted environment
+      ansible.builtin.shell: "source /home/stack/stackrc && openstack port list --network {{ network_item.name_lower }}  | grep ip_address | awk -F\"'\" '{print $2}'"
+      register: openstack_ports_results
+      loop: "{{ networks_data }}"
+      loop_control:
+        loop_var: network_item
+
+    - name: Step4. Add exclude_ips to each network data entry
+      ansible.builtin.set_fact:
+        # Append the updated network item to the merged_networks_data list
+        merged_networks_data: "{{ merged_networks_data + [item.network_item | combine({'exclude_ips':  item.stdout_lines | list})] }}"
+      loop: "{{ openstack_ports_results.results }}"
+
+    - name: Step5. Save the contents of the merged networks data for future playbooks
+      copy:
+        content: "{{ merged_networks_data | to_nice_yaml(indent=2) }}" # Convert facts to nice YAML with 2-space indentation
+        dest: "{{ network_state_file }}"
+      delegate_to: localhost # Execute this task on the control node

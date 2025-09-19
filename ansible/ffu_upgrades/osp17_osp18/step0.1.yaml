@@ -1,0 +1,11 @@
+---
+- name: Fetch provisioning node public key
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Fetch the public key from the provisioning node
+      ansible.builtin.fetch:
+        src: "{{ prov_pub_key_file }}"
+        dest: "{{ prov_pub_key_uc_file }}"
+        flat: true

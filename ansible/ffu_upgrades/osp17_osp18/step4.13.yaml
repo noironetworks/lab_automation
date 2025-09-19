@@ -1,0 +1,74 @@
+---
+- name: Adopting the Orchestration service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step0.1. Retrieve the existing auth_encryption_key value in use
+      shell: grep HeatAuthEncryptionKey "{{ dst_overcloud_passwords_file }}" | awk '{print $NF}'
+      register: heat_password
+
+    - name: Step3. Encode the password to Base64 format
+      shell: echo "{{ heat_password.stdout_lines[0] }}" | base64
+      register: encoded_heat_password
+
+    - name: Step4-1. Patch the osp-secret to update the HeatAuthEncryptionKey and HeatPassword parameters, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_heat_secret_file }}"
+        content: |
+          oc patch secret osp-secret --type='json' -p='[{"op" : "replace" ,"path" : "/data/HeatAuthEncryptionKey" ,"value" : "{{ encoded_heat_password.stdout_lines[0] }}"}]'
+
+    - name: Step4-2. Patch the osp-secret to update the HeatAuthEncryptionKey and HeatPassword parameters, part II
+      shell: "{{ patch_heat_secret_file }}"
+
+    - name: Step5-1. Patch the OpenStackControlPlane CR to deploy the Orchestration service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_heat_file }}"
+        content: |
+          oc patch openstackcontrolplane openstack --type=merge --patch '
+          spec:
+            heat:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                databaseInstance: openstack
+                databaseAccount: heat
+                secret: osp-secret
+                memcachedInstance: memcached
+                passwordSelectors:
+                  authEncryptionKey: HeatAuthEncryptionKey
+                  service: HeatPassword
+                  stackDomainAdminPassword: HeatStackDomainAdminPassword
+          '
+
+    - name: Step5-1. Patch the OpenStackControlPlane CR to deploy the Orchestration service, part II
+      shell: "{{ patch_heat_file }}"
+
+    - name: Step5.5. Give time for OpenStack client pod to come up
+      ansible.builtin.pause:
+        seconds: 90
+
+    - name: Step6-1. Ensure that the statuses of all the CRs are Setup complete, part I
+      shell: oc get Heat,HeatAPI,HeatEngine,HeatCFNAPI
+      register: heat_status
+
+    - name: Step6-2. Ensure that the statuses of all the CRs are Setup complete, part II
+      debug:
+        msg: "{{ heat_status.stdout_lines }}"
+
+    - name: Step6-1. Check that the Orchestration service is registered in the Identity service, part I
+      shell: oc exec -it openstackclient -- openstack service list -c Name -c Type
+
+    - name: Step6-2. Check that the Orchestration service is registered in the Identity service, part II
+      shell: oc exec -it openstackclient -- openstack endpoint list --service=heat -f yaml
+
+    - name: Step7. Verify that you can see your Orchestration service stacks
+      shell: oc exec -it openstackclient -- openstack stack list -f yaml

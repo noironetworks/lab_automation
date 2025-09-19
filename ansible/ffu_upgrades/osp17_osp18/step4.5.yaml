@@ -1,0 +1,104 @@
+---
+- name: Adopting the Object Storage service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step1-1. Create the swift-conf secret that includes the Object Storage service hash path suffix and prefix, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ adopt_swift_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          oc apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: swift-conf
+          type: Opaque
+          data:
+            swift.conf: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/swift/etc/swift/swift.conf | base64 -w0)
+          EOF
+
+    - name: Step1-2. Create the swift-conf secret that includes the Object Storage service hash path suffix and prefix, part II
+      shell: "{{ adopt_swift_file }}"
+
+    - name: Step2-1. Create the swift-ring-files ConfigMap that includes the Object Storage service ring files, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ swift_ring_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          oc apply -f - <<EOF
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: swift-ring-files
+          binaryData:
+            swiftrings.tar.gz: $($CONTROLLER1_SSH "cd /var/lib/config-data/puppet-generated/swift/etc/swift && tar cz *.builder *.ring.gz backups/ | base64 -w0")
+            account.ring.gz: $($CONTROLLER1_SSH "base64 -w0 /var/lib/config-data/puppet-generated/swift/etc/swift/account.ring.gz")
+            container.ring.gz: $($CONTROLLER1_SSH "base64 -w0 /var/lib/config-data/puppet-generated/swift/etc/swift/container.ring.gz")
+            object.ring.gz: $($CONTROLLER1_SSH "base64 -w0 /var/lib/config-data/puppet-generated/swift/etc/swift/object.ring.gz")
+          EOF
+
+    - name: Step2-2. Create the swift-ring-files ConfigMap that includes the Object Storage service ring files, part II
+      shell: "{{ swift_ring_file }}"
+
+    - name: Step3-1. Patch the OpenStackControlPlane custom resource to deploy the Object Storage service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_swift_file }}"
+        content: |
+          oc patch openstackcontrolplane openstack --type=merge --patch '
+          spec:
+            swift:
+              enabled: true
+              template:
+                memcachedInstance: memcached
+                swiftRing:
+                  ringReplicas: 1
+                swiftStorage:
+                  replicas: 0
+                  networkAttachments:
+                  - storage
+                  storageClass: ""
+                  storageRequest: 10Gi
+                swiftProxy:
+                  secret: osp-secret
+                  replicas: 1
+                  passwordSelectors:
+                    service: SwiftPassword
+                  serviceUser: swift
+                  override:
+                    service:
+                      internal:
+                        metadata:
+                          annotations:
+                            metallb.universe.tf/address-pool: internalapi
+                            metallb.universe.tf/allow-shared-ip: internalapi
+                            metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                        spec:
+                          type: LoadBalancer
+                  networkAttachments:
+                  - storage
+          '
+
+    - name: Step3-2. Patch the OpenStackControlPlane custom resource to deploy the Object Storage service, part II
+      shell: "{{ patch_swift_file }}"
+
+    - name: Step4. Inspect the resulting Object Storage service pods
+      shell: oc get pods -l component=swift-proxy
+
+    - name: Step5. Verify that the Object Storage proxy service is registered in the Identity service 
+      shell: oc exec -t openstackclient -- openstack service list | grep swift
+
+    - name: Step5. Give time for CR
+      ansible.builtin.pause:
+        seconds: 60

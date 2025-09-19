@@ -1,0 +1,175 @@
+---
+- name: Performing a fast-forward upgrade on Compute services
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step0-1. Define the shell variables necessary to apply the fast-forward upgrade commands for each Compute service cell, part I
+      copy:
+        owner: noiro
+        group: noiro
+        dest: "{{ ffu_env_vars_file }}"
+        content: |
+          DEFAULT_CELL_NAME="cell1"
+          RENAMED_CELLS="$DEFAULT_CELL_NAME"
+
+          declare -A PODIFIED_DB_ROOT_PASSWORD
+          for CELL in $(echo "super $RENAMED_CELLS"); do
+            PODIFIED_DB_ROOT_PASSWORD[$CELL]=$(oc get -o json secret/osp-secret | jq -r .data.DbRootPassword | base64 -d)
+          done
+      
+    - name: Step1-1. Wait for the Compute service data plane services version to update for all the cells, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ update_cells_file }}"
+        content: |
+          source "{{ ffu_env_vars_file }}"
+          for CELL in $(echo $RENAMED_CELLS); do
+           oc exec openstack-$CELL-galera-0 -c galera -- mysql -rs -uroot -p"${PODIFIED_DB_ROOT_PASSWORD[$CELL]}" \
+              -e "select a.version from nova_${CELL}.services a join nova_${CELL}.services b where a.version!=b.version and a.binary='nova-compute' and a.deleted=0;"
+          done
+
+    - name: Step1-2. Wait for the Compute service data plane services version to update for all the cells, part II
+      shell: "{{ update_cells_file }}"
+
+    - name: Step2-1. Patch the OpenStackControlPlane CR to remove the pre-fast-forward upgrade workarounds from the Compute control plane services, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ create_patch_cp_file }}"
+        content: |
+          source "{{ ffu_env_vars_file }}"
+          rm -f celltemplates
+          for CELL in $(echo $RENAMED_CELLS); do
+          cat >> celltemplates << EOF
+                  ${CELL}:
+                    metadataServiceTemplate:
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=false
+                    conductorServiceTemplate:
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=false
+          EOF
+          done
+          
+          cat > oscp-patch.yaml << EOF
+          spec:
+            nova:
+              template:
+                apiServiceTemplate:
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=false
+                metadataServiceTemplate:
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=false
+                schedulerServiceTemplate:
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=false
+                cellTemplates:
+                  cell0:
+                    conductorServiceTemplate:
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=false
+          EOF
+          cat celltemplates >> oscp-patch.yaml
+
+    - name: Step2-1. Patch the OpenStackControlPlane CR to remove the pre-fast-forward upgrade workarounds from the Compute control plane services, part I
+      shell: "{{ create_patch_cp_file }}"
+
+    - name: Step3. Apply the patch file
+      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file=oscp-patch.yaml
+
+    - name: Step4. Wait until the Compute control plane services CRs are ready
+      shell: oc wait --for condition=Ready --timeout=300s Nova/nova
+
+    - name: Step5-1. Remove the pre-fast-forward upgrade workarounds from the Compute data plane services, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ remove_ffu_workarounds_file }}"
+        content: |
+          source "{{ adopt_copmute_env_vars_file }}"
+          oc patch cm nova-cells-global-config --type=json -p='[{"op": "replace", "path": "/data/99-nova-compute-cells-workarounds.conf", "value": "[workarounds]\n"}]'
+          for CELL in $(echo $RENAMED_CELLS); do
+          oc get Openstackdataplanenodeset openstack-${CELL} || continue
+          oc apply -f - <<EOF
+          ---
+          apiVersion: dataplane.openstack.org/v1beta1
+          kind: OpenStackDataPlaneDeployment
+          metadata:
+            name: openstack-nova-compute-ffu-$CELL
+          spec:
+            nodeSets:
+              - openstack-${CELL}
+            servicesOverride:
+              - nova-${CELL}
+          backoffLimit: 3
+          EOF
+          done
+
+    - name: Step5-2. Remove the pre-fast-forward upgrade workarounds from the Compute data plane services, part II
+      shell: "{{ remove_ffu_workarounds_file }}"
+
+    - name: Step6. Wait for the Compute data plane services to be ready for all the cells
+      shell: oc wait --for condition=Ready openstackdataplanedeployments --all --timeout=10m
+
+    - name: Step7-1. Run Compute database online migrations to complete the upgrade, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ db_online_migrations_file }}"
+        content: |
+          source "{{ adopt_copmute_env_vars_file }}"
+          oc exec -it nova-cell0-conductor-0 -- nova-manage db online_data_migrations
+          for CELL in $(echo $RENAMED_CELLS); do
+            oc exec -it nova-${CELL}-conductor-0 -- nova-manage db online_data_migrations
+          done
+
+    - name: Step7-2. Run Compute database online migrations to complete the upgrade, part II
+      shell: "{{ db_online_migrations_file }}"
+
+    - name: Step8. Discover the Compute hosts in the cells
+      shell: oc rsh nova-cell0-conductor-0 nova-manage cell_v2 discover_hosts --verbose
+
+    - name: Step9. Verify if the existing test VM instance is running
+      shell: ${BASH_ALIASES[openstack]} server --os-compute-api-version 2.48 show --diagnostics test 2>&1 || echo FAIL
+
+    - name: Step10-1. Verify if the Compute services can stop the existing test VM instance, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ stop_instances_file }}"
+        content: |
+          ${BASH_ALIASES[openstack]} server list -c Name -c Status -f value | grep -qF "test ACTIVE" && ${BASH_ALIASES[openstack]} server stop test || echo PASS
+          ${BASH_ALIASES[openstack]} server list -c Name -c Status -f value | grep -qF "test SHUTOFF" || echo FAIL
+          ${BASH_ALIASES[openstack]} server --os-compute-api-version 2.48 show --diagnostics test 2>&1 || echo PASS
+
+    - name: Step10-2. Verify if the Compute services can stop the existing test VM instance, part II
+      shell: "{{ stop_instances_file }}"
+
+    - name: Step11-1. Verify if the Compute services can start the existing test VM instance, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ start_instances_file }}"
+        content: |
+          ${BASH_ALIASES[openstack]} server list -c Name -c Status -f value | grep -qF "test SHUTOFF" && ${BASH_ALIASES[openstack]} server start test || echo PASS
+          ${BASH_ALIASES[openstack]} server list -c Name -c Status -f value | grep -qF "test ACTIVE" && \
+            ${BASH_ALIASES[openstack]} server --os-compute-api-version 2.48 show --diagnostics test --fit-width -f json | jq -r '.state' | grep running || echo FAIL
+
+    - name: Step11-2. Verify if the Compute services can start the existing test VM instance, part II
+      shell: "{{ start_instances_file }}"

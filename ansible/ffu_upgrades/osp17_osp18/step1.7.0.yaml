@@ -1,0 +1,16 @@
+---
+- name: Retrieving the OCP hosts from the OCP cluster
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Get the names of the OCP hosts
+      shell: oc get nodes | grep master | awk '{print $1}'
+      register: ocp_nodes
+
+    - name: Step2. Set up the OCP hosts file
+      ansible.builtin.template:
+        src: ocp_hosts.template.j2
+        dest: "{{ ocp_hosts_file }}"
+      delegate_to: localhost # Execute this task on the undercloud
+

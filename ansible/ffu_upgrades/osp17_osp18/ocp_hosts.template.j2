@@ -1,0 +1,4 @@
+hosts:
+{% for host in ocp_nodes.stdout_lines %}
+  - {{ host }}
+{% endfor %}

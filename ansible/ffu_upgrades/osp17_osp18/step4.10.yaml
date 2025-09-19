@@ -1,0 +1,140 @@
+---
+- name: Adopting the Block Storage service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step0-1. The contents of cinder.conf file. Download the file so that you can access it locally, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ get_cinder_conf_file }}"
+        content: |
+          source "{{ provisioning_env_vars_1_file }}"
+          $CONTROLLER1_SSH "sudo cat /var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf | grep -v '^#\|^$'" > "{{ local_cinder_conf_file }}"
+
+    - name: Step0-2. The contents of cinder.conf file. Download the file so that you can access it locally, part II
+      shell: "{{ get_cinder_conf_file }}"
+
+    - name: Step1-1. Create a new file, for example, cinder_api.patch, and apply the configuration, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ cinder_api_patch_file }}"
+        content: |
+          spec:
+            cinder:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                databaseInstance: openstack
+                databaseAccount: cinder
+                secret: osp-secret
+                cinderAPI:
+                  override:
+                    service:
+                      internal:
+                        metadata:
+                          annotations:
+                            metallb.universe.tf/address-pool: internalapi
+                            metallb.universe.tf/allow-shared-ip: internalapi
+                            metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                        spec:
+                          type: LoadBalancer
+                  replicas: 1
+                  customServiceConfig: |
+                    [DEFAULT]
+                    default_volume_type=tripleo
+                cinderScheduler:
+                  replicas: 0
+                cinderBackup:
+                  networkAttachments:
+                  - storage
+                  replicas: 0
+                cinderVolumes:
+                  ceph:
+                    networkAttachments:
+                    - storage
+                    replicas: 0
+
+    - name: Step1-2. Create a new file, for example, cinder_api.patch, and apply the configuration, part II
+      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ cinder_api_patch_file }}"
+
+    - name: Step2. Retrieve the list of the previous scheduler and backup services
+      shell: openstack volume service list | grep down | awk '{print "oc exec -t cinder-api-0 -c cinder-api -- cinder-manage service remove "$2" "$4}'  >  "{{ vol_services_file }}"
+
+    - name: Step3. Remove services for hosts that are in the down state
+      shell: "sh {{ vol_services_file }}"
+
+    - name: Step4-1. Deploy the scheduler, backup, and volume services, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ patch_cinder_file }}"
+        content: |
+          spec:
+            cinder:
+              enabled: true
+              template:
+                cinderScheduler:
+                  replicas: 1
+                cinderBackup:
+                  networkAttachments:
+                  - storage
+                  replicas: 0
+                  customServiceConfig: |
+                    [DEFAULT]
+                    backup_driver=cinder.backup.drivers.ceph.CephBackupDriver
+                    backup_ceph_conf=/etc/ceph/ceph.conf
+                    backup_ceph_user=openstack
+                    backup_ceph_pool=backups
+                cinderVolumes:
+                  volume1:
+                    networkAttachments:
+                    - storage
+                    replicas: 0
+                    resources: {}
+
+    - name: Step4-2. Deploy the scheduler, backup, and volume services, part II
+      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ patch_cinder_file }}" 
+
+    - name: Step6-1. Check if all the services are up and running, part I
+      shell: oc exec -it openstackclient -- openstack volume service list
+      register: volume_services
+
+    - name: Step6-2. Check if all the services are up and running, part II
+      debug:
+        msg: "{{ volume_services.stdout_lines }}"
+
+    - name: Step6.5. Give time for service
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Step7. Apply the DB data migrations
+      shell: oc exec -it cinder-scheduler-0 -- cinder-manage db online_data_migrations
+
+    - name: Step9. Confirm that the Block Storage services are running
+      shell: oc exec -t openstackclient -- openstack volume service list
+
+    - name: Step10-1. Confirm that you have your previous volume types, volumes, snapshots, and backups, part I
+      shell: oc exec -it openstackclient -- openstack volume type list
+
+    - name: Step10-2. Confirm that you have your previous volume types, volumes, snapshots, and backups, part II
+      shell: oc exec -it openstackclient -- openstack volume list
+
+    - name: Step10-3. Confirm that you have your previous volume types, volumes, snapshots, and backups, part III
+      shell: oc exec -it openstackclient -- openstack volume snapshot list
+
+    - name: Step10-4. Confirm that you have your previous volume types, volumes, snapshots, and backups, part IV
+      shell: oc exec -it openstackclient -- openstack volume backup list
+
+    - name: Step11-1. To confirm that the configuration is working, perform the following steps, part I
+      shell: oc exec -it openstackclient -- openstack volume create --image $(oc exec -it openstackclient -- openstack image list | grep -m 1 cirros | awk '{print $4}') --bootable --size 1 disk_new
+
+    - name: Step11-2. To confirm that the configuration is working, perform the following steps, part II
+      shell: oc exec -it openstackclient -- openstack volume delete disk_new

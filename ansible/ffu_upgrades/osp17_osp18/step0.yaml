@@ -1,0 +1,35 @@
+---
+- name: Set up subscription manager for the nodes
+  hosts: Compute
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  become: yes
+  tasks:
+  - name: Step0.1. Remove all subscriptions
+    command: subscription-manager remove --all
+  - name: Step0.2. Unregister
+    command: subscription-manager unregister
+    ignore_errors: yes
+  - name: Step0.3. Clean
+    command: subscription-manager clean
+    ignore_errors: yes
+  - name: Step1. Set up proxy
+    command: subscription-manager config --server.proxy_hostname="{{ sm_proxy_name }}" --server.proxy_port="{{ sm_proxy_port }}"
+  - name: Step2. Register
+    command: subscription-manager register --username "{{ sm_user }}" --password "{{ sm_password }}"
+    ignore_errors: true
+  - name: Step3. Set up pool
+    command: subscription-manager attach --pool="{{ sm_pool_id }}"
+  - name: Step4. Disable all repos
+    command: subscription-manager repos --disable=*
+  - name: Step5. Set RHEL release to 9.2
+    command: subscription-manager release --set=9.2
+  - name: Step6. Configure RHEL9 repos
+    ignore_errors: yes
+    command: sudo subscription-manager repos \
+        --enable=rhel-9-for-x86_64-baseos-eus-rpms \
+        --enable=rhel-9-for-x86_64-appstream-eus-rpms \
+        --enable=rhel-9-for-x86_64-highavailability-eus-rpms \
+        --enable=rhoso-18.0-for-rhel-9-x86_64-rpms \
+        --enable=fast-datapath-for-rhel-9-x86_64-rpms \
+        --enable=rhceph-7-tools-for-rhel-9-x86_64-rpms

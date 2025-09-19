@@ -1,0 +1,36 @@
+---
+- name: Stopping infrastructure management and Compute services
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step1-1. Remove the conflicting repositories and packages from all Compute hosts, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ pcs_stop_file }}"
+        content: |
+          source "{{ remote_controllers_env_file }}"
+          PacemakerResourcesToStop=(
+                "galera-bundle"
+                "haproxy-bundle"
+                "rabbitmq-bundle")
+
+          echo "Stopping pacemaker services"
+          for i in {1..3}; do
+              SSH_CMD=CONTROLLER${i}_SSH
+              if [ ! -z "${!SSH_CMD}" ]; then
+                  echo "Using controller $i to run pacemaker commands"
+                  for resource in ${PacemakerResourcesToStop[*]}; do
+                      if ${!SSH_CMD} sudo pcs resource config $resource; then
+                          ${!SSH_CMD} sudo pcs resource disable $resource
+                      fi
+                  done
+                  break
+              fi
+          done
+
+    - name: Step1-2. Remove the conflicting repositories and packages from all Compute hosts, part II
+      shell: "{{ pcs_stop_file }}"

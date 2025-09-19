@@ -1,0 +1,27 @@
+# netconfig_template.j2
+apiVersion: network.openstack.org/v1beta1
+kind: NetConfig
+metadata:
+  name: netconfig
+spec:
+  networks:
+{% for network in merged_networks_data %}
+  - name: {{ network.name|lower }}
+    dnsDomain: {{ network.name|lower }}.example.com # Example DNS domain
+    subnets:
+    - name: subnet1 # Using a fixed name as per example
+      allocationRanges:
+      {% set current_subnet = network.subnets.values() | first %}
+# Note: Complex splitting of allocationRanges based on exclude_ips
+      # is not directly implemented here due to Jinja2 templating limitations.
+      # This example uses the primary allocation pool as a single range.
+      - end: {{ current_subnet.allocation_pools[0].end }}
+        start: {{ current_subnet.allocation_pools[0].start }}
+      cidr: {{ current_subnet.ip_subnet }}
+{% if current_subnet.gateway is defined %}
+      gateway: {{ current_subnet.gateway }}
+{% endif %}
+{% if current_subnet.vlan is defined %}
+      vlan: {{ current_subnet.vlan }}
+{% endif %}
+{% endfor %}

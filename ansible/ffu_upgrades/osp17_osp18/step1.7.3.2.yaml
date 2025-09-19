@@ -1,0 +1,114 @@
+---
+- name: Configuring isolated networks on control plane services
+  hosts: undercloud
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step0. Read in the yaml file with the existing state
+      ansible.builtin.set_fact:
+        merged_networks_data: "{{ lookup('file', network_state_file) | from_yaml }}"
+
+    - name: Step1. Define a NetworkAttachmentDefinition CR for each isolated network
+      ansible.builtin.template:
+        src: nad_template.j2
+        dest: "{{ output_dir }}/{{ item.name_lower }}-nad.yaml"
+      loop: "{{ merged_networks_data }}"
+      # Set a variable 'current_subnet' for easier access to subnet details
+      vars:
+        current_subnet: "{{ item.subnets.values() | first }}"
+
+    - name: Step3. If your RHOSP services require load balancer IP addresses, define the pools for these services in an IPAddressPool CR
+      copy:
+        dest: "{{ output_dir }}/lb-pool.yaml"
+        content: |
+          apiVersion: metallb.io/v1beta1
+          kind: IPAddressPool
+          metadata:
+            name: internalapi
+            namespace: metallb-system
+          spec:
+            addresses:
+              - "{{ internal_api_lb_cidrs }}"
+            autoAssign: true
+            avoidBuggyIPs: false
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: IPAddressPool
+          metadata:
+            name: ctlplane
+            namespace: metallb-system
+          spec:
+            addresses:
+              - "{{ ctrlplane_lb_cidrs }}"
+            autoAssign: true
+            avoidBuggyIPs: false
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: IPAddressPool
+          metadata:
+            name: storage
+            namespace: metallb-system
+          spec:
+            addresses:
+              - "{{ storage_lb_cidrs }}"
+            autoAssign: true
+            avoidBuggyIPs: false
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: IPAddressPool
+          metadata:
+            name: tenant
+            namespace: metallb-system
+          spec:
+            addresses:
+              - "{{ tenant_lb_cidrs }}"
+            autoAssign: true
+            avoidBuggyIPs: false
+
+    - name: Step4. Create the L2 advertisements for the same networks
+      copy:
+        dest: "{{ output_dir }}/l2advertisements.yaml"
+        content: |
+          apiVersion: metallb.io/v1beta1
+          kind: L2Advertisement
+          metadata:
+            name: internalapi
+            namespace: metallb-system
+          spec:
+            ipAddressPools:
+            - internalapi
+            interfaces:
+            - "{{ base_interface_name }}.101"
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: L2Advertisement
+          metadata:
+            name: ctlplane
+            namespace: metallb-system
+          spec:
+            ipAddressPools:
+            - ctlplane
+            interfaces:
+            - "{{ ctlplane_interface_name }}"
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: L2Advertisement
+          metadata:
+            name: storage
+            namespace: metallb-system
+          spec:
+            ipAddressPools:
+            - storage
+            interfaces:
+            - "{{ base_interface_name }}.102"
+          ---
+          apiVersion: metallb.io/v1beta1
+          kind: L2Advertisement
+          metadata:
+            name: tenant
+            namespace: metallb-system
+          spec:
+            ipAddressPools:
+            - tenant
+            interfaces:
+            - "{{ base_interface_name }}.104"

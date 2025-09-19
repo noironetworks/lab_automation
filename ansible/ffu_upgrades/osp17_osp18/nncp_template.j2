@@ -1,0 +1,38 @@
+# nncp_template.j2
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: {{ nncp_node_selector_hostname }}-network-policy
+spec:
+  desiredState:
+    interfaces:
+{% for network in merged_networks_data %}
+{% set current_pool = (network.subnets.values() | first).allocation_pools[0].start %}
+{# Split the IP address into octets #}
+{% set ip_parts = current_pool.split('.') %}
+{# Get the last octet and convert to integer #}
+{% set last_octet = ip_parts[-1] | int %}
+{# Add the counting value #}
+{% set new_last_octet = last_octet + nncp_node_index + 1 %}
+{# Reconstruct the new IP address #}
+{% set new_ip = ip_parts[:-1] | join('.') + '.' + new_last_octet | string %}
+      - description: {{ network.name_lower }} vlan interface
+        ipv4:
+          address:
+          - ip: {{ new_ip }}
+            prefix-length: {{ (network.subnets.values() | first).ip_subnet.split('/') | last }}
+          dhcp: false
+          enabled: true
+        ipv6:
+          enabled: false
+        name: {{ base_interface_name }}.{{ (network.subnets.values() | first).vlan }}
+        state: up
+        type: vlan
+        vlan:
+          base-iface: {{ base_interface_name }}
+          id: {{ (network.subnets.values() | first).vlan }}
+          reorder-headers: true
+{% endfor %}
+  nodeSelector:
+    kubernetes.io/hostname: {{ nncp_node_selector_hostname }}
+    node-role.kubernetes.io/{{ nncp_node_selector_role }}: ""

@@ -1,0 +1,19 @@
+# env1-template.j2
+PASSWORD_FILE={{ dst_overcloud_passwords_file }}
+MARIADB_IMAGE=registry.redhat.io/rhoso/openstack-mariadb-rhel9:18.0
+declare -A TRIPLEO_PASSWORDS
+CELLS="{{ cells.stdout_lines | join(' ') }}"
+for CELL in $(echo $CELLS); do
+   TRIPLEO_PASSWORDS[$CELL]="$PASSWORD_FILE"
+done
+declare -A SOURCE_DB_ROOT_PASSWORD
+for CELL in $(echo $CELLS); do
+   SOURCE_DB_ROOT_PASSWORD[$CELL]=$(cat ${TRIPLEO_PASSWORDS[$CELL]} | grep ' MysqlRootPassword:' | awk -F ': ' '{ print $2; }')
+done
+MARIADB_CLIENT_ANNOTATIONS='--annotations=k8s.v1.cni.cncf.io/networks=internalapi'
+MARIADB_RUN_OVERRIDES="$MARIADB_CLIENT_ANNOTATIONS"
+CONTROLLER1_SSH="ssh -i {{ provisioning_private_key_file }} tripleo-admin@{{ ansible_host }}"
+declare -A SOURCE_MARIADB_IP
+for CELL in $(echo $CELLS); do
+   SOURCE_MARIADB_IP[$CELL]={{ overcloud_sql_ip.stdout_lines[0] }}
+done

@@ -1,0 +1,26 @@
+# nad_template.j2
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: {{ item.name|lower }}
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "{{ item.name|lower }}",
+      "type": "macvlan",
+{% if current_subnet.vlan is defined %}
+      "master": "{{ base_interface_name }}.{{ current_subnet.vlan }}",
+{% elif current_subnet.vlan is not defined %}
+      "master": "{{ ctlplane_interface_name }}",
+{% endif %}
+      "ipam": {
+        "type": "whereabouts",
+{% if item.exclude_ips is defined and item.exclude_ips | length > 0 %}
+        "exclude": {{ item.exclude_ips | to_json }},
+{% endif %}
+        "range": "{{ current_subnet.ip_subnet }}",
+        "range_start": "{{ current_subnet.allocation_pools[0].start }}",
+        "range_end": "{{ current_subnet.allocation_pools[0].end }}"
+      }
+    }

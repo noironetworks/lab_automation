@@ -1,0 +1,39 @@
+---
+- name: Convert AIM Configuration to Kubernetes CR
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Fetch the AIM operator CR
+      ansible.builtin.get_url:
+        url: "{{ aim_operator_url }}"
+        dest: "{{ aim_operator_file }}"
+
+    - name: Step2. Fetch the AIM CRD
+      ansible.builtin.get_url:
+        url: "{{ aim_crd_url }}"
+        dest: "{{ aim_crd_file }}"
+
+    - name: Step3. Fetch the AIM RBAC
+      ansible.builtin.get_url:
+        url: "{{ aim_rbac_url }}"
+        dest: "{{ aim_rbac_file }}"
+
+    - name: Step4. Copy the AIM CR  file to the provisioning host
+      ansible.builtin.copy:
+        owner: noiro
+        group: noiro
+        src: "{{ local_aim_cr_file }}"
+        dest: "{{ prov_aim_cr_file }}"
+
+    - name: Step5. Apply the AIM CRDs
+      shell: oc apply -f "{{ aim_crd_file }}"
+
+    - name: Step6. Apply the AIM RBAC
+      shell: oc apply -f "{{ aim_rbac_file }}"
+
+    - name: Step7. Apply the AIM CR
+      shell: oc apply -n openstack -f "{{ prov_aim_cr_file }}"
+
+    - name: Step8. Apply the AIM operator bundle deployment
+      shell: oc apply -f "{{ aim_operator_file }}"

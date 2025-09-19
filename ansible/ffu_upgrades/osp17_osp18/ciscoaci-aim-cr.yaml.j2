@@ -1,0 +1,48 @@
+apiVersion: api.cisco.com/v1alpha1
+kind: CiscoAciAim
+metadata:
+  name: ciscoaci-aim
+  namespace: {{ namespace }}
+spec:
+  ACIAimDebug: {{ aim_debug | capitalize }}
+  containerImage: "{{ aim_container_image }}"
+  replicas: {{ aim_replicas }}
+  logPersistence:
+    size: "{{ aim_log_persistence_size }}"
+  
+  # Enable optimized metadata service (for Neutron)
+  ACIOptimizedMetadata: true
+  
+  # Enable scoping of names with apic_system_id
+  ACIScopeNames: {{ scope_names | lower }}
+  
+  # Enable scoping of infra object names with apic_system_id
+  ACIScopeInfra: {{ scope_infra | lower }}
+  
+  # Enable sending of gratuitous ARPs for GEN1 hardware
+  AciGen1HwGratArps: {{ support_gen1_hw | lower }}
+  
+  # Enable subscription to APIC faults for monitoring
+  AciEnableFaultSubscription: {{ enable_faults | lower }}
+  
+  # --- ACI Connection Block (Required) ---
+  aciConnection:
+    ACIApicHosts: "{{ apic_hosts }}"
+    ACIApicUsername: "{{ apic_username }}"
+    ACIApicPassword: "{{ apic_password }}"
+    ACIApicSystemId: "{{ apic_system_id }}"
+    ACIApicSystemIdMaxLength: {{ apic_system_id_length }}
+  
+  # --- ACI Fabric Block (Optional) ---
+  aciFabric:
+    ACIApicEntityProfile: "{{ apic_entity_profile }}"
+    ACIVpcPairs:
+{% for pair in vpc_pairs_list %}
+      - "{{ pair }}"
+{% endfor %}
+{% if mcast_ranges %}
+    AciVmmMcastRanges: "{{ mcast_ranges }}"
+{% endif %}
+{% if multicast_address %}
+    AciVmmMulticastAddress: "{{ multicast_address }}"
+{% endif %}

@@ -1,0 +1,26 @@
+---
+- name: Apply CRs from section 1.7
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+    - name: Step1. Creqate a directory on the provisioning host for the CR yaml files
+      ansible.builtin.file:
+        path: "{{ remote_crs_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Step2. Copy CR yaml files to the provisioning server
+      ansible.builtin.copy:
+        src: "{{ local_crs_dir }}"
+        dest: "{{ remote_crs_dir }}"
+
+    - name: Step3. Get a list of the CR yaml files
+      ansible.builtin.command:
+        cmd: "ls {{ remote_crs_dir }}"
+      register: yaml_files
+
+    - name: Step.4. Apply the CRs in the target dir
+      ansible.builtin.command:
+        cmd: "oc apply -f {{ remote_crs_dir }}{{ item }}"
+      with_items: "{{ yaml_files.stdout_lines }}"

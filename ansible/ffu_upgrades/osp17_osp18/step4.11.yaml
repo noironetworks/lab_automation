@@ -1,0 +1,33 @@
+---
+- name: Adopting the Dashboard service 
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Dashboard service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{  adopt_horizon_file }}"
+        content: |
+          oc patch openstackcontrolplane openstack --type=merge --patch '
+          spec:
+            horizon:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                memcachedInstance: memcached
+                secret: osp-secret
+          '
+
+    - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Dashboard service, part II
+      shell: "{{ adopt_horizon_file }}"
+
+    - name: Step2. Verify that the Dashboard service instance is successfully deployed and ready
+      shell: oc get horizon
+
+    - name: Step3. Confirm that the Dashboard service is reachable and returns a 200 status code
+      shell: curl --silent --output /dev/stderr --head --write-out "%{http_code}" "$(oc get horizon horizon -o jsonpath='{.status.endpoint}')/dashboard/auth/login/?next=/dashboard/" -k | grep 000

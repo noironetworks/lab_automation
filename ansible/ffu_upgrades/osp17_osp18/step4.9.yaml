@@ -1,0 +1,133 @@
+---
+- name: Adopting the Compute service
+  hosts: rhoso_provisioning
+  vars_files:
+    - "/home/stack/ffu/variables.yaml"
+  tasks:
+
+    - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Compute service, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ adopt_nova_file }}"
+        content: |
+          source "{{ prov_db_env_vars_file }}"
+          rm -f celltemplates
+          for CELL in $(echo $RENAMED_CELLS); do
+          cat >> celltemplates << EOF
+                  ${CELL}:
+                    hasAPIAccess: true
+                    cellDatabaseAccount: nova-$CELL
+                    cellDatabaseInstance: openstack-$CELL
+                    cellMessageBusInstance: rabbitmq-$CELL
+                    metadataServiceTemplate:
+                      enabled: false
+                      override:
+                          service:
+                            metadata:
+                              annotations:
+                                metallb.universe.tf/address-pool: internalapi
+                                metallb.universe.tf/allow-shared-ip: internalapi
+                                metallb.universe.tf/loadBalancerIPs: 1.121.101.$(( 204 + ${CELL##*cell} ))
+                            spec:
+                              type: LoadBalancer
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=true
+                    conductorServiceTemplate:
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=true
+          EOF
+          done
+
+          cat > oscp-patch.yaml << EOF
+          spec:
+            nova:
+              enabled: true
+              apiOverride:
+                route: {}
+              template:
+                secret: osp-secret
+                apiDatabaseAccount: nova-api
+                apiServiceTemplate:
+                  override:
+                    service:
+                      internal:
+                        metadata:
+                          annotations:
+                            metallb.universe.tf/address-pool: internalapi
+                            metallb.universe.tf/allow-shared-ip: internalapi
+                            metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                        spec:
+                          type: LoadBalancer
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=true
+                metadataServiceTemplate:
+                  enabled: true
+                  override:
+                    service:
+                      metadata:
+                        annotations:
+                          metallb.universe.tf/address-pool: internalapi
+                          metallb.universe.tf/allow-shared-ip: internalapi
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.204
+                      spec:
+                        type: LoadBalancer
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=true
+                schedulerServiceTemplate:
+                  customServiceConfig: |
+                    [workarounds]
+                    disable_compute_service_check_for_ffu=true
+                cellTemplates:
+                  cell0:
+                    hasAPIAccess: true
+                    cellDatabaseAccount: nova-cell0
+                    cellDatabaseInstance: openstack
+                    cellMessageBusInstance: rabbitmq
+                    conductorServiceTemplate:
+                      customServiceConfig: |
+                        [workarounds]
+                        disable_compute_service_check_for_ffu=true
+          EOF
+          cat celltemplates >> oscp-patch.yaml
+          oc patch openstackcontrolplane openstack  --type=merge --patch-file=oscp-patch.yaml
+
+    - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Compute service, part II
+      shell: "{{ adopt_nova_file }}"
+
+    - name: Step2. Wait for the CRs for the Compute control plane services to be ready
+      shell: oc wait --for condition=Ready --timeout=300s Nova/nova
+
+    - name: Step3-1. Check that Compute service endpoints are defined and pointing to the control plane FQDNs, and that the Nova API responds, part I
+      shell: oc exec -t openstackclient -- openstack endpoint list | grep nova
+
+    - name: Step3-2. Check that Compute service endpoints are defined and pointing to the control plane FQDNs, and that the Nova API responds, part II
+      shell: oc exec -t openstackclient -- openstack server list
+
+    - name: Step4-1. Query the superconductor to check that the expected cells exist, and compare it to its pre-adoption values, part I
+      copy:
+        owner: noiro
+        group: noiro
+        mode: '0777'
+        dest: "{{ validate_nova_file }}"
+        content: |
+          source "{{ prov_db_env_vars_file }}"
+          for CELL in $(echo $CELLS); do
+          set +u
+          . ~/.source_cloud_exported_variables_$CELL
+          set -u
+          RCELL=$CELL
+          [ "$CELL" = "default" ] && RCELL=$DEFAULT_CELL_NAME
+
+          echo "comparing $CELL to $RCELL"
+          echo $PULL_OPENSTACK_CONFIGURATION_NOVAMANAGE_CELL_MAPPINGS | grep -F "| $CELL |"
+          oc rsh nova-cell0-conductor-0 nova-manage cell_v2 list_cells | grep -F "| $RCELL |"
+          done
+
+    - name: Step4-2. Query the superconductor to check that the expected cells exist, and compare it to its pre-adoption values, part I
+      shell: "{{ validate_nova_file }}" 
