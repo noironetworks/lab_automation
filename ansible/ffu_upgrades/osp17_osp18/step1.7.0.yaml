@@ -4,8 +4,15 @@
   vars_files:
     - "/home/stack/ffu/variables.yaml"
   tasks:
+    - name: Debug the host information
+      debug:
+        msg: 
+          - "Name: {{ inventory_hostname }}"
+          - "IP Address: {{ ansible_host }}"
     - name: Step1. Get the names of the OCP hosts
-      shell: oc get nodes | grep master | awk '{print $1}'
+      shell: |
+        source ~/.bash_profile
+        oc get nodes | grep master | awk '{print $1}'
       register: ocp_nodes
 
     - name: Step2. Set up the OCP hosts file

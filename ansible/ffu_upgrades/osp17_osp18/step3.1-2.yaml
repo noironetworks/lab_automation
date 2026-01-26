@@ -6,16 +6,16 @@
   tasks:
     - name: Step0.1 Copy the env vars file to the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         src:  "{{ local_env_vars_1_file }}"
         dest: "{{ provisioning_env_vars_1_file }}"
 
     - name: Step0.2 Copy the overcloud passwords file to the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         src:  "{{ src_overcloud_passwords_file }}"
         dest: "{{ dst_overcloud_passwords_file }}"
@@ -23,8 +23,8 @@
     - name: Step0.3 Create the first shell script on the provisioning host
       ansible.builtin.copy:
         dest: "{{ remote_shell_1_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
           source "{{ provisioning_env_vars_1_file }}"
@@ -38,8 +38,8 @@
 
     - name: Step0.4 Create the second shell script on the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remote_shell_2_file }}"
         content: |
@@ -66,8 +66,8 @@
 
     - name: Step0.5 Create the third shell script on the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remote_shell_3_file }}"
         content: |
@@ -79,8 +79,8 @@
 
     - name: Step0.6 Create the fourth shell script on the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remote_shell_4_file }}"
         content: |
@@ -96,8 +96,8 @@
 
     - name: Step0.7 Create the fifth shell script on the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remote_shell_5_file }}"
         content: |
@@ -107,8 +107,8 @@
 
     - name: Step0.8 Create the sixth shell script on the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remote_shell_6_file }}"
         content: |

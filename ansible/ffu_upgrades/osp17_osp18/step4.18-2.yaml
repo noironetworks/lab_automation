@@ -21,19 +21,19 @@
 
     - name: Step4. Copy the AIM CR  file to the provisioning host
       ansible.builtin.copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         src: "{{ local_aim_cr_file }}"
         dest: "{{ prov_aim_cr_file }}"
 
     - name: Step5. Apply the AIM CRDs
-      shell: oc apply -f "{{ aim_crd_file }}"
+      shell: source ~/.bash_profile && oc apply -f "{{ aim_crd_file }}"
 
     - name: Step6. Apply the AIM RBAC
-      shell: oc apply -f "{{ aim_rbac_file }}"
+      shell: source ~/.bash_profile && oc apply -f "{{ aim_rbac_file }}"
 
     - name: Step7. Apply the AIM CR
-      shell: oc apply -n openstack -f "{{ prov_aim_cr_file }}"
+      shell: source ~/.bash_profile && oc apply -n openstack -f "{{ prov_aim_cr_file }}"
 
     - name: Step8. Apply the AIM operator bundle deployment
-      shell: oc apply -f "{{ aim_operator_file }}"
+      shell: source ~/.bash_profile && oc apply -f "{{ aim_operator_file }}"

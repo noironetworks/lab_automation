@@ -7,8 +7,8 @@
 
     - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Compute service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ adopt_nova_file }}"
         content: |
@@ -101,18 +101,18 @@
       shell: "{{ adopt_nova_file }}"
 
     - name: Step2. Wait for the CRs for the Compute control plane services to be ready
-      shell: oc wait --for condition=Ready --timeout=300s Nova/nova
+      shell: source ~/.bash_profile && oc wait --for condition=Ready --timeout=300s Nova/nova
 
     - name: Step3-1. Check that Compute service endpoints are defined and pointing to the control plane FQDNs, and that the Nova API responds, part I
-      shell: oc exec -t openstackclient -- openstack endpoint list | grep nova
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack endpoint list | grep nova
 
     - name: Step3-2. Check that Compute service endpoints are defined and pointing to the control plane FQDNs, and that the Nova API responds, part II
-      shell: oc exec -t openstackclient -- openstack server list
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack server list
 
     - name: Step4-1. Query the superconductor to check that the expected cells exist, and compare it to its pre-adoption values, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ validate_nova_file }}"
         content: |

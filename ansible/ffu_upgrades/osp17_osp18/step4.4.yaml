@@ -6,8 +6,8 @@
   tasks:
     - name: Step0.1-1. Patch the OpenStackVersion for neutron and heat, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ new_containers_file }}"
         content: |
@@ -24,8 +24,8 @@
 
     - name: Step0.2-1. Create the ACI secret for neutron, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ aci_secrets_file }}"
         content: |
@@ -46,12 +46,12 @@
                     extension_drivers=aim_extension,proxy_group,apic_allowed_vm_name,apic_segmentation_label
 
     - name: Step0.2-2. Create the ACI secret for neutron, part II
-      shell: oc apply -f "{{ aci_secrets_file }}"
+      shell: source ~/.bash_profile && oc apply -f "{{ aci_secrets_file }}"
 
     - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Networking service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_neutron_file }}"
         content: |
@@ -115,10 +115,10 @@
                 - internalapi
 
     - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Networking service, part II
-      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ patch_neutron_file }}"
+      shell: source ~/.bash_profile && oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ patch_neutron_file }}"
 
     - name: Step3. Inspect the resulting Networking service pods
-      shell: oc get pods -l service=neutron
+      shell: source ~/.bash_profile && oc get pods -l service=neutron
 
     - name: Step4. Ensure that the Neutron API service is registered in the Identity service
-      shell: oc exec -t openstackclient -- openstack service list | grep network
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack service list | grep network

@@ -8,14 +8,14 @@
       copy:
         src: "{{ local_db_env_vars_file }}"
         dest: "{{ prov_db_env_vars_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
 
     - name: Step0.3-1. Prepare the MariaDB adoption helper pod, part I
       copy:
         dest: "{{ pvc_and_pod_yaml }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         content: |
           ---
           apiVersion: v1
@@ -60,18 +60,23 @@
                 claimName: mariadb-data
 
     - name: Step0.3-2. Prepare the MariaDB adoption helper pod, part II
-      shell: oc apply -f "{{ pvc_and_pod_yaml }}"
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc apply -f "{{ pvc_and_pod_yaml }}"
 
     - name: Step0.3-3. Wait for the pod to be ready
-      shell: oc wait --for condition=Ready pod/mariadb-copy-data --timeout=30s
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc wait --for condition=Ready pod/mariadb-copy-data --timeout=30s
 
     - name: Step1-1. Check that the source Galera database clusters in each cell have its members online and synced, part I
       copy:
         dest: "{{ db_check_1_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           for CELL in $(echo $CELLS); do
              MEMBERS=SOURCE_GALERA_MEMBERS_$(echo ${CELL}|tr '[:lower:]' '[:upper:]')[@]
@@ -95,10 +100,11 @@
     - name: Step2-1. Get the count of source databases with the NOK (not-OK) status, part I
       copy:
         dest: "{{ db_check_2_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           for CELL in $(echo $CELLS); do
              oc rsh mariadb-copy-data mysql -h "${SOURCE_MARIADB_IP[$CELL]}" -uroot -p"${SOURCE_DB_ROOT_PASSWORD[$CELL]}" -e "SHOW databases;"
@@ -111,8 +117,8 @@
     - name: Step3-1. Check that mysqlcheck had no errors, part I
       copy:
         dest: "{{ db_check_3_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
           source "{{ prov_db_env_vars_file }}"
@@ -130,10 +136,11 @@
     - name: Step4-1. Test the connection to the control plane upcall and cells databases, part I
       copy:
         dest: "{{ db_check_4_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           for CELL in $(echo "super $RENAMED_CELLS"); do
              oc run mariadb-client --image $MARIADB_IMAGE -i --rm --restart=Never -- \
@@ -147,10 +154,11 @@
     - name: Step5-1. Create a dump of the original databases, part I
       copy:
         dest: "{{ db_dump_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           for CELL in $(echo $CELLS); do
              oc rsh mariadb-copy-data << EOF
@@ -172,10 +180,11 @@
     - name: Step6-1. Restore the databases from .sql files into the control plane MariaDB, part I
       copy:
         dest: "{{ db_restore_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           for CELL in $(echo $CELLS); do
              RCELL=$CELL
@@ -243,10 +252,11 @@
     - name: Step7-1. Check that the databases are imported correctly, part I
       copy:
         dest: "{{ db_import_check_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ prov_db_env_vars_file }}"
           set +u
           . ~/.source_cloud_exported_variables_default
@@ -289,10 +299,11 @@
     - name: Step8-1. Delete the mariadb-data pod and the mariadb-copy-data persistent volume claim that contains the database backup, part I
       copy:
         dest: "{{ db_cleanup_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           oc delete pod mariadb-copy-data
           oc delete pvc mariadb-data
 

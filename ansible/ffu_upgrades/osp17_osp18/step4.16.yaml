@@ -7,8 +7,8 @@
 
     - name: Step2. Enable the services that you want to include in the /etc/os-diff/config.yaml file
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ os_diff_config_2_file }}"
         content: |
@@ -42,8 +42,8 @@
       
     - name: Step3-1. If you use non-containerized services, such as the ovs-external-ids, pull the configuration or the command output, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "/etc/os-diff/config.yaml"
         content: |

@@ -6,8 +6,8 @@
   tasks:
     - name: Step1. Create a new file, for example, glance_swift.patch, and include the following content
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ glance_patch_file }}"
         content: |
@@ -49,17 +49,17 @@
                     networkAttachments:
                       - storage
     - name: Step2. Verify that SwiftProxy is available
-      shell: oc get pod -l component=swift-proxy | grep Running
+      shell: source ~/.bash_profile && oc get pod -l component=swift-proxy | grep Running
 
     - name: Step3. Patch the GlanceAPI service that is deployed in the control plane
-      shell: oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ glance_patch_file }}"
+      shell: source ~/.bash_profile && oc patch openstackcontrolplane openstack --type=merge --patch-file="{{ glance_patch_file }}"
 
     - name: Step6. Check that the service is active, and that the endpoints are updated in the RHOSP CLI
-      shell: oc exec -t openstackclient -- openstack service list | grep image
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack service list | grep image
 
     - name: Step6.5. Give time for CR
       ansible.builtin.pause:
         seconds: 60
 
     - name: Step7. Check that the images that you previously listed in the source cloud are available in the adopted service
-      shell: oc exec -t openstackclient -- openstack image list
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack image list

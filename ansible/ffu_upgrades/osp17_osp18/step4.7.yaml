@@ -7,8 +7,8 @@
 
     - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Placement service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_placement_file }}"
         content: |
@@ -38,4 +38,4 @@
       shell: "{{ patch_placement_file }}"
 
     - name: Step2. Check that the Placement service endpoints are defined and pointing to the control plane FQDNs, and that the Placement API responds
-      shell: oc exec -t openstackclient -- openstack endpoint list | grep placement
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack endpoint list | grep placement

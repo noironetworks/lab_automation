@@ -6,8 +6,8 @@
   tasks:
     - name: Step0.1. Copy controller environment variables file
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         src: "{{ local_controllers_env_file }}"
         dest: "{{ remote_controllers_env_file }}"
 

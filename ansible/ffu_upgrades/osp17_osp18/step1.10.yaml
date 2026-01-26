@@ -38,8 +38,8 @@
 
   - name: Step0.5. Copy ansible inventory file to the host
     copy:
-      owner: noiro
-      group: noiro
+      owner: stack
+      group: stack
       src: "{{ local_inventory_file }}"
       dest: "{{ remote_inventory_file }}"
 
@@ -48,8 +48,8 @@
     ansible.builtin.file:
       path: "{{ os_diff_etc_dir }}"
       state: directory
-      owner: noiro
-      group: noiro
+      owner: stack
+      group: stack
       mode: '0755'
 
   - name: Step0.7. Add the undercloud to /etc/hosts
@@ -61,8 +61,8 @@
 
   - name: Step1. Configure the /etc/os-diff/os-diff.cfg file
     copy:
-      owner: noiro
-      group: noiro
+      owner: stack
+      group: stack
       dest: "{{ os_diff_config_1_file }}"
       content: |
          [Default]
@@ -87,8 +87,8 @@
 
   - name: Step2. If you use a host file to connect to your cloud, configure the ssh.config file to allow os-diff to access your RHOSP environment
     copy:
-      owner: noiro
-      group: noiro
+      owner: stack
+      group: stack
       dest: "{{ ssh_config_file }}"
       content: |
         Host undercloud

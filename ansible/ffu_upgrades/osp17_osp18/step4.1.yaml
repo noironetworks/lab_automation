@@ -6,8 +6,8 @@
   tasks:
     - name: Step0.1-1. Create the keystone secret that includes the Fernet keys that were copied from the RHOSP environment, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ keystone_secrets_file }}"
         content: |
@@ -29,8 +29,8 @@
 
     - name: Step1-1. Patch the OpenStackControlPlane CR to deploy the Identity service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_keystone_file }}"
         content: |
@@ -66,8 +66,8 @@
 
     - name: Step3-1. Remove services and endpoints that still point to the RHOSP control plane, excluding the Identity service and its endpoints, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ remove_services_file }}"
         content: |
@@ -84,10 +84,10 @@
         seconds: 90
 
     - name: Step4. Verify that you can access the OpenStackClient pod
-      shell: oc rsh openstackclient ls
+      shell: source ~/.bash_profile && oc rsh openstackclient ls
 
     - name: Step5. Confirm that the Identity service endpoints are defined and are pointing to the control plane FQDNs
-      shell: oc exec -t openstackclient -- openstack endpoint list | grep keystone
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack endpoint list | grep keystone
 
     - name: Step6. Wait for the OpenStackControlPlane resource to become Ready
-      shell: oc wait --for=condition=Ready --timeout=1m OpenStackControlPlane openstack
+      shell: source ~/.bash_profile && oc wait --for=condition=Ready --timeout=1m OpenStackControlPlane openstack

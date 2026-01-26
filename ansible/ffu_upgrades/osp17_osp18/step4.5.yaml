@@ -7,8 +7,8 @@
 
     - name: Step1-1. Create the swift-conf secret that includes the Object Storage service hash path suffix and prefix, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ adopt_swift_file }}"
         content: |
@@ -28,8 +28,8 @@
 
     - name: Step2-1. Create the swift-ring-files ConfigMap that includes the Object Storage service ring files, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ swift_ring_file }}"
         content: |
@@ -51,8 +51,8 @@
 
     - name: Step3-1. Patch the OpenStackControlPlane custom resource to deploy the Object Storage service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_swift_file }}"
         content: |
@@ -94,10 +94,10 @@
       shell: "{{ patch_swift_file }}"
 
     - name: Step4. Inspect the resulting Object Storage service pods
-      shell: oc get pods -l component=swift-proxy
+      shell: source ~/.bash_profile && oc get pods -l component=swift-proxy
 
     - name: Step5. Verify that the Object Storage proxy service is registered in the Identity service 
-      shell: oc exec -t openstackclient -- openstack service list | grep swift
+      shell: source ~/.bash_profile && oc exec -t openstackclient -- openstack service list | grep swift
 
     - name: Step5. Give time for CR
       ansible.builtin.pause:

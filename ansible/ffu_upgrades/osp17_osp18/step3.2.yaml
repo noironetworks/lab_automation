@@ -7,8 +7,8 @@
     - name: Step0.1 Create the secrets env vars on the provisioning host
       ansible.builtin.copy:
         dest: "{{ secrets_env_vars }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         content: |
           declare -A TRIPLEO_PASSWORDS
           TRIPLEO_PASSWORDS[default]="{{ dst_overcloud_passwords_file }}"
@@ -33,10 +33,11 @@
     - name: Step0.2 Create commands for setting service secrets
       ansible.builtin.copy:
         dest: "{{ service_secrets_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           source "{{ secrets_env_vars }}"
           oc set data secret/osp-secret "AodhPassword=$AODH_PASSWORD"
           oc set data secret/osp-secret "BarbicanPassword=$BARBICAN_PASSWORD"
@@ -59,8 +60,8 @@
     - name: Step0.3. Create the OpenStackControlPlane CR
       copy:
         dest: "{{ openstack_cp_cr_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
           apiVersion: core.openstack.org/v1beta1
@@ -94,7 +95,7 @@
                       annotations:
                         metallb.universe.tf/address-pool: internalapi
                         metallb.universe.tf/allow-shared-ip: internalapi
-                        metallb.universe.tf/loadBalancerIPs: 1.121.101.203
+                        metallb.universe.tf/loadBalancerIPs: 1.121.101.87
 
                     spec:
                       type: LoadBalancer
@@ -189,7 +190,7 @@
                       metadata:
                         annotations:
                           metallb.universe.tf/address-pool: internalapi
-                          metallb.universe.tf/loadBalancerIPs: 1.121.101.201
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.85
                       spec:
                         type: LoadBalancer
                 rabbitmq-cell1:
@@ -200,7 +201,7 @@
                       metadata:
                         annotations:
                           metallb.universe.tf/address-pool: internalapi
-                          metallb.universe.tf/loadBalancerIPs: 1.121.101.202
+                          metallb.universe.tf/loadBalancerIPs: 1.121.101.86
 
                       spec:
                         type: LoadBalancer
@@ -224,10 +225,11 @@
     - name: Step0.4 Create commands for verify step 1
       ansible.builtin.copy:
         dest: "{{ verify_1_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
+          source ~/.bash_profile
           RENAMED_CELLS="cell1"
           oc get pod openstack-galera-0 -o jsonpath='{.status.phase}{"\n"}'
           oc get pod rabbitmq-server-0 -o jsonpath='{.status.phase}{"\n"}'
@@ -237,14 +239,15 @@
           done
 
     - name: Step1. Ensure that you are using the Red Hat OpenShift Container Platform (RHOCP) namespace where you want the control plane to be deployed
-      ansible.builtin.command:
-        cmd: oc project openstack
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc project openstack
 
     - name: Step2-1. Create the RHOSP secret, part I
       ansible.builtin.copy:
         dest: "{{ initial_secrets_file }}"
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         content: |
             apiVersion: v1
@@ -309,11 +312,16 @@
       with_items: "{{ secret_data.stdout_lines }}"
 
     - name: Step2-5. Create the RHOSP secret, part V
-      shell: oc create -f "{{ secrets_yaml_file }}" -n openstack
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc create -f "{{ secrets_yaml_file }}" -n openstack
       ignore_errors: true
 
     - name: Step3. If the ADMIN_PASSWORD is different than the password you set in osp-secret, amend the AdminPassword key in the osp-secret
-      shell: source "{{ secrets_env_vars }}" && oc set data secret/osp-secret "AdminPassword=$ADMIN_PASSWORD"
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        source "{{ secrets_env_vars }}"
+        oc set data secret/osp-secret "AdminPassword=$ADMIN_PASSWORD"
       register: admin_secret_results
 
     - name: Step4. Set service account passwords in osp-secret to match the service account passwords from the original deployment
@@ -321,7 +329,9 @@
       register: service_secrets_results
 
     - name: Step5. Deploy the OpenStackControlPlane CR
-      shell: oc apply -f "{{ openstack_cp_cr_file }}"
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc apply -f "{{ openstack_cp_cr_file }}"
       register: os_cp_cr_results
 
     - name: Step5.5. Give time for CR
@@ -337,7 +347,9 @@
         msg: "{{ verify1_results.stdout_lines }}"
 
     - name: Step8. Ensure that the statuses of all the Rabbitmq and Galera CRs are Setup complete
-      shell: oc get Rabbitmqs,Galera
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc get Rabbitmqs,Galera
       register: verify2_results
 
     - name: Step9. Show verify results
@@ -345,7 +357,9 @@
         msg: "{{ verify2_results.stdout_lines }}"
 
     - name: Step10. Verify that the OpenStackControlPlane CR is waiting for deployment of the openstackclient pod
-      shell: oc get OpenStackControlPlane openstack
+      ansible.builtin.shell: |
+        source ~/.bash_profile
+        oc get OpenStackControlPlane openstack
       register: verify3_results
 
     - name: Step11. Show verify results

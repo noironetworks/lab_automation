@@ -15,8 +15,8 @@
 
     - name: Step4-1. Patch the osp-secret to update the HeatAuthEncryptionKey and HeatPassword parameters, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_heat_secret_file }}"
         content: |
@@ -27,8 +27,8 @@
 
     - name: Step5-1. Patch the OpenStackControlPlane CR to deploy the Orchestration service, part I
       copy:
-        owner: noiro
-        group: noiro
+        owner: stack
+        group: stack
         mode: '0777'
         dest: "{{ patch_heat_file }}"
         content: |
@@ -57,7 +57,7 @@
         seconds: 90
 
     - name: Step6-1. Ensure that the statuses of all the CRs are Setup complete, part I
-      shell: oc get Heat,HeatAPI,HeatEngine,HeatCFNAPI
+      shell: source ~/.bash_profile && oc get Heat,HeatAPI,HeatEngine,HeatCFNAPI
       register: heat_status
 
     - name: Step6-2. Ensure that the statuses of all the CRs are Setup complete, part II
@@ -65,10 +65,10 @@
         msg: "{{ heat_status.stdout_lines }}"
 
     - name: Step6-1. Check that the Orchestration service is registered in the Identity service, part I
-      shell: oc exec -it openstackclient -- openstack service list -c Name -c Type
+      shell: source ~/.bash_profile && oc exec -it openstackclient -- openstack service list -c Name -c Type
 
     - name: Step6-2. Check that the Orchestration service is registered in the Identity service, part II
-      shell: oc exec -it openstackclient -- openstack endpoint list --service=heat -f yaml
+      shell: source ~/.bash_profile && oc exec -it openstackclient -- openstack endpoint list --service=heat -f yaml
 
     - name: Step7. Verify that you can see your Orchestration service stacks
-      shell: oc exec -it openstackclient -- openstack stack list -f yaml
+      shell: source ~/.bash_profile && oc exec -it openstackclient -- openstack stack list -f yaml
