@@ -11,7 +11,7 @@
         mode: '0777'
         dest: "{{ keystone_secrets_file }}"
         content: |
-         source "{{ provisioning_env_vars_1_file }}" && oc apply -f - <<EOF
+         source ~/.bash_profile && source "{{ provisioning_env_vars_1_file }}" && oc apply -f - <<EOF
            apiVersion: v1
            data:
              CredentialKeys0: $($CONTROLLER1_SSH sudo cat /var/lib/config-data/puppet-generated/keystone/etc/keystone/credential-keys/0 | base64 -w 0)
@@ -34,7 +34,7 @@
         mode: '0777'
         dest: "{{ patch_keystone_file }}"
         content: |
-          oc patch openstackcontrolplane openstack --type=merge --patch '
+          source ~/.bash_profile && oc patch openstackcontrolplane openstack --type=merge --patch '
           spec:
             keystone:
               enabled: true

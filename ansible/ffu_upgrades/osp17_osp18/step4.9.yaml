@@ -95,7 +95,7 @@
                         disable_compute_service_check_for_ffu=true
           EOF
           cat celltemplates >> oscp-patch.yaml
-          oc patch openstackcontrolplane openstack  --type=merge --patch-file=oscp-patch.yaml
+          source ~/.bash_profile && oc patch openstackcontrolplane openstack  --type=merge --patch-file=oscp-patch.yaml
 
     - name: Step1-2. Patch the OpenStackControlPlane CR to deploy the Compute service, part II
       shell: "{{ adopt_nova_file }}"
@@ -126,7 +126,7 @@
 
           echo "comparing $CELL to $RCELL"
           echo $PULL_OPENSTACK_CONFIGURATION_NOVAMANAGE_CELL_MAPPINGS | grep -F "| $CELL |"
-          oc rsh nova-cell0-conductor-0 nova-manage cell_v2 list_cells | grep -F "| $RCELL |"
+          source ~/.bash_profile && oc rsh nova-cell0-conductor-0 nova-manage cell_v2 list_cells | grep -F "| $RCELL |"
           done
 
     - name: Step4-2. Query the superconductor to check that the expected cells exist, and compare it to its pre-adoption values, part I

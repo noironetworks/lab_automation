@@ -11,7 +11,7 @@
         mode: '0777'
         dest: "{{ new_containers_file }}"
         content: |
-          oc patch openstackversion openstack --type=merge --patch '
+          source ~/.bash_profile && oc patch openstackversion openstack --type=merge --patch '
           spec:
             customContainerImages:
               heatAPIImage: 10.30.9.74:8787/osp18/openstack-heat-engine-rhel9-ciscoaci:18.0.8

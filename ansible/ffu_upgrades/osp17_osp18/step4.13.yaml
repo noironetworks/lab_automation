@@ -20,7 +20,7 @@
         mode: '0777'
         dest: "{{ patch_heat_secret_file }}"
         content: |
-          oc patch secret osp-secret --type='json' -p='[{"op" : "replace" ,"path" : "/data/HeatAuthEncryptionKey" ,"value" : "{{ encoded_heat_password.stdout_lines[0] }}"}]'
+          source ~/.bash_profile && oc patch secret osp-secret --type='json' -p='[{"op" : "replace" ,"path" : "/data/HeatAuthEncryptionKey" ,"value" : "{{ encoded_heat_password.stdout_lines[0] }}"}]'
 
     - name: Step4-2. Patch the osp-secret to update the HeatAuthEncryptionKey and HeatPassword parameters, part II
       shell: "{{ patch_heat_secret_file }}"
@@ -32,7 +32,7 @@
         mode: '0777'
         dest: "{{ patch_heat_file }}"
         content: |
-          oc patch openstackcontrolplane openstack --type=merge --patch '
+          source ~/.bash_profile && oc patch openstackcontrolplane openstack --type=merge --patch '
           spec:
             heat:
               enabled: true

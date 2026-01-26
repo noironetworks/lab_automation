@@ -12,7 +12,7 @@
         mode: '0777'
         dest: "{{  adopt_horizon_file }}"
         content: |
-          oc patch openstackcontrolplane openstack --type=merge --patch '
+          source ~/.bash_profile && oc patch openstackcontrolplane openstack --type=merge --patch '
           spec:
             horizon:
               enabled: true
