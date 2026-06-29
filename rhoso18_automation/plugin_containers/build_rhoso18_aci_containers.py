@@ -370,6 +370,16 @@ gpgcheck=0
             "summary":"This is Ciscoaci Neutron Opflex Agent container",
             "description":"This will be deployed on the controller and compute nodes",
         },
+        'openstack-openstackclient-aci': {
+            "user": "neutron",
+            "rhel_container": "openstack-openstackclient-rhel9",
+            "aci_container": "openstack-openstackclient-aci",
+            "packages": [],
+            "run_cmds": ["yum --releasever={} -y install python3-gbpclient".format(rhel_version)],
+            "osd_param_name": ["ContainerOpenstackCliImage"],
+            "summary":"This is Ciscoaci Openstack CLI container",
+            "description":"This will be deployed os the openstack cli pod",
+        },
     }
 
     license_text = """
