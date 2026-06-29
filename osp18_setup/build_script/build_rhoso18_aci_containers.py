@@ -64,7 +64,6 @@ def build_containers(upstream_registry, regseparator,
     if "opflex" in container_name:
 	    rhel_container = "%s%s%s:%s" % ("localhost", regseparator,
 		  		    arr['rhel_container'], release_tag)
-	    print("IFTI.............. opfxlex in %s" % container_name)
     else:
 	    rhel_container = "%s%s%s:%s" % (upstream_registry, regseparator,
                                     arr['rhel_container'], release_tag)
